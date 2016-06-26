@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "globals.h"
 #include "config.h"
 #include "errno.h"
@@ -268,46 +255,6 @@ pframe_alloc(mmobj_t *o, uint32_t pagenum)
         return pf;
 }
 
-int
-pframe_lookup(struct mmobj *o, uint32_t pagenum, int forwrite, pframe_t **result)
-{
-        KASSERT(NULL != o);
-        KASSERT(NULL != result);
-
-        return o->mmo_ops->lookuppage(o, pagenum, forwrite, result);
-}
-
-/*
- * Migrate a page frame up the tree. The destination must be on the same
- * branch as the pframe's current object. pf must not be busy. If dest
- * already has a page with the same number as pf clean pf.
- *
- * @param pf page to be migrated
- * @param dest destination vm object
- */
-void
-pframe_migrate(pframe_t *pf, mmobj_t *dest)
-{
-        KASSERT(!pframe_is_busy(pf));
-        if (NULL != pframe_get_resident(dest, pf->pf_pagenum)) {
-                /* dest already has a newer version of the page, clean this page */
-                pframe_unpin(pf);
-                pframe_clean(pf);
-                pframe_free(pf);
-        } else {
-                mmobj_t *src = pf->pf_obj;
-                pf->pf_obj = dest;
-                list_remove(&pf->pf_hlink);
-                list_remove(&pf->pf_olink);
-                src->mmo_nrespages--;
-                src->mmo_ops->put(src);
-                list_insert_head(&pframe_hash[hash_page(dest, pf->pf_pagenum)], &pf->pf_hlink);
-                list_insert_head(&dest->mmo_respages, &pf->pf_olink);
-                dest->mmo_nrespages++;
-                dest->mmo_ops->ref(dest);
-        }
-}
-
 /*
  * Fills the contents of the page (using the mmobj's fillpage op).
  * Make sure to mark the page busy while it's being filled.
@@ -350,43 +297,72 @@ pframe_fill(pframe_t *pf)
 int
 pframe_get(struct mmobj *o, uint32_t pagenum, pframe_t **result)
 {
-        pframe_t *pframe = NULL;
+        /*NOT_YET_IMPLEMENTED("VM: pframe_get");*/
+	pframe_t * f = pframe_get_resident(o, pagenum);
+	if(f == NULL){
+		if(pageoutd_needed()){
+			/*TODO: pageoutd not sleeping?
+			if(){
+			}
+			*/
+			pageoutd_wakeup();
+			pageoutd_run(NULL, NULL);
+		}
+		f = pframe_alloc(o, pagenum);	
+		if(f == NULL){
+			return -1;
+		}
+		pframe_fill(f);	
+		*result = f;
+		return 0;
+	}else{
+		if(pframe_is_busy(f)){
+                        sched_sleep_on(&f->pf_waitq);
+		}/*TODO is this correct way of waiting*/
+		*result = f;
+		return 0;
+	}
+        return -1;
+}
 
-        pframe = pframe_get_resident(o, pagenum);
-        if (pframe != NULL) {
-                if (pframe_is_busy(pframe)) {
-                        sched_sleep_on(&pframe->pf_waitq);
-                        dbg(DBG_PRINT, "(GRADING3D)\n");
-                        return pframe_get(o, pagenum, result);
-                }
-                *result = pframe;
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                return 0;
+int
+pframe_lookup(struct mmobj *o, uint32_t pagenum, int forwrite, pframe_t **result)
+{
+        KASSERT(NULL != o);
+        KASSERT(NULL != result);
+
+        return o->mmo_ops->lookuppage(o, pagenum, forwrite, result);
+}
+
+/*
+ * Migrate a page frame up the tree. The destination must be on the same
+ * branch as the pframe's current object. pf must not be busy. If dest
+ * already has a page with the same number as pf clean pf.
+ *
+ * @param pf page to be migrated
+ * @param dest destination vm object
+ */
+void
+pframe_migrate(pframe_t *pf, mmobj_t *dest)
+{
+        KASSERT(!pframe_is_busy(pf));
+        if (NULL != pframe_get_resident(dest, pf->pf_pagenum)) {
+                /* dest already has a newer version of the page, clean this page */
+                pframe_unpin(pf);
+                pframe_clean(pf);
+                pframe_free(pf);
+        } else {
+                mmobj_t *src = pf->pf_obj;
+                pf->pf_obj = dest;
+                list_remove(&pf->pf_hlink);
+                list_remove(&pf->pf_olink);
+                src->mmo_nrespages--;
+                src->mmo_ops->put(src);
+                list_insert_head(&pframe_hash[hash_page(dest, pf->pf_pagenum)], &pf->pf_hlink);
+                list_insert_head(&dest->mmo_respages, &pf->pf_olink);
+                dest->mmo_nrespages++;
+                dest->mmo_ops->ref(dest);
         }
-
-        if (pageoutd_needed()) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                pageoutd_wakeup();
-                sched_sleep_on(&alloc_waitq);
-        }
-
-        pframe = pframe_alloc(o, pagenum);
-        if (pframe == NULL) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                return -EFAULT;
-        }
-
-        if (pframe_fill(pframe) < 0) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                pframe_free(pframe);
-                return -EFAULT;
-        }
-
-        *result = pframe;
-
-        dbg(DBG_PRINT, "(GRADING3B)\n");
-
-        return 0;
 }
 
 /*
@@ -405,20 +381,20 @@ pframe_get(struct mmobj *o, uint32_t pagenum, pframe_t **result)
 void
 pframe_pin(pframe_t *pf)
 {
-        KASSERT(!pframe_is_free(pf));
-        KASSERT(pf->pf_pincount >= 0);
-        dbg(DBG_PRINT, "(GRADING3A 1.a)\n");
+        /*NOT_YET_IMPLEMENTED("VM: pframe_pin");*/
+	KASSERT(!pframe_is_free(pf));	
+	dbg(DBG_PRINT, "GRADING3A 1.a\n");
+	KASSERT(pf->pf_pincount >= 0);
+	dbg(DBG_PRINT, "GRADING3A 1.a\n");
 
-        if (pf->pf_pincount == 0) {
-                dbg(DBG_PRINT, "(GRADING3B)\n");
-                nallocated --;
-                list_remove(&pf->pf_link);
-                npinned ++;
-                list_insert_tail(&pinned_list, &pf->pf_link);
-        }
-        dbg(DBG_PRINT, "(GRADING3B)\n");
-
-        pf->pf_pincount ++;
+	if(!pframe_is_pinned(pf)){
+		list_remove(&pf->pf_link);
+		--nallocated;
+		list_insert_tail(&pinned_list, &pf->pf_link);
+	}
+	++npinned;
+	++pf->pf_pincount;
+	
 }
 
 /*
@@ -434,20 +410,22 @@ pframe_pin(pframe_t *pf)
 void
 pframe_unpin(pframe_t *pf)
 {
-        KASSERT(!pframe_is_free(pf));
-        KASSERT(pf->pf_pincount > 0);
-        dbg(DBG_PRINT, "(GRADING3A 1.a)\n");
+        /*NOT_YET_IMPLEMENTED("VM: pframe_unpin");*/
+	KASSERT(!pframe_is_free(pf));	
+	dbg(DBG_PRINT, "GRADING3A 1.b\n");
+	
+	KASSERT(pf->pf_pincount > 0);
+	dbg(DBG_PRINT, "GRADING3A 1.b\n");
 
-        pf->pf_pincount --;
-
-        if (pf->pf_pincount == 0) {
-                dbg(DBG_PRINT, "(GRADING3B)\n");
-                npinned --;
-                list_remove(&pf->pf_link);
-                nallocated ++;
-                list_insert_tail(&alloc_list, &pf->pf_link);
-        }
-        dbg(DBG_PRINT, "(GRADING3B)\n");
+	--pf->pf_pincount;
+	--npinned;
+	if(pf->pf_pincount == 0){
+		list_remove(&pf->pf_link);
+		list_insert_tail(&alloc_list, &pf->pf_link);
+		++nallocated;
+	}
+	
+			
 }
 
 /*

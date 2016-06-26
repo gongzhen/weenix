@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "types.h"
 #include "kernel.h"
 
@@ -87,17 +74,7 @@ _pagegroup_create(uintptr_t start, uintptr_t end)
                 list_init(&group->pg_freelist[order]);
                 if (npages & (1 << order)) {
                         end -= (1 << order) << PAGE_SHIFT;
-                        /*
-                         * The next line is commented out by Bill Cheng to fix the memory corruption bug discovered by Zhiyi Xu.
-                         * To see the memory corruption bug, start with the prestine PROCS assignment and add the following
-                         * anywhere in, say, "main/kmain.c":
-                         * 
-                         *     static int a[30000];
-                         * 
-                         * Then call page_alloc() in an infinite loop in bootstrap().  This will cause a failed assertion
-                         * when page_freecount reaches 4.
-                         */
-                        /* list_insert_head(&group->pg_freelist[order], &((struct freepage *)end)->fp_link); */
+                        list_insert_head(&group->pg_freelist[order], &((struct freepage *)end)->fp_link);
                 }
         }
 

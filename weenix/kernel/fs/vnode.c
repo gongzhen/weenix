@@ -1,21 +1,8 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 /*
  *  FILE: vnode.c
  *  AUTH: mcc | mahrens | kma | afenn
  *  DESC: vnode management
- *  $Id: vnode.c,v 1.8 2014/12/22 16:15:17 william Exp $
+ *  $Id: vnode.c,v 1.1 2012/10/10 20:06:46 william Exp $
  */
 
 #include "kernel.h"
@@ -38,10 +25,10 @@ static list_t vnode_inuse_list;
 
 /* Related to vnodes representing special files: */
 static void init_special_vnode(vnode_t *vn);
-static int special_file_stat(vnode_t *vnode, struct stat *ss);
 static int special_file_read(vnode_t *file, off_t offset, void *buf, size_t count);
 static int special_file_write(vnode_t *file, off_t offset, const void *buf, size_t count);
 static int special_file_mmap(vnode_t *file, vmarea_t *vma, mmobj_t **ret);
+static int special_file_stat(vnode_t *vnode, struct stat *ss);
 static int special_file_fillpage(vnode_t *file, off_t offset, void *pagebuf);
 static int special_file_dirtypage(vnode_t *file, off_t offset);
 static int special_file_cleanpage(vnode_t *file, off_t offset, void *pagebuf);
@@ -438,6 +425,84 @@ init_special_vnode(vnode_t *vn)
 }
 
 
+/*
+ * If the file is a byte device then find the file's
+ * bytedev_t, and call read on it. Return what read returns.
+ *
+ * If the file is a block device then return -ENOTSUP
+ */
+static int
+special_file_read(vnode_t *file, off_t offset, void *buf, size_t count)
+{
+        /*NOT_YET_IMPLEMENTED("VFS: special_file_read");*/
+	KASSERT(file);
+	dbg(DBG_PRINT,"GRADING2 A.1.a\n");
+	KASSERT((S_ISCHR(file->vn_mode) || S_ISBLK(file->vn_mode)));
+	dbg(DBG_PRINT,"GRADING2 A.1.a\n");
+	if (S_ISCHR(file->vn_mode)){
+		KASSERT(file->vn_cdev && file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->read);
+		dbg(DBG_PRINT,"GRADING2 A.1.a\n");
+		/*byte device is same as char device, ref: vnode.h*/
+		return file->vn_cdev->cd_ops->read(file->vn_cdev, offset, buf, count);
+	}
+	if(S_ISBLK(file->vn_mode)){
+		return -ENOTSUP;
+	}
+	
+	return 0;
+}
+
+/*
+ * If the file is a byte device find the file's
+ * bytedev_t, and call its write. Return what write returns.
+ *
+ * If the file is a block device then return -ENOTSUP.
+ */
+static int
+special_file_write(vnode_t *file, off_t offset, const void *buf, size_t count)
+{
+        /*NOT_YET_IMPLEMENTED("VFS: special_file_write");*/
+	KASSERT(file);
+	dbg(DBG_PRINT,"GRADING2 A.1.b\n");
+	KASSERT((S_ISCHR(file->vn_mode) || S_ISBLK(file->vn_mode)));
+	dbg(DBG_PRINT,"GRADING2 A.1.b\n");
+	if (S_ISCHR(file->vn_mode)){
+        	KASSERT(file->vn_cdev && file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->write);
+		dbg(DBG_PRINT,"GRADING2 A.1.b\n");
+		
+		return file->vn_cdev->cd_ops->write(file->vn_cdev, offset, buf, count);
+	}
+	
+	if(S_ISBLK(file->vn_mode)){
+		return -ENOTSUP;	
+	}
+
+	return 0;
+}
+
+/* Memory map the special file represented by <file>. All of the
+ * work for this function is device-specific, so look up the
+ * file's bytedev_t and pass the arguments through to its mmap
+ * function. Return what that function returns.
+ *
+ * Do not worry about this until VM.
+ */
+static int
+special_file_mmap(vnode_t *file, vmarea_t *vma, mmobj_t **ret)
+{
+        /*NOT_YET_IMPLEMENTED("VM: special_file_mmap");*/
+	KASSERT(file);
+	dbg(DBG_PRINT, "GRADING3A 5.a\n");
+        KASSERT(S_ISCHR(file->vn_mode) && "because these ops only assigned if vnode represents a special file");
+	dbg(DBG_PRINT, "GRADING3A 5.a\n");
+        KASSERT((file->vn_cdev) && "because open shouldn\'t have let us arrive here if vn_cdev was NULL");
+	dbg(DBG_PRINT, "GRADING3A 5.a\n");
+        KASSERT(file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->mmap);
+	dbg(DBG_PRINT, "GRADING3A 5.a\n");
+
+	return file->vn_cdev->cd_ops->mmap( file, vma, ret);
+}
+
 /* Stat is currently the only filesystem specific routine that we have to worry
  * about for special files.  Here we just call the stat routine for the root
  * directory of the filesystem.
@@ -451,121 +516,69 @@ special_file_stat(vnode_t *vnode, struct stat *ss)
         return vnode->vn_fs->fs_root->vn_ops->stat(vnode, ss);
 }
 
-/*
- * If the file is a byte device then find the file's
- * bytedev_t, and call read on it. Return what read returns.
- *
- * If the file is a block device then return -ENOTSUP
- */
-static int
-special_file_read(vnode_t *file, off_t offset, void *buf, size_t count)
-{
-        KASSERT(file);
-        KASSERT((S_ISCHR(file->vn_mode) || S_ISBLK(file->vn_mode)));
-        if (S_ISCHR(file->vn_mode)) {
-                KASSERT(file->vn_cdev && file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->read);
-                dbg(DBG_PRINT, "(GRADING2A 1.a)\n");
-        }
-        dbg(DBG_PRINT, "(GRADING1A 1.a)\n");
-
-        if (S_ISBLK(file->vn_mode)) {
-                dbg(DBG_PRINT, "(GRADING2D)\n");
-                return -ENOTSUP;
-        }
-
-        return file->vn_cdev->cd_ops->read(file->vn_cdev, offset, buf, count);
-}
-
-/*
- * If the file is a byte device find the file's
- * bytedev_t, and call its write. Return what write returns.
- *
- * If the file is a block device then return -ENOTSUP.
- */
-static int
-special_file_write(vnode_t *file, off_t offset, const void *buf, size_t count)
-{
-        KASSERT(file);
-        KASSERT((S_ISCHR(file->vn_mode) || S_ISBLK(file->vn_mode)));
-        if (S_ISCHR(file->vn_mode)) {
-                KASSERT(file->vn_cdev && file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->write);
-                dbg(DBG_PRINT, "(GRADING2A 1.b)\n");
-        }
-        dbg(DBG_PRINT, "(GRADING2A 1.b)\n");
-
-        if (S_ISBLK(file->vn_mode)) {
-                dbg(DBG_PRINT, "(GRADING2D)\n");
-                return -ENOTSUP;
-        }
-
-        return file->vn_cdev->cd_ops->write(file->vn_cdev, offset, buf, count);
-}
-
-/* Memory map the special file represented by <file>. All of the
- * work for this function is device-specific, so look up the
- * file's bytedev_t and pass the arguments through to its mmap
- * function. Return what that function returns.
- *
- * Do not worry about this until VM.
- */
-static int
-special_file_mmap(vnode_t *file, vmarea_t *vma, mmobj_t **ret)
-{
-        KASSERT(file);
-        KASSERT(S_ISCHR(file->vn_mode));
-        KASSERT(file->vn_cdev);
-        KASSERT(file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->mmap);
-        dbg(DBG_PRINT, "(GRADING3A 5.a)\n");
-
-        return file->vn_cdev->cd_ops->mmap(file, vma, ret);
-}
-
 /* Just as with mmap above, pass the call through to the
- * device-specific fillpage function.
+ * device-specific mmap function.
  *
  * Do not worry about this until VM.
  */
 static int
 special_file_fillpage(vnode_t *file, off_t offset, void *pagebuf)
 {
+        /*NOT_YET_IMPLEMENTED("VM: special_file_fillpage");*/
         KASSERT(file);
+	dbg(DBG_PRINT, "GRADING3A 5.b\n");
         KASSERT(S_ISCHR(file->vn_mode));
-        KASSERT(file->vn_cdev);
+	dbg(DBG_PRINT, "GRADING3A 5.b\n");
+        KASSERT((file->vn_cdev));
+	dbg(DBG_PRINT, "GRADING3A 5.b\n");
         KASSERT(file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->fillpage);
-
-        return file->vn_cdev->cd_ops->fillpage(file, offset, pagebuf);
+	dbg(DBG_PRINT, "GRADING3A 5.b\n");
+	
+	vmarea_t *vma;
+	
+	return file->vn_cdev->cd_ops->fillpage(file, offset, pagebuf);
 }
 
 /* Just as with mmap above, pass the call through to the
- * device-specific dirtypage function.
+ * device-specific mmap function.
  *
  * Do not worry about this until VM.
  */
 static int
 special_file_dirtypage(vnode_t *file, off_t offset)
 {
-        KASSERT(file);
+        /*NOT_YET_IMPLEMENTED("VM: special_file_dirtypage");*/
+	KASSERT(file);
+	dbg(DBG_PRINT, "GRADING3A 5.c\n");
         KASSERT(S_ISCHR(file->vn_mode));
-        KASSERT(file->vn_cdev);
-        KASSERT(file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->dirtypage);
+	dbg(DBG_PRINT, "GRADING3A 5.c\n");
+        KASSERT((file->vn_cdev));
+	dbg(DBG_PRINT, "GRADING3A 5.c\n");
+	KASSERT(file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->dirtypage);	
+	dbg(DBG_PRINT, "GRADING3A 5.c\n");
 
-        return file->vn_cdev->cd_ops->dirtypage(file, offset);
+        return file->vn_cdev->cd_ops->dirtypage( file, offset);
 }
 
 /* Just as with mmap above, pass the call through to the
- * device-specific cleanpage function.
+ * device-specific mmap function.
  *
  * Do not worry about this until VM.
  */
 static int
 special_file_cleanpage(vnode_t *file, off_t offset, void *pagebuf)
 {
+        /*NOT_YET_IMPLEMENTED("VM: special_file_cleanpage");*/
         KASSERT(file);
+	dbg(DBG_PRINT, "GRADING3A 5.d\n");
         KASSERT(S_ISCHR(file->vn_mode));
-        KASSERT(file->vn_cdev);
+	dbg(DBG_PRINT, "GRADING3A 5.d\n");
+        KASSERT((file->vn_cdev));
+	dbg(DBG_PRINT, "GRADING3A 5.d\n");
         KASSERT(file->vn_cdev->cd_ops && file->vn_cdev->cd_ops->cleanpage);
+	dbg(DBG_PRINT, "GRADING3.A.5.d\n");
 
-        return file->vn_cdev->cd_ops->cleanpage(file, offset, pagebuf);
+        return file->vn_cdev->cd_ops->cleanpage( file, offset, pagebuf);
 }
 
 /*

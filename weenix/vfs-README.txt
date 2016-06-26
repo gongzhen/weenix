@@ -1,92 +1,29 @@
-Documentation for Kernel Assignment 2
-=====================================
+==================================================================================================================================================
 
-+-------------+
-| BUILD & RUN |
-+-------------+
+Submitted By: kothamas@usc.edu, marella@usc.edu
+Date      : 2013-12-06
+==================================================================================================================================================
+Section C
+It has been verified that the code written by us has been covered. The details are given below.
 
-Comments: 
-BUILD : make
-RUN :
-	k2_1 : vfstest
-	k2_2 : faber_fs_thread_test
-	k2_3 : faber_directory_test
+==================================================================================================================================================
+Test cases provided as part of kernel 3 assignment covered our code path.
 
-        Use "help" in kshell
+kernel/api/access.c:
+addr_perm(): called up many a times when we wanted to check the permissions on an address and also called by range_perm.
+range_perm(): This function is called when we wanted to check the permissions on a given address range.
+   We observed that this code has been bit during memtest tests for example.
+kernel/api/syscallc.:
+sys_read(): This function is invoked when we want to read contents from the user space to kernel space and again copy to the user.
+sys_write(): Almost the same functionality as above, and this code is hit as many time we try to copy something from user space to kernel space.
+kernel/proc/kthread.c:
+kthread_clone():newly written method to clone the thread. Hit when we call fork. E.g hello program.
+fork.c(): Entire code path in fork.c is hit when we try to run the hello program and remaining programs which call fork.
+kernel/vm/anon.c: Functions in this file are hit during the entire process of creating,cleaning pages and destroying ananoymus objects which are not assosicated with any files.
+kernel/vm/brk.c: This code path is hit when we try to increase our heap area. This code path is tested by many test cases which are part of this project.
+kernel/vm/shadow.c: Similar implementation as anon objects but beaviour is different. Code in this file is hit during the process of forking a current process and destroying these objects in later stages.
+kernel/vm/vmmap.c,kernel/vm/mmap.c: These two files are used in mapping, inserting, removing the memory objects and unmapping the memory areas.
+kernel/vm/pagefault.c: This is used when getting the page which is not present in the pagetable by using pt_map.
+kernel/mm/pframe.c: Implemented pframe_get, pframe_pin and pframe_unpin which inturn calls the corresponding object functions.
 
-+-----------------+
-| SKIP (Optional) |
-+-----------------+
-
-Is there are any tests in the standard test suite that you know that it's not
-working and you don't want the grader to run it at all so you won't get extra
-deductions, please list them here.  (Of course, if the grader won't run these
-tests, you will not get plus points for them.)
-
-None
-
-+---------+
-| GRADING |
-+---------+
-
-(A.1) In fs/vnode.c:
-    (a) In special_file_read(): 6 out of 6 pts
-    (b) In special_file_write(): 6 out of 6 pts
-
-(A.2) In fs/namev.c:
-    (a) In lookup(): 6 out of 6 pts
-    (b) In dir_namev(): 10 out of 10 pts
-    (c) In open_namev(): 2 out of 2 pts
-
-(3) In fs/vfs_syscall.c:
-    (a) In do_write(): 6 out of 6 pts
-    (b) In do_mknod(): 2 out of 2 pts
-    (c) In do_mkdir(): 2 out of 2 pts
-    (d) In do_rmdir(): 2 out of 2 pts
-    (e) In do_unlink(): 2 out of 2 pts
-    (f) In do_stat(): 2 out of 2 pts
-
-(B) vfstest: 39 out of 39 pts
-    Comments: No
-
-(C.1) faber_fs_thread_test (3 out of 3 pts)
-(C.2) faber_directory_test (2 out of 2 pts)
-
-(D) Self-checks: (10 out of 10 pts)
-    Comments: No 
-
-Missing required section(s) in README file (vfs-README.txt): 0
-Submitted binary file : 0
-Submitted extra (unmodified) file : 0
-Wrong file location in submission : 0
-Use dbg_print(...) instead of dbg(DBG_PRINT, ...) : 0
-Not properly indentify which dbg() printout is for which item in the grading guidelines : 0
-Cannot compile : 0
-Compiler warnings : 0
-"make clean" : 0
-Useless KASSERT : 0
-Insufficient/Confusing dbg : 0
-Kernel panic : 0
-Cannot halt kernel cleanly : 0
-
-+------+
-| BUGS |
-+------+
-
-Comments: None
-
-+---------------------------+
-| CONTRIBUTION FROM MEMBERS |
-+---------------------------+
-
-Not applicable
-
-+------------------+
-| OTHER (Optional) |
-+------------------+
-
-Special DBG setting in Config.mk for certain tests: No
-Comments on deviation from spec (you will still lose points, but it's better to let the grader know): No
-General comments on design decisions: No
-
-
+================

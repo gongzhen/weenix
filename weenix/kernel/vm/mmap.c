@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "globals.h"
 #include "errno.h"
 #include "types.h"
@@ -47,79 +34,66 @@ int
 do_mmap(void *addr, size_t len, int prot, int flags,
         int fd, off_t off, void **ret)
 {
-        int err;
-        uint32_t lopage, npages;
-        file_t *f = NULL;
-        vnode_t *vnode = NULL;
-        vmarea_t *vma = NULL;
-
-        KASSERT(NULL != curproc->p_pagedir);
-        dbg(DBG_PRINT, "(GRADING3A 2.a)\n");
-
-        if (PAGE_ALIGNED(off) == 0 || len == 0 || len > 0xc0000000) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                return -EINVAL;
-        }
-
-        if (flags & MAP_FIXED) {
-                lopage = ADDR_TO_PN(addr);
-                if ((uintptr_t)addr < USER_MEM_LOW || (uintptr_t)addr > USER_MEM_HIGH) {
-                        dbg(DBG_PRINT, "(GRADING3D)\n");
-                        return -EINVAL;
-                }
-        } else {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                lopage = 0;
-        }
-        npages = (len - 1) / PAGE_SIZE + 1;
- 
-        if (!(MAP_SHARED & flags) && !(MAP_PRIVATE & flags)) {
-                dbg(DBG_PRINT, "(GRADING3C)\n");
-                return -EINVAL;
-        }
-
-        if (~(PROT_NONE | PROT_READ | PROT_WRITE | PROT_EXEC) & prot) {
-                dbg(DBG_PRINT, "(GRADING3C)\n");
-                return -EINVAL;
-        }
-
-        if (!(flags & MAP_ANON)) {
-                f = fget(fd);
-                if (f == NULL) {
-                        dbg(DBG_PRINT, "(GRADING3D)\n");
-                        return -EBADF;
-                }
-
-                if ((flags & MAP_PRIVATE && !(f->f_mode & FMODE_READ)) ||
-                    (flags & MAP_SHARED && prot & PROT_WRITE && f->f_mode != (FMODE_READ | FMODE_WRITE))) {
-                        dbg(DBG_PRINT, "(GRADING3D)\n");
-                        fput(f);
-
-                        return -EACCES;
-                }
-                vnode = f->f_vnode;
-        }
-
-        err = vmmap_map(curproc->p_vmmap, vnode, lopage, npages, prot, flags, off, VMMAP_DIR_HILO, &vma);
-
-        if (f)
-                fput(f);
-
-        if (err < 0) {
-                dbg(DBG_PRINT,"(GRADING3D)\n");
-                return err;
-        }
-        
-        if (vma == NULL) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                return -1;
-        }
-
-        *ret = PN_TO_ADDR(vma->vma_start);
-
-        tlb_flush_all();
-
-        return 0;
+	if(sizeof(len)==NULL || sizeof(off)==NULL || PAGE_ALIGNED(addr)==0){
+		return -EINVAL;
+	}
+	if(! ( (flags & MAP_SHARED) 
+		|| (flags & MAP_PRIVATE) 
+			|| (flags & MAP_FIXED)
+				 || (flags & MAP_ANON )) ){
+		return EINVAL;
+	}
+	if( (flags & MAP_SHARED)
+		 && (flags & MAP_PRIVATE) ){
+		
+		return EINVAL;
+	}
+	vnode_t *vn = NULL;
+	if( !(flags & MAP_ANON) && (fd < 0 || fd > NFILES)){
+			return EBADF;
+	}else{
+		vn = curproc->p_files[fd]->f_vnode; 
+	}
+	file_t *f=fget(-1);
+	if(f == NULL){
+		return ENOMEM;
+	}
+	if( !(curproc->p_files[fd]->f_mode & FMODE_READ) 
+		&& (flags & MAP_PRIVATE) ){
+		return EACCES;
+	}
+	/*	
+	if( !( (flags & MAP_SHARED) 
+		&& (prot & PROT_WRITE) 
+			&& (curproc->p_files[fd]->f_mode & (FMODE_WRITE || FMODE_READ)) ) ){
+		return -EACCES;
+	}
+	if( !( (flags & MAP_SHARED) 
+		&& (prot & PROT_WRITE) 
+			&& (curproc->p_files[fd]->f_mode & FMODE_APPEND)) ){
+		return -EACCES;
+	}
+	*/
+	
+	/*TODO*/
+	int dir = 0;
+	if(len >= PAGE_SIZE){
+		len = (size_t)ADDR_TO_PN(len);
+		/*
+		if(len % PAGE_SIZE){
+			len = len / PAGE_SIZE;
+		}else{
+			len = len / P
+		}
+		*/
+	}
+	/*TODO:Handle EPERM and flush the TLB */
+	int result=vmmap_map(curproc->p_vmmap, vn, (uintptr_t)ADDR_TO_PN(addr), (uintptr_t)len, prot, flags, off, VMMAP_DIR_LOHI,(vmarea_t **)ret);
+        /*NOT_YET_IMPLEMENTED("VM: do_mmap");*/
+	tlb_flush_range((uintptr_t)ADDR_TO_PN(addr), (uintptr_t)(len) );
+	KASSERT(NULL != curproc->p_pagedir);
+	dbg(DBG_PRINT, "GRADING3A 2.a\n");
+        return result;
 }
 
 
@@ -133,28 +107,22 @@ do_mmap(void *addr, size_t len, int prot, int flags,
 int
 do_munmap(void *addr, size_t len)
 {
-        uint32_t lopage, npages;
-
-        KASSERT(NULL != curproc->p_pagedir);
-        dbg(DBG_PRINT, "(GRADING3A 2.b)\n");
-
-        if (len == 0 || len > 0xc0000000) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                return -EINVAL;
-        }
-
-        if ((uintptr_t)addr < USER_MEM_LOW || (uintptr_t)addr + len > USER_MEM_HIGH || (uintptr_t)addr > USER_MEM_HIGH) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                return -EINVAL;
-        }
-
-        lopage = ADDR_TO_PN(addr);
-        npages = (len - 1) / PAGE_SIZE + 1;
-
-        vmmap_remove(curproc->p_vmmap, lopage, npages);
-
-        tlb_flush_all();
-        
-        return 0;
+	if( PAGE_ALIGNED(addr)==0 || sizeof(len)== 0){
+		return -EINVAL;
+	}
+	if(len >= PAGE_SIZE){
+		len = (size_t)ADDR_TO_PN(len);
+	}
+	int result=vmmap_remove(curproc->p_vmmap, ADDR_TO_PN(addr),(uint32_t) len);
+	if(result == 0){
+		return -EINVAL;
+	}
+	
+	tlb_flush((uintptr_t)addr);
+		
+	KASSERT(NULL != curproc->p_pagedir);	
+	dbg(DBG_PRINT, "GRADING3A 2.b\n");
+	return result;
+       /* NOT_YET_IMPLEMENTED("VM: do_munmap");*/
 }
 

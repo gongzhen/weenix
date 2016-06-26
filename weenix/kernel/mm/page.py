@@ -12,7 +12,7 @@ class PageCommand(weenix.Command):
 
 	def invoke(self, args, tty):
 		total = 0
-		print ("pagesize: {0}".format(weenix.kmem.pagesize()))
+		print "pagesize: {0}".format(weenix.kmem.pagesize())
 		
 		names = list()
 		blobs = list()
@@ -39,10 +39,10 @@ class PageCommand(weenix.Command):
 		bytewidth = max(map(lambda x: len(x), bytes))
 
 		for name, blob, page, byte in zip(names, blobs, pages, bytes):
-			print ("{1:<{0}} {3:>{2}} {5:>{4}} {7:>{6}}".format(
+			print "{1:<{0}} {3:>{2}} {5:>{4}} {7:>{6}}".format(
 				namewidth, name,
 				blobwidth, blob,
 				pagewidth, page,
-				bytewidth, byte))
+				bytewidth, byte)
 
 PageCommand()

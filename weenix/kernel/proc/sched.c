@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "globals.h"
 #include "errno.h"
 
@@ -113,9 +100,41 @@ sched_queue_empty(ktqueue_t *q)
 void
 sched_sleep_on(ktqueue_t *q)
 {
-        curthr->kt_state = KT_SLEEP;
-        ktqueue_enqueue(q, curthr);
-        sched_switch();
+        /*NOT_YET_IMPLEMENTED("PROCS: sched_sleep_on");*/
+	uint8_t earlier_ipl = intr_getipl();
+	intr_setipl(IPL_HIGH);	
+	kthread_t *thread1 = curthr;
+	context_t *oldc = &(thread1->kt_ctx);
+	context_t *newc;
+	curthr->kt_state = KT_SLEEP;
+	ktqueue_enqueue(q,curthr);
+	kthread_t *thread2 = NULL;
+	if( list_empty(&(kt_runq.tq_list)) != 1){
+		thread2 = ktqueue_dequeue(&kt_runq);
+		curthr = thread2;
+		curproc = thread2->kt_proc;
+		if(thread2 != NULL){
+			newc = &(thread2->kt_ctx);
+			context_switch(oldc, newc);
+		}
+			
+	}else{
+		/*threads may be waiting for the interrutps*/
+		intr_setipl(IPL_LOW);	
+		while(sched_queue_empty(&kt_runq)){
+		intr_wait();
+		}
+		intr_setipl(IPL_HIGH);
+
+		thread2 = ktqueue_dequeue(&kt_runq);
+		curthr = thread2;
+		curproc = thread2->kt_proc;
+		if(thread2 != NULL){
+			newc = &(thread2->kt_ctx);
+			context_switch(oldc, newc);
+		}
+	}
+	intr_setipl(earlier_ipl);
 }
 
 
@@ -129,37 +148,78 @@ sched_sleep_on(ktqueue_t *q)
 int
 sched_cancellable_sleep_on(ktqueue_t *q)
 {
-        if (curthr->kt_cancelled == 1)
-                return -EINTR;
 
-        curthr->kt_state = KT_SLEEP_CANCELLABLE;
-        ktqueue_enqueue(q, curthr);
-        sched_switch();
-
-        if (curthr->kt_cancelled == 1)
-                return -EINTR;
-        return 0;
+	if(curthr->kt_cancelled==1){
+		return -EINTR;	
+	}
+   
+        /*NOT_YET_IMPLEMENTED("PROCS: sched_cancellable_sleep_on");*/
+	uint8_t earlier_ipl = intr_getipl();
+	intr_setipl(IPL_HIGH);	
+	kthread_t *thread1 = curthr;
+	context_t *oldc = &(thread1->kt_ctx);
+	context_t *newc;
+	curthr->kt_state = KT_SLEEP_CANCELLABLE;
+	ktqueue_enqueue(q,curthr);
+	kthread_t *thread2 = NULL;
+	if( list_empty(&(kt_runq.tq_list)) != 1){
+		thread2 = ktqueue_dequeue(&kt_runq);
+		curthr = thread2;
+		curproc = thread2->kt_proc;
+		if(thread2 != NULL){
+			newc = &(thread2->kt_ctx);
+			context_switch(oldc, newc);
+		}
+		intr_setipl(IPL_LOW);	
+			
+	}else{
+		/*threads may be waiting for the interrutps*/
+		intr_setipl(IPL_LOW);	
+		while(sched_queue_empty(&kt_runq)){
+		intr_wait();
+		}
+		intr_setipl(IPL_HIGH);
+		thread2 = ktqueue_dequeue(&kt_runq);
+		curthr = thread2;
+		curproc = thread2->kt_proc;
+		if(thread2 != NULL){
+			newc = &(thread2->kt_ctx);
+			context_switch(oldc, newc);
+		}
+	}
+	intr_setipl(earlier_ipl);
+	return 0;
+	
 }
 
 kthread_t *
 sched_wakeup_on(ktqueue_t *q)
 {
-        kthread_t *thr = NULL;
-
-        if (!sched_queue_empty(q)) {
-                thr = ktqueue_dequeue(q);
-                KASSERT((thr->kt_state == KT_SLEEP) || (thr->kt_state == KT_SLEEP_CANCELLABLE));
-                dbg(DBG_PRINT, "(GRADING1A 4.a)\n");
-                sched_make_runnable(thr);
-        }
-        return thr;
+        /*NOT_YET_IMPLEMENTED("PROCS: sched_wakeup_on");*/
+	kthread_t *pThread = NULL;
+	if(list_empty(&(q->tq_list)) != 1){
+		
+		pThread = ktqueue_dequeue(q);	
+		KASSERT((pThread->kt_state == KT_SLEEP) || ( pThread->kt_state == KT_SLEEP_CANCELLABLE));
+		dbg_print("GRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.\n");
+        
+		sched_make_runnable(pThread);
+	}
+	return pThread;
 }
 
 void
 sched_broadcast_on(ktqueue_t *q)
 {
-        while (q->tq_size != 0)
-                sched_wakeup_on(q);
+        /*NOT_YET_IMPLEMENTED("PROCS: sched_broadcast_on");*/
+	kthread_t *pThread = NULL;
+	while(!sched_queue_empty(q)){
+		
+		pThread = ktqueue_dequeue(q);	
+		/*pThread->kt_state =  KT_RUN; FIXME:*/
+		sched_make_runnable(pThread);
+	}
+	
 }
 
 /*
@@ -174,11 +234,12 @@ sched_broadcast_on(ktqueue_t *q)
 void
 sched_cancel(struct kthread *kthr)
 {
-        kthr->kt_cancelled = 1;
-        if (kthr->kt_state == KT_SLEEP_CANCELLABLE) {
-                ktqueue_remove(kthr->kt_wchan, kthr);
-                sched_make_runnable(kthr);
-        }
+        /*NOT_YET_IMPLEMENTED("PROCS: sched_cancel");*/
+	kthr->kt_cancelled = 1;
+	if( kthr->kt_state == KT_SLEEP_CANCELLABLE ){
+		ktqueue_remove(kthr->kt_wchan, kthr);
+		sched_make_runnable(kthr);
+	}	
 }
 
 /*
@@ -220,28 +281,40 @@ sched_cancel(struct kthread *kthr)
 void
 sched_switch(void)
 {
-        uint8_t original_ipl;
-        kthread_t *old_thr, *new_thr;
-
-        old_thr = NULL;
-        new_thr = NULL;
-
-        original_ipl = intr_getipl();
-        intr_setipl(IPL_HIGH);
-
-        while (sched_queue_empty(&kt_runq)) {
-                intr_disable();
-                intr_setipl(IPL_LOW);
-                intr_wait();
-                intr_setipl(IPL_HIGH);
-        }
-
-        new_thr = ktqueue_dequeue(&kt_runq);
-        old_thr = curthr;
-        curthr = new_thr;
-        curproc = new_thr->kt_proc;
-        context_switch(&old_thr->kt_ctx, &new_thr->kt_ctx);
-        intr_setipl(original_ipl);
+        /*NOT_YET_IMPLEMENTED("PROCS: sched_switch");*/
+	uint8_t earlier_ipl = intr_getipl();	
+	intr_setipl(IPL_HIGH);	
+	/*remove first thread*/
+	kthread_t *thread1 = curthr;
+	context_t *oldc = &(thread1->kt_ctx);
+	context_t *newc;
+	kthread_t *thread2 = NULL;
+	if( list_empty(&(kt_runq.tq_list)) != 1){
+		thread2 = ktqueue_dequeue(&kt_runq);
+		curthr = thread2;
+		curproc = thread2->kt_proc;
+		if(thread2 != NULL){
+			newc = &(thread2->kt_ctx);
+			context_switch(oldc, newc);
+		}
+		intr_setipl(IPL_LOW);	
+			
+	}else{
+		/*threads may be waiting for the interrutps*/
+		intr_setipl(IPL_LOW);	
+		while(sched_queue_empty(&kt_runq)){
+		intr_wait();
+		}
+		intr_setipl(IPL_HIGH);
+		thread2 = ktqueue_dequeue(&kt_runq);
+		curthr = thread2;
+		curproc = thread2->kt_proc;
+		if(thread2 != NULL){
+			newc = &(thread2->kt_ctx);
+			context_switch(oldc, newc);
+		}
+	}
+	intr_setipl(earlier_ipl);	
 }
 
 /*
@@ -260,16 +333,13 @@ sched_switch(void)
 void
 sched_make_runnable(kthread_t *thr)
 {
-        uint8_t original_ipl;
+	KASSERT(&kt_runq != thr->kt_wchan); /* make sure thread is not blocked */
+	dbg_print("GRADING1 4.b PASSED: thread is not blocked.\n");
 
-        KASSERT(&kt_runq != thr->kt_wchan);
-        dbg(DBG_PRINT, "(GRADING1A 4.b)\n");
-
-        original_ipl = intr_getipl();
-        intr_setipl(IPL_HIGH);
-
-        thr->kt_state = KT_RUN;
-        ktqueue_enqueue(&kt_runq, thr);
-
-        intr_setipl(original_ipl);
+        /*NOT_YET_IMPLEMENTED("PROCS: sched_make_runnable");*/
+	uint8_t ipl = intr_getipl();	
+	intr_setipl(IPL_HIGH);	
+	thr->kt_state = KT_RUN;	
+	ktqueue_enqueue(&kt_runq,thr);
+	intr_setipl(ipl);
 }

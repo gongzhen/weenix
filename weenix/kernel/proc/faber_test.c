@@ -1,23 +1,8 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 /*
  * Author: Ted Faber <faber@isi.edu>
  * With modifications by: Bill Cheng <bill.cheng@usc.edu>
- *
- * BC: You must NOT change this file.  If you submit a modified version
- * of this file, it will be deleted from your submission.
  */
+
 #include "kernel.h"
 #include "config.h"
 #include "globals.h"
@@ -39,6 +24,8 @@
 #include "mm/mmobj.h"
 #include "mm/mm.h"
 #include "mm/mman.h"
+
+extern void *student_tests(int, void*);
 
 ktqueue_t wake_me_q;
 int wake_me_len = 0;
@@ -82,7 +69,7 @@ static void wait_for_proc(proc_t *p) {
     strncpy(pname, p->p_comm, PROC_NAME_LEN); 
     pname[PROC_NAME_LEN-1] = '\0'; 
     pid = do_waitpid(p->p_pid, 0, &rv);
-    dbg(DBG_TEST, "%s (%d) exited: %d\n", pname, pid, rv);
+    dbg_print("%s (%d) exited: %d\n", pname, pid, rv);
 }
 
 /**
@@ -94,7 +81,7 @@ static pid_t wait_for_any() {
     pid_t pid;
 
     pid = do_waitpid(-1, 0, &rv);
-    if ( pid != -ECHILD) dbg(DBG_TEST, "child (%d) exited: %d\n", pid, rv);
+    if ( pid != -ECHILD) dbg_print("child (%d) exited: %d\n", pid, rv);
     return pid;
 }
 
@@ -150,7 +137,7 @@ void *kthread_exit_test(int arg1, void *arg2) {
 void *wakeme_test(int arg1, void *arg2) {
     wake_me_len++;
     if (sched_cancellable_sleep_on(&wake_me_q) == -EINTR ) {
-	dbg(DBG_TEST, "Wakeme cancelled?! pid (%d)\n", curproc->p_pid);
+	dbg_print("Wakeme cancelled?! pid (%d)\n", curproc->p_pid);
 	wake_me_len--;
 	do_exit(-1);
     }
@@ -179,7 +166,7 @@ void *wakeme_uncancellable_test(int arg1, void *arg2) {
 void *cancelme_test(int arg1, void *arg2) {
     wake_me_len++;
     if (sched_cancellable_sleep_on(&wake_me_q) != -EINTR ) {
-	dbg(DBG_TEST, "Wakeme returned?! pid (%d)\n", curproc->p_pid);
+	dbg_print("Wakeme returned?! pid (%d)\n", curproc->p_pid);
 	wake_me_len--;
 	do_exit(-1);
     }
@@ -246,7 +233,7 @@ void *mutex_test(int arg1, void *arg2) {
     int local;
 
     if ( kmutex_lock_cancellable(&mutex) ) {
-	dbg(DBG_TEST, "Mutex cancelled? %d", curproc->p_pid);
+	dbg_print("Mutex cancelled? %d", curproc->p_pid);
 	do_exit(-1);
     }
     sched_make_runnable(curthr);
@@ -277,7 +264,7 @@ void *mutex_test_cancelme(int arg1, void *arg2) {
 
     if ( kmutex_lock_cancellable(&mutex) ) 
 	do_exit(0);
-    dbg(DBG_TEST, "Mutex not cancelled? %d", curproc->p_pid);
+    dbg_print("Mutex not cancelled? %d", curproc->p_pid);
     sched_make_runnable(curthr);
     sched_switch();
     local = race;
@@ -309,52 +296,46 @@ void *reparent_test(int arg1, void *arg2) {
     return NULL;
 }
 
-/*
- * The core thread test code.
- * This function is meant to be invoked in a separate kernel process.
- */
-void *faber_thread_test(int arg1, void *arg2) {
+/* The core testproc code */
+void *testproc(int arg1, void *arg2) {
     proc_thread_t pt;
     pid_t pid = -1;
-    proc_t *p;
     int rv = 0;
     int i = 0;
 
-    dbg(DBG_TEST, ">>> Start running faber_thread_test()...\n");
-
 #if CS402TESTS > 0
-    dbg(DBG_TEST, "waitpid any test\n");
+    dbg_print("waitpid any test");
     start_proc(&pt, "waitpid any test", waitpid_test, 23);
     wait_for_any();
 
-    dbg(DBG_TEST, "waitpid test\n");
+    dbg_print("waitpid test");
     start_proc(&pt, "waitpid test", waitpid_test, 32);
     pid = do_waitpid(2323, 0, &rv);
-    if ( pid != -ECHILD ) dbg(DBG_TEST, "Allowed wait on non-existent pid\n");
+    if ( pid != -ECHILD ) dbg_print("Allowed wait on non-existent pid\n");
     wait_for_proc(pt.p);
-
-    dbg(DBG_TEST, "kthread exit test\n");
+/*
+    dbg_print("kthread exit test");
     start_proc(&pt, "kthread exit test", kthread_exit_test, 0);
     wait_for_proc(pt.p);
-
-    dbg(DBG_TEST, "many test\n");
+*/
+/*
+    dbg_print("many test");
     for (i = 0; i < 10; i++) 
 	start_proc(NULL, "many test", waitpid_test, i);
-    wait_for_all();
-    dbg(DBG_TEST, "(C.1) done\n");
+    wait_for_all();a
+*/
 #endif
 
 #if CS402TESTS > 1
-    dbg(DBG_TEST, "Context switch test\n");
+    dbg_print("Context switch test");
     start_proc(&pt, "Context switch", racer_test, 0);
     wait_for_proc(pt.p);
-    dbg(DBG_TEST, "(C.2) done\n");
 #endif
 
 #if CS402TESTS > 2
     sched_queue_init(&wake_me_q);
 
-    dbg(DBG_TEST, "wake me test\n");
+    dbg_print("wake me test");
     wake_me_len = 0;
     start_proc(&pt, "wake me test", wakeme_test, 0);
     /* Make sure p has blocked */
@@ -363,7 +344,7 @@ void *faber_thread_test(int arg1, void *arg2) {
     wait_for_proc(pt.p);
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
 
-    dbg(DBG_TEST, "broadcast me test\n");
+    dbg_print("broadcast me test");
     for (i = 0; i < 10; i++ ) 
 	start_proc(NULL, "broadcast me test", wakeme_test, 0);
     stop_until_queued(10, &wake_me_len);
@@ -371,11 +352,10 @@ void *faber_thread_test(int arg1, void *arg2) {
     sched_broadcast_on(&wake_me_q);
     wait_for_all();
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
-    dbg(DBG_TEST, "(C.3) done\n");
 #endif
 
 #if CS402TESTS > 3
-    dbg(DBG_TEST, "wake me uncancellable test\n");
+    dbg_print("wake me uncancellable test");
     start_proc(&pt, "wake me uncancellable test", 
 	    wakeme_uncancellable_test, 0);
     /* Make sure p has blocked */
@@ -384,7 +364,7 @@ void *faber_thread_test(int arg1, void *arg2) {
     wait_for_proc(pt.p);
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
 
-    dbg(DBG_TEST, "broadcast me uncancellable test\n");
+    dbg_print("broadcast me uncancellable test");
     for (i = 0; i < 10; i++ ) 
 	start_proc(NULL, "broadcast me uncancellable test", 
 		wakeme_uncancellable_test, 0);
@@ -393,11 +373,10 @@ void *faber_thread_test(int arg1, void *arg2) {
     sched_broadcast_on(&wake_me_q);
     wait_for_all();
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
-    dbg(DBG_TEST, "(C.4) done\n");
 #endif
 
 #if CS402TESTS > 4
-    dbg(DBG_TEST, "cancel me test\n");
+    dbg_print("cancel me test");
     start_proc(&pt, "cancel me test", cancelme_test, 0);
     /* Make sure p has blocked */
     stop_until_queued(1, &wake_me_len);
@@ -405,14 +384,14 @@ void *faber_thread_test(int arg1, void *arg2) {
     wait_for_proc(pt.p);
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
 
-    dbg(DBG_TEST, "prior cancel me test\n");
+    dbg_print("prior cancel me test");
     start_proc(&pt, "prior cancel me test", cancelme_test, 0);
     /*  Cancel before sleep */
     sched_cancel(pt.t);
     wait_for_proc(pt.p);
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
 
-    dbg(DBG_TEST, "cancel me head test\n");
+    dbg_print("cancel me head test");
     start_proc(&pt, "cancel me head test", cancelme_test, 0);
     start_proc(NULL, "cancel me head test", wakeme_test, 0);
     stop_until_queued(2, &wake_me_len);
@@ -421,7 +400,7 @@ void *faber_thread_test(int arg1, void *arg2) {
     wait_for_all();
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
     
-    dbg(DBG_TEST, "cancel me tail test\n");
+    dbg_print("cancel me tail test");
     start_proc(NULL, "cancel me tail test", wakeme_test, 0);
     start_proc(&pt, "cancel me tail test", cancelme_test, 0);
     stop_until_queued(2, &wake_me_len);
@@ -429,42 +408,40 @@ void *faber_thread_test(int arg1, void *arg2) {
     sched_wakeup_on(&wake_me_q);
     wait_for_all();
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
-    dbg(DBG_TEST, "(C.5) done\n");
 #endif
 
 #if CS402TESTS > 5
-    dbg(DBG_TEST, "Reparenting test\n");
+    dbg_print("Reparenting test");
     start_proc(NULL, "Reparenting test", reparent_test, 1);
     stop_until_queued(1, &wake_me_len);
     sched_wakeup_on(&wake_me_q);
     wait_for_all();
     stop_until_zero(&wake_me_len);
-    dbg(DBG_TEST, "Reparenting stress test\n");
+    dbg_print("Reparenting stress test");
     start_proc(NULL, "Reparenting stress test", reparent_test, 10);
     stop_until_queued(10, &wake_me_len);
     sched_broadcast_on(&wake_me_q);
     wait_for_all();
     stop_until_zero(&wake_me_len);
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
-    dbg(DBG_TEST, "(C.6) done\n");
 #endif
 
 #if CS402TESTS > 6
     kmutex_init(&mutex);
 
-    dbg(DBG_TEST, "show race test\n");
+    dbg_print("show race test");
     race = 0;
     for (i = 0; i < 10; i++ ) 
 	start_proc(NULL, "show race test", racer_test, 0);
     wait_for_all();
 
-    dbg(DBG_TEST, "fix race test\n");
+    dbg_print("fix race test");
     race = 0;
     for (i = 0; i < 10; i++ ) 
 	start_proc(NULL, "fix race test", mutex_uncancellable_test, 0);
     wait_for_all();
 
-    dbg(DBG_TEST, "fix race test w/cancel\n");
+    dbg_print("fix race test w/cancel");
     race = 0;
     for (i = 0; i < 10; i++ ) {
 	if ( i % 2 == 0) { 
@@ -475,40 +452,22 @@ void *faber_thread_test(int arg1, void *arg2) {
 	}
     }
     wait_for_all();
-    dbg(DBG_TEST, "(C.7) done\n");
 #endif
 
 #if CS402TESTS > 7
-    dbg(DBG_TEST, "kill child procs test\n");
+    dbg_print("kill all test");
     for ( i=0 ; i < 10; i++ )
-	start_proc(NULL, "kill child procs test", cancelme_test, 0);
+	start_proc(NULL, "kill all test", cancelme_test, 0);
     stop_until_queued(10, &wake_me_len);
-    list_iterate_begin(&curproc->p_children, p, proc_t, p_child_link) {
-        proc_kill(p, -1);
-    } list_iterate_end();
+    proc_kill_all();
     wait_for_all();
     KASSERT(wake_me_len == 0 && "Error on wakeme bookkeeping");
-    dbg(DBG_TEST, "(C.8) done\n");
 #endif
 
 #if CS402TESTS > 8
-    dbg(DBG_TEST, "proc kill all test\n");
-    for ( i=0 ; i < 10; i++ )
-	start_proc(NULL, "proc kill all test", cancelme_test, 0);
-    stop_until_queued(10, &wake_me_len);
-    /*
-     * If you don't run this test in a separate process,
-     *   the kernel should shutdown and you would fail this test.
-     * Therefore, you must run faber_thread_test() in a separate process,
-     *   since proc_kill_all() should not kill the init process,
-     *   although this function will not return, you should
-     *   be able to get your kshell prompt back.
-     */
-    proc_kill_all();
-
-    dbg(DBG_TEST, "proc_kill_all() must not return\n\n");
-    KASSERT(0 && "Error in proc kill all test");
+    student_tests(arg1, arg2);
 #endif
 
+    dbg_print("All tests completed\n\n");
     return NULL;
 }

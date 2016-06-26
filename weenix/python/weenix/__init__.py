@@ -13,9 +13,9 @@ class WeenixPrefixCommand(gdb.Command):
     def invoke(self, arg, tty):
         if (len(arg) != 0):
             print ("'{0}' is not a valid {1} command".format(arg, _weenix_command_prefix))
-        print ("valid {0} commands are:".format(_weenix_command_prefix))
+        print "valid {0} commands are:".format(_weenix_command_prefix)
         for command in _weenix_command_names:
-            print ("  {0}".format(command))
+            print "  {0}".format(command)
         print ("run 'help {0} <command>' for details on a particular command".format(_weenix_command_prefix))
 
 WeenixPrefixCommand()

@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "kernel.h"
 #include "globals.h"
 #include "errno.h"
@@ -69,32 +56,26 @@ init_func(syscall_init);
 static int
 sys_read(read_args_t *arg)
 {
-        read_args_t karg;
-        int ret, err;
-        void *buffer = NULL;
-
-        dbg(DBG_PRINT, "(GRADING3B)\n");
-        err = copy_from_user(&karg, arg, sizeof(read_args_t));
-        if (err < 0) {
-                curthr->kt_errno = -err;
-                return -1;
-        }
-
-        buffer = page_alloc();
-        KASSERT(NULL != buffer);
-
-        ret = do_read(karg.fd, buffer, karg.nbytes);
-        if (ret < 0) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                curthr->kt_errno = -ret;
-                page_free(buffer);
-                return -1;
-        }
-
-        err = copy_to_user(arg->buf, buffer, ret);
-        page_free(buffer);
-
-        return ret;
+        /*NOT_YET_IMPLEMENTED("VM: sys_read");*/
+	read_args_t readkaddr;
+	int readbytes=0;
+	readbytes = copy_from_user(&readkaddr, arg, sizeof(read_args_t));
+	if(readbytes < 0){
+		curthr->kt_errno = readbytes;
+		return -1;
+	}
+	void *buff=page_alloc();
+	readbytes = do_read(readkaddr.fd,buff,readkaddr.nbytes);
+	if(readbytes<0){
+		curthr->kt_errno = readbytes;
+		return -1;
+	}
+	if (copy_to_user(arg->buf,buff,readbytes) < 0){
+		curthr->kt_errno=EFAULT;
+		return -1;
+	}
+        page_free(buff);
+	return readbytes;
 }
 
 /*
@@ -103,40 +84,28 @@ sys_read(read_args_t *arg)
 static int
 sys_write(write_args_t *arg)
 {
-        write_args_t karg;
-        int ret, err;
-        void *buffer;
+        /*NOT_YET_IMPLEMENTED("VM: sys_write");*/
 
-        dbg(DBG_PRINT, "(GRADING3B)\n");
-        err = copy_from_user(&karg, arg, sizeof(write_args_t));
-        if (err < 0) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                curthr->kt_errno = -err;
-                return -1;
-        }
-
-        buffer = page_alloc();
-        KASSERT(NULL != buffer);
-
-        err = copy_from_user(buffer, arg->buf, arg->nbytes);
-        if (err < 0) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                page_free(buffer);
-                curthr->kt_errno = -err;
-                return -1;
-        }
-
-        ret = do_write(karg.fd, buffer, karg.nbytes);
-        if (ret < 0) {
-                dbg(DBG_PRINT, "(GRADING3D)\n");
-                curthr->kt_errno = -ret;
-                page_free(buffer);
-                return -1;
-        }
-
-        page_free(buffer);
-
-        return ret;
+	write_args_t writekaddr;
+	int writebytes=0;
+	writebytes = copy_from_user(&writekaddr, arg, sizeof(write_args_t));
+	if(writebytes < 0){
+		curthr->kt_errno = writebytes;
+		return -1;
+	}
+	void *buff=page_alloc();
+	copy_from_user(buff, writekaddr.buf, writekaddr.nbytes);
+	writebytes = do_write(writekaddr.fd,buff,writekaddr.nbytes);
+	if(writebytes<0){
+		curthr->kt_errno = writebytes;
+		return -1;
+	}
+	if (copy_to_user(arg->buf,buff,writebytes) < 0){
+		curthr->kt_errno=EFAULT;
+		return -1;
+	}
+        page_free(buff);
+	return writebytes;
 }
 
 /*
@@ -151,42 +120,28 @@ sys_write(write_args_t *arg)
 static int
 sys_getdents(getdents_args_t *arg)
 {
-        getdents_args_t karg;
-        int ret, err;
-        uint32_t count;
-        dirent_t dirent;
-        dirent_t *index = NULL;
-
-        err = copy_from_user(&karg, arg, sizeof(write_args_t));
-        if (err < 0) {
-                curthr->kt_errno = -err;
-                return -1;
-        }
-
-        count = 0;
-        index = arg->dirp;
-        while (karg.count > count) {
-                ret = do_getdent(karg.fd, &dirent);
-                if (ret < 0) {
-                        dbg(DBG_PRINT, "(GRADING3C)\n");
-                        curthr->kt_errno = -ret;
-                        return -1;
-                }
-
-                if (ret == 0) break;
-
-                err = copy_to_user(index, &dirent, ret);
-                if (err < 0) {
-                        dbg(DBG_PRINT, "(GRADING3C)\n");
-                        curthr->kt_errno = -ret;
-                        return -1;
-                }
-
-                index ++;
-                count += ret;
-        }
-
-        return count;
+        /*NOT_YET_IMPLEMENTED("VM: sys_getdents");*/
+	getdents_args_t tempgetdent;
+	int result;
+	result=copy_from_user(&tempgetdent,arg,sizeof(getdents_args_t));
+	if(result<0){
+		curthr->kt_errno=result;
+		return -1;
+	}
+	int i=0, loopcount = tempgetdent.count;
+	while(i<(int)(loopcount/sizeof(dirent_t))){
+		result=do_getdent(tempgetdent.fd,tempgetdent.dirp);
+		if(result <= 0){
+	
+			curthr->kt_errno=result;
+			return -1;
+		}else{
+			return result;
+		}
+		i++;
+	}
+	
+	return 0;
 }
 
 #ifdef __MOUNTING__

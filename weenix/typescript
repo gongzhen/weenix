@@ -1,0 +1,1305 @@
+Script started on Fri 06 Dec 2013 01:21:13 AM PST
+]0;kothamas@kothamas-VirtualBox: ~/kernel1/kernel1/weenix-assignment-1.0.7/weenixkothamas@kothamas-VirtualBox:~/kernel1/kernel1/weenix-assignment-1.0.7/weenix$ exit./weenix -n -d gdb -wexit[K./weenix -n -d gdb -w[K[K[K[K[K[K[K[K[K[K
+/usr/bin/qemu-system-i386
+open /dev/kvm: No such file or directory
+Could not initialize KVM, will disable KVM support
+qemu-system-i386: pci_add_option_rom: failed to find romfile "pxe-rtl8139.bin"
+[32;40mKernel binary:
+[0m[32;40m  text: 0xc0000000-0xc004e000
+[0m[32;40m  data: 0xc004e000-0xc004e8fc
+[0m[32;40m  bss:  0xc004e8fc-0xc0059000
+[0m[31;40mPhysical Memory Map:
+[0m[31;40m    0x00000000-0x0009f400: Usable
+[0m[31;40m    0x0009f400-0x000a0000: Reserved
+[0m[31;40m    0x000f0000-0x00100000: Reserved
+[0m[31;40m    0x00100000-0x01ffd000: Usable
+[0m[31;40mHighest usable physical memory: 0x01ffd000
+[0m[31;40mAvailable memory: 0x01efd000
+[0m[31;40mPage System adding range: 0xc0065400 to 0xc1efd000
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "slab_allocators" (0xc004fb64)
+[0m[31;40m  Object Size:   32
+[0m[31;40m  Order:         0
+[0m[31;40m  Slab Capacity: 102
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1efb000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "slab_allocators" (0xc004fb64), new slab 0xc1efbff0 (1 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb000 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 1
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-64" (0xc1efb004)
+[0m[31;40m  Object Size:   72
+[0m[31;40m  Order:         0
+[0m[31;40m  Slab Capacity: 51
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb028 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 2
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 48
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-128" (0xc1efb02c)
+[0m[31;40m  Object Size:   136
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 455
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb050 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 3
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-256" (0xc1efb054)
+[0m[31;40m  Object Size:   264
+[0m[31;40m  Order:         0
+[0m[31;40m  Slab Capacity: 15
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb078 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 4
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 384
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 1, waste 256
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 2, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-512" (0xc1efb07c)
+[0m[31;40m  Object Size:   520
+[0m[31;40m  Order:         2
+[0m[31;40m  Slab Capacity: 31
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb0a0 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 5
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 960
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 1, waste 896
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 2, waste 768
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 3, waste 512
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-1024" (0xc1efb0a4)
+[0m[31;40m  Object Size:   1032
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 63
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb0c8 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 6
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 2016
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 1, waste 1984
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 2, waste 1920
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 3, waste 1792
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 1536
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-2048" (0xc1efb0cc)
+[0m[31;40m  Object Size:   2056
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 31
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb0f0 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 7
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 1, waste 4064
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 2, waste 4032
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 3, waste 3968
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 3840
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-4096" (0xc1efb0f4)
+[0m[31;40m  Object Size:   4104
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 15
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb118 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 8
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 2, waste 8160
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 3, waste 8128
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 8064
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-8192" (0xc1efb11c)
+[0m[31;40m  Object Size:   8200
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 7
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb140 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 9
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 3, waste 16352
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 16320
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-16384" (0xc1efb144)
+[0m[31;40m  Object Size:   16392
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 3
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb168 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 10
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 4, waste 32736
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-32768" (0xc1efb16c)
+[0m[31;40m  Object Size:   32776
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 1
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb190 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 11
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 5, waste 65504
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-65536" (0xc1efb194)
+[0m[31;40m  Object Size:   65544
+[0m[31;40m  Order:         5
+[0m[31;40m  Slab Capacity: 1
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb1b8 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 12
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 6, waste 131040
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-131072" (0xc1efb1bc)
+[0m[31;40m  Object Size:   131080
+[0m[31;40m  Order:         6
+[0m[31;40m  Slab Capacity: 1
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb1e0 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 13
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 7, waste 262112
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "size-262144" (0xc1efb1e4)
+[0m[31;40m  Object Size:   262152
+[0m[31;40m  Order:         7
+[0m[31;40m  Slab Capacity: 1
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb208 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 14
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 48
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 1, waste 40
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 2, waste 24
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "pframe" (0xc1efb20c)
+[0m[31;40m  Object Size:   64
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 910
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ef9000 (1) into 0xc1ef9000 and 0xc1efa000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1efa000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "size-64" (0xc1efb004), new slab 0xc1efaff0 (1 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa000 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 1
+[0m[32;40m--- ACPI INIT ---
+[0m[32;40mrsdp addr:  000fdab0
+[0m[32;40mrsdt addr:  c1efa008
+[0m[32;40mrev:        0
+[0m[32;40moem:        BOCHS 6
+[0m[32;40ments:	[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 16 pages (addr 0xc1ee5000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "size-128" (0xc1efb02c), new slab 0xc1ef4ff0 (16 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5000 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 1
+[0m[32;40mFACP [0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1ef9000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "size-256" (0xc1efb054), new slab 0xc1ef9ff0 (1 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ef9000 from "size-256" (0xc1efb054), slab 0xc1efb054, inuse 1
+[0m[32;40mSSDT [0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5090 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 2
+[0m[32;40mAPIC [0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa050 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 2
+[0m[32;40mHPET [0m[32;40m
+[0m[32;40m--- APIC INIT ---
+[0m[32;40mlocal apic paddr:     0xfee00000
+[0m[32;40mPC-AT compatible:    1
+[0m[32;40mLAPIC:
+[0m[32;40m   id:         0x00
+[0m[32;40m   processor:  0x000
+[0m[32;40m   enabled:    1
+[0m[32;40mIOAPIC:
+[0m[32;40m   id:         0x01
+[0m[32;40m   base paddr:  0xfec00000
+[0m[32;40m   inti addr:   0x00000000
+[0m[32;40mUnknown APIC type:  0x2
+[0m[32;40mUnknown APIC type:  0x2
+[0m[32;40mUnknown APIC type:  0x2
+[0m[32;40mUnknown APIC type:  0x2
+[0m[32;40mUnknown APIC type:  0x2
+[0m[32;40mLocal APIC 0x00 Configuration:
+[0m[32;40m    APIC Version:         0x11
+[0m[32;40m    Spurious Vector:      0x000001ff
+[0m[32;40mIO APIC 0x00 Configuration:
+[0m[32;40m    APIC Version:         0x11
+[0m[32;40m    Maximum Redirection:  0x17
+[0m[32;40mmain/apic.c:263 apic_setspur(): mapping spurious interrupts to %hu
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb230 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 15
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "anonobject" (0xc1efb234)
+[0m[31;40m  Object Size:   40
+[0m[31;40m  Order:         0
+[0m[31;40m  Slab Capacity: 85
+[0m[0mvm/anon.c:44 anon_init(): GRADING 3.A.4.a 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb258 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 16
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "sahdowobject" (0xc1efb25c)
+[0m[31;40m  Object Size:   40
+[0m[31;40m  Order:         0
+[0m[31;40m  Slab Capacity: 85
+[0m[0mvm/shadow.c:58 shadow_init(): GRADING 3.A.6.a 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb280 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 17
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 20
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 1, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "vmmap" (0xc1efb284)
+[0m[31;40m  Object Size:   20
+[0m[31;40m  Order:         1
+[0m[31;40m  Slab Capacity: 292
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb2a8 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 18
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "vmarea" (0xc1efb2ac)
+[0m[31;40m  Object Size:   52
+[0m[31;40m  Order:         0
+[0m[31;40m  Slab Capacity: 68
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb2d0 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 19
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 240
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 1, waste 16
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "proc" (0xc1efb2d4)
+[0m[31;40m  Object Size:   472
+[0m[31;40m  Order:         1
+[0m[31;40m  Slab Capacity: 17
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb2f8 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 20
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 48
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 1, waste 28
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 4, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "kthread" (0xc1efb2fc)
+[0m[31;40m  Object Size:   76
+[0m[31;40m  Order:         4
+[0m[31;40m  Slab Capacity: 780
+[0m[32;40mmain/apic.c:256 apic_setredir(): redirecting irq 1 to interrupt %hu
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa0a0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 3
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa0f0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 4
+[0m[1;35;40mdrivers/tty/n_tty.c:190 n_tty_attach(): Attaching n_tty line discipline to tty 0
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ef9110 from "size-256" (0xc1efb054), slab 0xc1efb054, inuse 2
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa140 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 5
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa190 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 6
+[0m[1;35;40mdrivers/tty/n_tty.c:190 n_tty_attach(): Attaching n_tty line discipline to tty 1
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ef9220 from "size-256" (0xc1efb054), slab 0xc1efb054, inuse 3
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa1e0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 7
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa230 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 8
+[0m[1;35;40mdrivers/tty/n_tty.c:190 n_tty_attach(): Attaching n_tty line discipline to tty 2
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ef9330 from "size-256" (0xc1efb054), slab 0xc1efb054, inuse 4
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa280 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 9
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa2d0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 10
+[0m[32;40mmain/apic.c:256 apic_setredir(): redirecting irq 14 to interrupt %hu
+[0m[32;40mmain/apic.c:256 apic_setredir(): redirecting irq 15 to interrupt %hu
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5120 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 3
+[0m[33;40mdrivers/disk/ata.c:311 ata_init(): Initialized ATA device 0, channel PRIMARY, drive MASTER, size 8192
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ef5000 (2) into 0xc1ef5000 and 0xc1ef7000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ef7000 (1) into 0xc1ef7000 and 0xc1ef8000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1ef8000)
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 2 pages (addr 0xc1ef5000)
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e65000 (7) into 0xc1e65000 and 0xc1ea5000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ea5000 (6) into 0xc1ea5000 and 0xc1ec5000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ec5000 (5) into 0xc1ec5000 and 0xc1ed5000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ed5000 (4) into 0xc1ed5000 and 0xc1edd000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1edd000 (3) into 0xc1edd000 and 0xc1ee1000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ee1000 (2) into 0xc1ee1000 and 0xc1ee3000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 2 pages (addr 0xc1ee3000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "proc" (0xc1efb2d4), new slab 0xc1ee4fe0 (2 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee3000 from "proc" (0xc1efb2d4), slab 0xc1efb2d4, inuse 1
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 2 pages (addr 0xc1ee1000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "vmmap" (0xc1efb284), new slab 0xc1ee2ff0 (2 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee1000 from "vmmap" (0xc1efb284), slab 0xc1efb284, inuse 1
+[0mGRADING1 2.a PASSED: pid can only be PID_IDLE if this is the first process.
+GRADING2 2.a PASSED: pid can only be PID_INIT when creating from idle process.
+[37;40mmm/page.c:174 __page_split(): split 0xc1edd000 (2) into 0xc1edd000 and 0xc1edf000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 2 pages (addr 0xc1edf000)
+[0mGRADING1 1.a PASSED: idle process has been created successfully.
+GRADING1 1.a PASSED: what has been created is the idle process.
+GRADING1 3.a PASSED: should have associated process.
+[31;40mmm/page.c:258 _page_alloc_order(): allocating 16 pages (addr 0xc1ec5000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "kthread" (0xc1efb2fc), new slab 0xc1ed4ff0 (16 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ec5000 from "kthread" (0xc1efb2fc), slab 0xc1efb2fc, inuse 1
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ea5000 (5) into 0xc1ea5000 and 0xc1eb5000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 16 pages (addr 0xc1eb5000)
+[0mGRADING1 1.a PASSED: the thread for the idle process has been created successfully.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee31e0 from "proc" (0xc1efb2d4), slab 0xc1efb2d4, inuse 2
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee101c from "vmmap" (0xc1efb284), slab 0xc1efb284, inuse 2
+[0mGRADING1 2.a PASSED: pid can only be PID_IDLE if this is the first process.
+GRADING2 2.a PASSED: pid can only be PID_INIT when creating from idle process.
+[31;40mmm/page.c:258 _page_alloc_order(): allocating 2 pages (addr 0xc1edd000)
+[0mGRADING1 1.b PASSED: init process has been created.
+GRADING1 1.b PASSED: what has been created is the init process.
+GRADING1 3.a PASSED: should have associated process.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ec5054 from "kthread" (0xc1efb2fc), slab 0xc1efb2fc, inuse 2
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 16 pages (addr 0xc1ea5000)
+[0mGRADING1 1.b PASSED: thread for the init process has been created.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa320 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 11
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa370 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 12
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa3c0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 13
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa410 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 14
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa460 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 15
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa4b0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 16
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa500 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 17
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa550 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 18
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa5a0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 19
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa5f0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 20
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa640 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 21
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 22
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa6e0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 23
+[0m[0mutil/init.c:106 init_call_all(): Initialization functions and dependencies:
+[0m[0mpageoutd_init (0xc000e7ff): [0m[0msched_init [0m[0m
+[0m[0msched_init (0xc0012d46): [0m[0m
+[0m[0mfile_init (0xc001545f): [0m[0m
+[0m[0mvfs_init (0xc00169c7): [0m[0mvnode_init [0m[0mfile_init [0m[0m
+[0m[0mvnode_init (0xc00182cb): [0m[0m
+[0m[0mbinfmt_init (0xc001d63f): [0m[0m
+[0m[0melf32_init (0xc001fa19): [0m[0mbinfmt_init [0m[0m
+[0m[0msyscall_init (0xc001fd5d): [0m[0m
+[0m[0mkshell_init (0xc0022918): [0m[0m
+[0m[0mutil/init.c:51 _init_call(): 'pageoutd_init' depends on 'sched_init': [0m[0mcalling
+[0m[0mutil/init.c:63 _init_call(): Calling sched_init (0xc0012d46)
+[0m[0mutil/init.c:63 _init_call(): Calling pageoutd_init (0xc000e7ff)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee33c0 from "proc" (0xc1efb2d4), slab 0xc1efb2d4, inuse 3
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee1038 from "vmmap" (0xc1efb284), slab 0xc1efb284, inuse 3
+[0mGRADING1 2.a PASSED: pid can only be PID_IDLE if this is the first process.
+GRADING2 2.a PASSED: pid can only be PID_INIT when creating from idle process.
+[37;40mmm/page.c:174 __page_split(): split 0xc1ed5000 (3) into 0xc1ed5000 and 0xc1ed9000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ed9000 (2) into 0xc1ed9000 and 0xc1edb000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 2 pages (addr 0xc1edb000)
+[0mGRADING1 3.a PASSED: should have associated process.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ec50a8 from "kthread" (0xc1efb2fc), slab 0xc1efb2fc, inuse 3
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e65000 (6) into 0xc1e65000 and 0xc1e85000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e85000 (5) into 0xc1e85000 and 0xc1e95000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 16 pages (addr 0xc1e95000)
+[0mGRADING1 4.b PASSED: thread is not blocked.
+[0mutil/init.c:63 _init_call(): Calling file_init (0xc001545f)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb320 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 21
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 16
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "file" (0xc1efb324)
+[0m[31;40m  Object Size:   24
+[0m[31;40m  Order:         0
+[0m[31;40m  Slab Capacity: 127
+[0m[0mutil/init.c:51 _init_call(): 'vfs_init' depends on 'vnode_init': [0m[0mcalling
+[0m[0mutil/init.c:63 _init_call(): Calling vnode_init (0xc00182cb)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efb348 from "slab_allocators" (0xc004fb64), slab 0xc004fb64, inuse 22
+[0m[31;40mmm/slab.c:139 _calc_slab_size(): calc_slab_size: minorder 0, waste 112
+[0m[31;40mmm/slab.c:150 _calc_slab_size(): calc_slab_size: replacing with order 2, waste 0
+[0m[31;40mmm/slab.c:182 _allocator_init(): Initialized new slab allocator:
+[0m[31;40m  Name:          "vnode" (0xc1efb34c)
+[0m[31;40m  Object Size:   116
+[0m[31;40m  Order:         2
+[0m[31;40m  Slab Capacity: 132
+[0m[0mutil/init.c:51 _init_call(): 'vfs_init' depends on 'file_init': [0m[0malready called
+[0m[0mutil/init.c:63 _init_call(): Calling vfs_init (0xc00169c7)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee51b0 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 4
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa730 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 24
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 16 pages (addr 0xc1e85000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "pframe" (0xc1efb20c), new slab 0xc1e94ff0 (16 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85000 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 1
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1ef7000)
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1ef7000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x00, lba1 0x00, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[1;35;40mmm/pframe.c:676 pageoutd_run(): PAGEOUT DEMAON: Falling asleep
+[0m[1;35;40mmm/pframe.c:680 pageoutd_run(): PAGEOUT DEMAON: nfreepages_target=|3915| nfreepages_min=|0| page_free_count=|7718|
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 4 pages (addr 0xc1ed5000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "vnode" (0xc1efb34c), new slab 0xc1ed8ff0 (4 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed5000 from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 1
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85048 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 2
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1ed9000 (1) into 0xc1ed9000 and 0xc1eda000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1eda000)
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1eda000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x08, lba1 0x00, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mutil/init.c:63 _init_call(): Calling binfmt_init (0xc001d63f)
+[0m[0mutil/init.c:51 _init_call(): 'elf32_init' depends on 'binfmt_init': [0m[0malready called
+[0m[0mutil/init.c:63 _init_call(): Calling elf32_init (0xc001fa19)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa780 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 25
+[0m[1;31;40mapi/binfmt.c:36 binfmt_add(): Registering binary loader ELF32
+[0m[0mutil/init.c:63 _init_call(): Calling syscall_init (0xc001fd5d)
+[0m[0mutil/init.c:63 _init_call(): Calling kshell_init (0xc0022918)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5240 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 5
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added help command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee52d0 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 6
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added echo command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5360 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 7
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added cat command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee53f0 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 8
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added ls command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5480 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 9
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added cd command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5510 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 10
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added rm command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee55a0 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 11
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added link command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5630 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 12
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added rmdir command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee56c0 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 13
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added mkdir command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5750 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 14
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added stat command
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee57e0 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 15
+[0m[31;40mtest/kshell/kshell.c:64 kshell_add_command(): Added exit command
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa370 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 24
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa320 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 23
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa3c0 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 22
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa410 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 21
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa4b0 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 20
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa500 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 19
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa460 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 18
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa550 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 17
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa5a0 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 16
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa640 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 15
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa5f0 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 14
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 13
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa6e0 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 12
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 2, nrespages=0
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 3, nrespages=0
+[0m[0mfs/namev.c:89 dir_namev(): GRADING2 A.2.b #PASSED : pathname is not null
+[0m[0mfs/namev.c:91 dir_namev(): GRADING2 A.2.b #PASSED : namelen is not null
+[0m[0mfs/namev.c:93 dir_namev(): GRADING2 A.2.b #PASSED : name is not null
+[0m[0mfs/namev.c:95 dir_namev(): GRADING2 A.2.b #PASSED : res_vnode is not null
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 4, nrespages=0
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 3, nrespages = 0
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 4, nrespages=0
+[0m[0mfs/namev.c:185 dir_namev(): GRADING 2 A.2.b 
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up dev len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85090 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 3
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1ed9000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=0
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1ed9000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0xf8, lba1 0x1f, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mfs/vfs_syscall.c:368 do_mkdir(): GRADING 2 A.3.c# PASSED: pointer to corresponding vnode is not null.
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:660 s5fs_mkdir(): [0]: mkdir
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:200 lock_s5(): [0]: s5 mutex locked
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e850d8 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 4
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e65000 (5) into 0xc1e65000 and 0xc1e75000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e75000 (4) into 0xc1e75000 and 0xc1e7d000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e7d000 (3) into 0xc1e7d000 and 0xc1e81000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e81000 (2) into 0xc1e81000 and 0xc1e83000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e83000 (1) into 0xc1e83000 and 0xc1e84000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e84000)
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1e84000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x10, lba1 0x00, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:214 unlock_s5(): [0]: s5 mutex unlocked
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed507c from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 2
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85120 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 5
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e83000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5080, 0xc1ee51b8 ino 32 up to 2, nrespages=0
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:200 lock_s5(): [0]: s5 mutex locked
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:214 unlock_s5(): [0]: s5 mutex unlocked
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5080, 0xc1ee51b8 ino 32, down to 1, nrespages = 1
+[0m[1;31;40mfs/s5fs/s5fs.c:726 s5fs_mkdir(): [0]: mkdir done
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[0mfs/namev.c:89 dir_namev(): GRADING2 A.2.b #PASSED : pathname is not null
+[0m[0mfs/namev.c:91 dir_namev(): GRADING2 A.2.b #PASSED : namelen is not null
+[0m[0mfs/namev.c:93 dir_namev(): GRADING2 A.2.b #PASSED : name is not null
+[0m[0mfs/namev.c:95 dir_namev(): GRADING2 A.2.b #PASSED : res_vnode is not null
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up dev/null len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 32
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5080, 0xc1ee51b8 ino 32 up to 2, nrespages=1
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[0mfs/namev.c:185 dir_namev(): GRADING 2 A.2.b 
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up null len = 4
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mfs/vfs_syscall.c:299 do_mknod(): GRADING2 A.3.b
+ [0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+GRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:200 lock_s5(): [0]: s5 mutex locked
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:214 unlock_s5(): [0]: s5 mutex unlocked
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed50f8 from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 3
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed50fc, 0xc1ee51b8 ino 33, down to 0, nrespages = 0
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ed50f8 from "vnode" (0xc1efb34c), slab 0xc1ed8ff0, inuse 2
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5080, 0xc1ee51b8 ino 32, down to 1, nrespages = 1
+[0m[0mfs/namev.c:89 dir_namev(): GRADING2 A.2.b #PASSED : pathname is not null
+[0m[0mfs/namev.c:91 dir_namev(): GRADING2 A.2.b #PASSED : namelen is not null
+[0m[0mfs/namev.c:93 dir_namev(): GRADING2 A.2.b #PASSED : name is not null
+[0m[0mfs/namev.c:95 dir_namev(): GRADING2 A.2.b #PASSED : res_vnode is not null
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up dev/zero len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 32
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5080, 0xc1ee51b8 ino 32 up to 2, nrespages=1
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[0mfs/namev.c:185 dir_namev(): GRADING 2 A.2.b 
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up zero len = 4
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mfs/vfs_syscall.c:299 do_mknod(): GRADING2 A.3.b
+ [0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+GRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:200 lock_s5(): [0]: s5 mutex locked
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:214 unlock_s5(): [0]: s5 mutex unlocked
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed50f8 from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 3
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed50fc, 0xc1ee51b8 ino 34, down to 0, nrespages = 0
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ed50f8 from "vnode" (0xc1efb34c), slab 0xc1ed8ff0, inuse 2
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5080, 0xc1ee51b8 ino 32, down to 1, nrespages = 1
+[0m[0mfs/namev.c:89 dir_namev(): GRADING2 A.2.b #PASSED : pathname is not null
+[0m[0mfs/namev.c:91 dir_namev(): GRADING2 A.2.b #PASSED : namelen is not null
+[0m[0mfs/namev.c:93 dir_namev(): GRADING2 A.2.b #PASSED : name is not null
+[0m[0mfs/namev.c:95 dir_namev(): GRADING2 A.2.b #PASSED : res_vnode is not null
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up dev/tty0 len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 32
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5080, 0xc1ee51b8 ino 32 up to 2, nrespages=1
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[0mfs/namev.c:185 dir_namev(): GRADING 2 A.2.b 
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up tty0 len = 4
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mfs/vfs_syscall.c:299 do_mknod(): GRADING2 A.3.b
+ [0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+GRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:200 lock_s5(): [0]: s5 mutex locked
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;31;40mfs/s5fs/s5fs_subr.c:214 unlock_s5(): [0]: s5 mutex unlocked
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed50f8 from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 3
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed50fc, 0xc1ee51b8 ino 35, down to 0, nrespages = 0
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ed50f8 from "vnode" (0xc1efb34c), slab 0xc1ed8ff0, inuse 2
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5080, 0xc1ee51b8 ino 32, down to 1, nrespages = 1
+[0mGRADING1 4.b PASSED: thread is not blocked.
+GRADING1 2.c PASSED: the process should not be NULL.
+GRADING1 2.c PASSED: should be able to find the process.
+[37;40mmm/page.c:174 __page_split(): split 0xc1e81000 (1) into 0xc1e81000 and 0xc1e82000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e82000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "file" (0xc1efb324), new slab 0xc1e82fe0 (1 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e82000 from "file" (0xc1efb324), slab 0xc1efb324, inuse 1
+[0m[35;40mfs/file.c:46 fref(): fref: 0xc1e82004 up to 1
+[0m[0mfs/namev.c:89 dir_namev(): GRADING2 A.2.b #PASSED : pathname is not null
+[0m[0mfs/namev.c:91 dir_namev(): GRADING2 A.2.b #PASSED : namelen is not null
+[0m[0mfs/namev.c:93 dir_namev(): GRADING2 A.2.b #PASSED : name is not null
+[0m[0mfs/namev.c:95 dir_namev(): GRADING2 A.2.b #PASSED : res_vnode is not null
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up usr/bin/hello len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 3
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed50f8 from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 3
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up bin/hello len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85168 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 6
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e81000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed50fc, 0xc1ee51b8 ino 3 up to 2, nrespages=0
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1e81000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0xe0, lba1 0x1f, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 10
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed5174 from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 4
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed50fc, 0xc1ee51b8 ino 3, down to 1, nrespages = 1
+[0m[0mfs/namev.c:185 dir_namev(): GRADING 2 A.2.b 
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up hello len = 5
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e851b0 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 7
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e7d000 (2) into 0xc1e7d000 and 0xc1e7f000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e7f000 (1) into 0xc1e7f000 and 0xc1e80000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e80000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5178, 0xc1ee51b8 ino 10 up to 2, nrespages=0
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1e80000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x60, lba1 0x1c, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 30
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed51f0 from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 5
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5178, 0xc1ee51b8 ino 10, down to 1, nrespages = 1
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 2
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 1
+[0m[1;31;40mapi/binfmt.c:67 binfmt_load(): Trying to exec /usr/bin/hello using binary loader ELF32
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 2
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e851f8 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 8
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e7f000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed51f4, 0xc1ee51b8 ino 30 up to 2, nrespages=0
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1e7f000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x30, lba1 0x07, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 4
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 3
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 2
+[0m[1;32;40mapi/elf32.c:160 _elf32_load_ehdr(): loading ELF file
+[0m[1;32;40mELF Header Information:
+[0m[1;32;40mVersion: 1
+[0m[1;32;40mClass:   1
+[0m[1;32;40mData:    1
+[0m[1;32;40mType:    2
+[0m[1;32;40mMachine: 3
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee1054 from "vmmap" (0xc1efb284), slab 0xc1efb284, inuse 4
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ee5870 from "size-128" (0xc1efb02c), slab 0xc1efb02c, inuse 16
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 3
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 2
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 4
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 3
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 2
+[0m[1;32;40mapi/elf32.c:56 _elf32_map_segment(): Mapping program segment: type 0x1, offset 0x000000, vaddr 0x8048000, filesz 0x5514, memsz 0x5514, flags 0x5, align 0x1000
+[0m[0mvm/vmmap.c:414 vmmap_is_range_empty(): GRADING3.A.3.e 
+[0m[0mvm/vmmap.c:262 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:264 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:266 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:268 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:270 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:272 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:274 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:414 vmmap_is_range_empty(): GRADING3.A.3.e 
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e7d000 (1) into 0xc1e7d000 and 0xc1e7e000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e7e000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "vmarea" (0xc1efb2ac), new slab 0xc1e7eff0 (1 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7e000 from "vmarea" (0xc1efb2ac), slab 0xc1efb2ac, inuse 1
+[0m[0mvm/vmmap.c:101 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:104 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:107 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:109 vmmap_insert(): GRADING 3.A.3.b
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xbbbbbbbb 0x00000 0x08048-0x0804e
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed51f4, 0xc1ee51b8 ino 30 up to 3, nrespages=1
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e7d000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "sahdowobject" (0xc1efb25c), new slab 0xc1e7dff0 (1 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7d000 from "sahdowobject" (0xc1efb25c), slab 0xc1efb25c, inuse 1
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[1;32;40mapi/elf32.c:56 _elf32_map_segment(): Mapping program segment: type 0x1, offset 0x005514, vaddr 0x804e514, filesz 0x1c, memsz 0x138, flags 0x6, align 0x1000
+[0m[0mvm/vmmap.c:414 vmmap_is_range_empty(): GRADING3.A.3.e 
+[0m[0mvm/vmmap.c:262 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:264 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:266 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:268 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:270 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:272 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:274 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:414 vmmap_is_range_empty(): GRADING3.A.3.e 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7e03c from "vmarea" (0xc1efb2ac), slab 0xc1efb2ac, inuse 2
+[0m[0mvm/vmmap.c:101 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:104 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:107 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:109 vmmap_insert(): GRADING 3.A.3.b
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xbbbbbbbb 0x05000 0x0804e-0x0804f
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed51f4, 0xc1ee51b8 ino 30 up to 4, nrespages=1
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7d030 from "sahdowobject" (0xc1efb25c), slab 0xc1efb25c, inuse 2
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[0mvm/vmmap.c:262 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:264 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:266 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:268 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:270 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:272 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:274 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:414 vmmap_is_range_empty(): GRADING3.A.3.e 
+[0m[0mvm/shadow.c:107 shadow_put(): GRADING 3.A.6.c 
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1e7e03c from "vmarea" (0xc1efb2ac), slab 0xc1e7eff0, inuse 1
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7e03c from "vmarea" (0xc1efb2ac), slab 0xc1efb2ac, inuse 2
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e75000 (3) into 0xc1e75000 and 0xc1e79000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e79000 (2) into 0xc1e79000 and 0xc1e7b000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e7b000 (1) into 0xc1e7b000 and 0xc1e7c000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e7c000)
+[0m[31;40mmm/slab.c:253 _slab_allocator_grow(): Growing cache "anonobject" (0xc1efb234), new slab 0xc1e7cff0 (1 pages)
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7c000 from "anonobject" (0xc1efb234), slab 0xc1efb234, inuse 1
+[0m[0mvm/anon.c:78 anon_ref(): GRADING 3.A.4.b 
+[0m[0mvm/vmmap.c:101 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:104 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:107 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:109 vmmap_insert(): GRADING 3.A.3.b
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7c004 0x00000 0x0804e-0x0804f
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7d060 from "sahdowobject" (0xc1efb25c), slab 0xc1efb25c, inuse 3
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e7b000)
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85240 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 9
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e79000 (1) into 0xc1e79000 and 0xc1e7a000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e7a000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed51f4, 0xc1ee51b8 ino 30 up to 5, nrespages=1
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1e7a000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x08, lba1 0x07, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85288 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 10
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e79000)
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[0mvm/shadow.c:175 shadow_fillpage(): GRADING3.A.6.d 
+[0m[0mvm/shadow.c:177 shadow_fillpage(): GRADING3.A.6.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e852d0 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 11
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e75000 (2) into 0xc1e75000 and 0xc1e77000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e77000 (1) into 0xc1e77000 and 0xc1e78000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e78000)
+[0m[0mvm/anon.c:78 anon_ref(): GRADING 3.A.4.b 
+[0m[0mvm/anon.c:139 anon_fillpage(): GRADING 3.A.4.d 
+[0m[0mvm/anon.c:141 anon_fillpage(): GRADING 3.A.4.d 
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[31;40mmm/page.c:328 _page_free_order(): page_free: freed 1 pages (addr 0xc1e7b000); 7700 pages currently free
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa6e0 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 13
+[0m[0mvm/vmmap.c:262 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:264 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:266 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:268 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:270 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:272 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:274 vmmap_map(): GRADING 3.A.3.f 
+[0m[0mvm/vmmap.c:414 vmmap_is_range_empty(): GRADING3.A.3.e 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7e078 from "vmarea" (0xc1efb2ac), slab 0xc1efb2ac, inuse 3
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7c030 from "anonobject" (0xc1efb234), slab 0xc1efb234, inuse 2
+[0m[0mvm/anon.c:78 anon_ref(): GRADING 3.A.4.b 
+[0m[0mvm/vmmap.c:101 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:104 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:107 vmmap_insert(): GRADING 3.A.3.b
+[0m[0mvm/vmmap.c:109 vmmap_insert(): GRADING 3.A.3.b
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7c034 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e7d090 from "sahdowobject" (0xc1efb25c), slab 0xc1efb25c, inuse 4
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[1;32;40mapi/elf32.c:633 _elf32_load(): Mapped stack at low addr 0x08039000, size 0xf000
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 14
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85318 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 12
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e7b000)
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[0mvm/shadow.c:175 shadow_fillpage(): GRADING3.A.6.d 
+[0m[0mvm/shadow.c:177 shadow_fillpage(): GRADING3.A.6.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85360 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 13
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e77000)
+[0m[0mvm/anon.c:78 anon_ref(): GRADING 3.A.4.b 
+[0m[0mvm/anon.c:139 anon_fillpage(): GRADING 3.A.4.d 
+[0m[0mvm/anon.c:141 anon_fillpage(): GRADING 3.A.4.d 
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[1;32;40mapi/elf32.c:655 _elf32_load(): Past the point of no return. Swapping to map at 0xc1ee1058, setting brk to 0x0804e64c
+[0m[0mvm/vmmap.c:77 vmmap_destroy(): GRADING 3.A.3.
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ee101c from "vmmap" (0xc1efb284), slab 0xc1ee2ff0, inuse 3
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 1
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ee5870 from "size-128" (0xc1efb02c), slab 0xc1ef4ff0, inuse 15
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa6e0 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 13
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 12
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 30, up to 2
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 1
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 30, down to 0
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed51f4, 0xc1ee51b8 ino 30, down to 4, nrespages = 2
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1e82000 from "file" (0xc1efb324), slab 0xc1e82fe0, inuse 0
+[0m[1;31;40mapi/exec.c:57 kernel_execve(): Entering userland with eip 0x80480f8, esp 0x8047fdc
+[0m[1;37;40mpid:          1
+name:         /usr/bin/hello
+parent:       0 (idle process)
+children:     -
+status:       0
+state:        1
+start brk:    0x0804e64c
+brk:          0x0804e64c
+[0m[1;37;40m  PID NAME          PARENT
+   0  idle process    -
+   1  /usr/bin/hello   0 (idle process)
+   2  pageoutd        0 (idle process)
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e853a8 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 14
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e75000 (1) into 0xc1e75000 and 0xc1e76000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e76000)
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[0mvm/shadow.c:175 shadow_fillpage(): GRADING3.A.6.d 
+[0m[0mvm/shadow.c:177 shadow_fillpage(): GRADING3.A.6.d 
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e75000)
+[0m[1;37;40mpid:          1
+name:         /usr/bin/hello
+parent:       0 (idle process)
+children:     -
+status:       0
+state:        1
+start brk:    0x0804e64c
+brk:          0x0804e64c
+[0m[1;37;40m  PID NAME          PARENT
+   0  idle process    -
+   1  /usr/bin/hello   0 (idle process)
+   2  pageoutd        0 (idle process)
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[1;37;40mpid:          1
+name:         /usr/bin/hello
+parent:       0 (idle process)
+children:     -
+status:       0
+state:        1
+start brk:    0x0804e64c
+brk:          0x0804e64c
+[0m[1;37;40m  PID NAME          PARENT
+   0  idle process    -
+   1  /usr/bin/hello   0 (idle process)
+   2  pageoutd        0 (idle process)
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e853f0 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 15
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e65000 (4) into 0xc1e65000 and 0xc1e6d000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e6d000 (3) into 0xc1e6d000 and 0xc1e71000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e71000 (2) into 0xc1e71000 and 0xc1e73000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e73000 (1) into 0xc1e73000 and 0xc1e74000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e74000)
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[0mvm/shadow.c:175 shadow_fillpage(): GRADING3.A.6.d 
+[0m[0mvm/shadow.c:177 shadow_fillpage(): GRADING3.A.6.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85438 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 16
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e73000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed51f4, 0xc1ee51b8 ino 30 up to 5, nrespages=2
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1e73000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x28, lba1 0x07, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[1;37;40mpid:          1
+name:         /usr/bin/hello
+parent:       0 (idle process)
+children:     -
+status:       0
+state:        1
+start brk:    0x0804e64c
+brk:          0x0804e64c
+[0m[1;37;40m  PID NAME          PARENT
+   0  idle process    -
+   1  /usr/bin/hello   0 (idle process)
+   2  pageoutd        0 (idle process)
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e85480 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 17
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e71000 (1) into 0xc1e71000 and 0xc1e72000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e72000)
+[0m[0mvm/shadow.c:90 shadow_ref(): GRADING 3.A.6.b 
+[0m[0mvm/shadow.c:175 shadow_fillpage(): GRADING3.A.6.d 
+[0m[0mvm/shadow.c:177 shadow_fillpage(): GRADING3.A.6.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e854c8 from "pframe" (0xc1efb20c), slab 0xc1efb20c, inuse 18
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e71000)
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed51f4, 0xc1ee51b8 ino 30 up to 6, nrespages=3
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[33;40mdrivers/disk/ata.c:517 ata_do_operation(): Preparing DMA PRD with data at 0xc1e71000, 8 sectors (total size 4096), and write 0
+[0m[33;40mdrivers/disk/ata.c:526 ata_do_operation(): Preparing disk with seccount 8, lba0 0x18, lba1 0x07, lba2 0x00
+[0m[33;40mdrivers/disk/ata.c:537 ata_do_operation(): Writing command READ DMA, 0xc8
+[0m[33;40mdrivers/disk/ata.c:547 ata_do_operation(): After command, before start of DMA, disk status is 0xd8
+[0m[33;40mdrivers/disk/ata.c:330 ata_intr_wrapper(): ATA interrupt
+[0m[33;40mdrivers/disk/ata.c:595 ata_intr(): Received interrupt w/ intr number 208, error code 0, for channel 0, drive 0
+[0mGRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[33;40mdrivers/disk/ata.c:559 ata_do_operation(): ATA status: 0x50
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[31;40mapi/syscall.c:735 syscall_handler(): >> pid 1, sysnum: 5 (5), arg: 134512532 (0x8047f94)
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 13
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e82000 from "file" (0xc1efb324), slab 0xc1efb324, inuse 1
+[0m[35;40mfs/file.c:46 fref(): fref: 0xc1e82004 up to 1
+[0m[0mfs/namev.c:89 dir_namev(): GRADING2 A.2.b #PASSED : pathname is not null
+[0m[0mfs/namev.c:91 dir_namev(): GRADING2 A.2.b #PASSED : namelen is not null
+[0m[0mfs/namev.c:93 dir_namev(): GRADING2 A.2.b #PASSED : name is not null
+[0m[0mfs/namev.c:95 dir_namev(): GRADING2 A.2.b #PASSED : res_vnode is not null
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up dev/tty0 len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 32
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5080, 0xc1ee51b8 ino 32 up to 2, nrespages=1
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[0mfs/namev.c:185 dir_namev(): GRADING 2 A.2.b 
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up tty0 len = 4
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 35
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1ed526c from "vnode" (0xc1efb34c), slab 0xc1efb34c, inuse 6
+[0m[0mmm/pframe.c:386 pframe_pin(): GRADING3.A.1.a
+[0m[0mmm/pframe.c:388 pframe_pin(): GRADING3.A.1.a
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5080, 0xc1ee51b8 ino 32, down to 1, nrespages = 1
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 12
+[0m[31;40mapi/syscall.c:756 syscall_handler(): << pid 1, sysnum: 5 (5), returned: 0 (0x0)
+[0m[31;40mapi/syscall.c:735 syscall_handler(): >> pid 1, sysnum: 39 (27), arg: 134512532 (0x8047f94)
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[31;40mapi/syscall.c:756 syscall_handler(): << pid 1, sysnum: 39 (27), returned: 0 (0x0)
+[0m[1;37;40mpid:          1
+name:         /usr/bin/hello
+parent:       0 (idle process)
+children:     -
+status:       0
+state:        1
+start brk:    0x0804e64c
+brk:          0x0804e64c
+[0m[1;37;40m  PID NAME          PARENT
+   0  idle process    -
+   1  /usr/bin/hello   0 (idle process)
+   2  pageoutd        0 (idle process)
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mapi/syscall.c:735 syscall_handler(): >> pid 1, sysnum: 5 (5), arg: 134512532 (0x8047f94)
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efb004, inuse 13
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mmm/slab.c:295 slab_obj_alloc(): Allocated object 0xc1e82020 from "file" (0xc1efb324), slab 0xc1efb324, inuse 2
+[0m[35;40mfs/file.c:46 fref(): fref: 0xc1e82024 up to 1
+[0m[0mfs/namev.c:89 dir_namev(): GRADING2 A.2.b #PASSED : pathname is not null
+[0m[0mfs/namev.c:91 dir_namev(): GRADING2 A.2.b #PASSED : namelen is not null
+[0m[0mfs/namev.c:93 dir_namev(): GRADING2 A.2.b #PASSED : name is not null
+[0m[0mfs/namev.c:95 dir_namev(): GRADING2 A.2.b #PASSED : res_vnode is not null
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5004, 0xc1ee51b8 ino 0 up to 5, nrespages=1
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up dev/tty0 len = 3
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 32
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5080, 0xc1ee51b8 ino 32 up to 2, nrespages=1
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 4, nrespages = 1
+[0m[0mfs/namev.c:185 dir_namev(): GRADING 2 A.2.b 
+[0m[0mfs/namev.c:32 lookup(): GRADING2 A.2.a #PASSED : dir is not null
+[0m[0mfs/namev.c:34 lookup(): GRADING2 A.2.a #PASSED : name is not null
+[0m[0mfs/namev.c:36 lookup(): GRADING2 A.2.a #PASSED : result is not null
+[0m[1;31;40mfs/s5fs/s5fs.c:561 s5fs_lookup(): In s5fs_lookup: Looking up tty0 len = 4
+[0mGRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.
+[1;31;40mfs/s5fs/s5fs.c:574 s5fs_lookup(): In s5fs_lookup: Found num = 35
+[0m[36;40mfs/vnode.c:111 vref(): vref: 0xc1ed5270, 0xc1ee51b8 ino 35 up to 2, nrespages=0
+[0mGRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.
+GRADING1:5.c PASSED: curthr is NOT the mutex holder.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5080, 0xc1ee51b8 ino 32, down to 1, nrespages = 1
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1efa690 from "size-64" (0xc1efb004), slab 0xc1efaff0, inuse 12
+[0m[31;40mapi/syscall.c:756 syscall_handler(): << pid 1, sysnum: 5 (5), returned: 1 (0x1)
+[0m[31;40mapi/syscall.c:735 syscall_handler(): >> pid 1, sysnum: 39 (27), arg: 134512532 (0x8047f94)
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[31;40mapi/syscall.c:756 syscall_handler(): << pid 1, sysnum: 39 (27), returned: 0 (0x0)
+[0m[31;40mapi/syscall.c:735 syscall_handler(): >> pid 1, sysnum: 4 (4), arg: 134512540 (0x8047f9c)
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e6d000 (2) into 0xc1e6d000 and 0xc1e6f000
+[0m[37;40mmm/page.c:174 __page_split(): split 0xc1e6f000 (1) into 0xc1e6f000 and 0xc1e70000
+[0m[31;40mmm/page.c:258 _page_alloc_order(): allocating 1 pages (addr 0xc1e70000)
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82024, 0xc1ee51b8 ino 35, up to 2
+[0m[0mfs/vnode.c:466 special_file_write(): GRADING2 A.1.b
+[0m[0mfs/vnode.c:468 special_file_write(): GRADING2 A.1.b
+[0m[0mfs/vnode.c:471 special_file_write(): GRADING2 A.1.b
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82024, 0xc1ee51b8 ino 35, up to 3
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82024, 0xc1ee51b8 ino 35, down to 2
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82024, 0xc1ee51b8 ino 35, down to 1
+[0m[0mfs/vfs_syscall.c:140 do_write(): GRADING2 A.3.a
+[0m[0mvm/vmmap.c:189 vmmap_lookup(): GRADING 3.A.3.d 
+[0m[31;40mapi/syscall.c:756 syscall_handler(): << pid 1, sysnum: 4 (4), returned: -1 (0xffffffff)
+[0m[31;40mapi/syscall.c:735 syscall_handler(): >> pid 1, sysnum: 39 (27), arg: 134512540 (0x8047f9c)
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0m[31;40mapi/syscall.c:756 syscall_handler(): << pid 1, sysnum: 39 (27), returned: 14 (0xe)
+[0m[31;40mapi/syscall.c:735 syscall_handler(): >> pid 1, sysnum: 1 (1), arg: 0 (0x000000)
+[0m[1;32;40m          VADDR RANGE  PROT   FLAGS    MMOBJ     OFFSET    VFN RANGE
+0x08039000-0x08048000  rw-  PRIVATE 0xc1e7d094 0x00000 0x08039-0x08048
+0x08048000-0x0804e000  r-x  PRIVATE 0xc1e7d004 0x00000 0x08048-0x0804e
+0x0804e000-0x0804f000  rw-  PRIVATE 0xc1e7d064 0x00000 0x0804e-0x0804f
+[0mGRADING1 3.c PASSED: queue should be empty.
+GRADING1 3.c PASSED: queue should be empty.
+GRADING1 3.c PASSED: current process and the process associated with current thread are same.
+GRADING 2.b PASSED: should have an init process.
+GRADING 2.b PASSED: this process should not be idle process.
+GRADING 2.b PASSED: this process should have parent process.
+GRADING1 4.a PASSED: kt_state is either KT_SLEEP or KT_SLEEP_CANCELLABLE.
+GRADING1 4.b PASSED: thread is not blocked.
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 3, nrespages = 1
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82004, 0xc1ee51b8 ino 35, up to 2
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 35, down to 1
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82004, 0xc1ee51b8 ino 35, down to 0
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5270, 0xc1ee51b8 ino 35, down to 1, nrespages = 0
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1e82000 from "file" (0xc1efb324), slab 0xc1e82fe0, inuse 1
+[0m[35;40mfs/file.c:44 fref(): fref: 0xc1e82024, 0xc1ee51b8 ino 35, up to 2
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82024, 0xc1ee51b8 ino 35, down to 1
+[0m[35;40mfs/file.c:85 fput(): fput: 0xc1e82024, 0xc1ee51b8 ino 35, down to 0
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5270, 0xc1ee51b8 ino 35, down to 0, nrespages = 0
+[0m[0mmm/pframe.c:415 pframe_unpin(): GRADING A.1.b
+[0m[0mmm/pframe.c:418 pframe_unpin(): GRADING A.1.b
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ed526c from "vnode" (0xc1efb34c), slab 0xc1ed8ff0, inuse 5
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1e82020 from "file" (0xc1efb324), slab 0xc1e82fe0, inuse 0
+[0m[0mvm/vmmap.c:77 vmmap_destroy(): GRADING 3.A.3.
+[0m[0mvm/shadow.c:107 shadow_put(): GRADING 3.A.6.c 
+[0m[0mvm/anon.c:95 anon_put(): GRADING 3.A.4.c 
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1e7e078 from "vmarea" (0xc1efb2ac), slab 0xc1e7eff0, inuse 2
+[0m[0mvm/shadow.c:107 shadow_put(): GRADING 3.A.6.c 
+[0m[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed51f4, 0xc1ee51b8 ino 30, down to 5, nrespages = 4
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1e7e000 from "vmarea" (0xc1efb2ac), slab 0xc1e7eff0, inuse 1
+[0m[0mvm/shadow.c:107 shadow_put(): GRADING 3.A.6.c 
+[0m[0mvm/anon.c:95 anon_put(): GRADING 3.A.4.c 
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1e7e03c from "vmarea" (0xc1efb2ac), slab 0xc1e7eff0, inuse 0
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ee1054 from "vmmap" (0xc1efb284), slab 0xc1ee2ff0, inuse 2
+[0mGRADING 2.b PASSED: this process should have parent process.
+GRADING1 2.c PASSED: this process should have pagedir.
+GRADING1 2.c PASSED: thr points to a thread to be destroyed.
+[31;40mmm/page.c:328 _page_free_order(): page_free: freed 16 pages (addr 0xc1ea5000); 7707 pages currently free
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ec5054 from "kthread" (0xc1efb2fc), slab 0xc1ed4ff0, inuse 2
+[0m[31;40mmm/page.c:328 _page_free_order(): page_free: freed 1 pages (addr 0xc1e75000); 7708 pages currently free
+[0m[31;40mmm/page.c:328 _page_free_order(): page_free: freed 2 pages (addr 0xc1edd000); 7710 pages currently free
+[0m[31;40mmm/slab.c:337 slab_obj_free(): Freed object 0xc1ee31e0 from "proc" (0xc1efb2d4), slab 0xc1ee4fe0, inuse 2
+[0mweenix: vfs shutdown...
+[36;40mfs/vnode.c:240 vput(): vput: 0xc1ed5004, 0xc1ee51b8 ino 0, down to 2, nrespages = 1
+[0m[1;37;40mfs/vnode.c:351 vfs_is_in_use(): Vnode 30 mode 800 device 0 flags 0 is still in use with refcount=5 and 4 res pages
+[0mpanic in fs/vfs.c:166 vfs_shutdown(): vfs_shutdown: found active vnodes in root filesystem!!! This shouldn't happen!!
+
+Kernel Halting.
+
+]0;kothamas@kothamas-VirtualBox: ~/kernel1/kernel1/weenix-assignment-1.0.7/weenixkothamas@kothamas-VirtualBox:~/kernel1/kernel1/weenix-assignment-1.0.7/weenix$ exit
+exit
+
+Script done on Fri 06 Dec 2013 01:21:29 AM PST

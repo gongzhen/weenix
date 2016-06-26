@@ -37,11 +37,11 @@ class SlabCommand(weenix.Command):
 		countwidth = max(map(lambda x: len(x), counts))
 
 		for name, slab, size, count in zip(names, slabs, sizes, counts):
-			print ("{1:<{0}} {3:>{2}} {5:>{4}} {7:>{6}}".format(
+			print "{1:<{0}} {3:>{2}} {5:>{4}} {7:>{6}}".format(
 				namewidth, name,
 				slabwidth, slab,
 				sizewidth, size,
-				countwidth, count))
+				countwidth, count)
 
 	def complete(self, line, word):
 		l = map(lambda x: x.name(), self._allocators())

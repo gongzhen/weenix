@@ -74,7 +74,7 @@ static int test_mmap_bounds(void)
         test_assert('\0' == *((char *)addr + PAGE_SIZE), NULL);
         test_assert('\0' == *((char *)addr + PAGE_SIZE * 2), NULL);
         test_assert('\0' == *((char *)addr + PAGE_SIZE * 3 - 1), NULL);
-
+	
         /* Unmap the ends */
         test_assert(0 == munmap(addr, PAGE_SIZE), NULL);
         test_assert(0 == munmap((char *)addr + PAGE_SIZE * 2, PAGE_SIZE), NULL);
@@ -333,11 +333,8 @@ static int test_start_brk(void)
 
         /* Move it up, make sure we have new clean region */
         test_assert(0 == brk(oldbrk + 1), NULL);
-        /* This behavior is undefined, this represents how it
-         * works on Linux but these need not pass
-         */
-        /*test_assert('\0' == *oldbrk, NULL);
-        test_assert('\0' == *(newbrk - 1), NULL);*/
+        test_assert('\0' == *oldbrk, NULL);
+        test_assert('\0' == *(newbrk - 1), NULL);
         assert_fault(char foo = *newbrk, "");
 
         /* Move back and finish */
@@ -616,15 +613,21 @@ int main(int argc, char **argv)
         /* printf("Linker magic: start 0x%p, text end 0x%p, data end 0x%p, bss end 0x%p\n",
                text_start, text_end, data_end, bss_end); */
         test_init();
+	/*
         childtest(test_overflow);
+	
         childtest(test_mmap_bounds);
         childtest(test_brk_bounds);
+	*/
+	
         childtest(test_munmap);
-        childtest(test_start_brk);
+        /*
+	childtest(test_start_brk);
         childtest(test_brk_mmap);
         childtest(test_mmap_fill);
         childtest(test_mmap_repeat);
         childtest(test_mmap_beyond);
+	*/
         test_fini();
 
         return 0;

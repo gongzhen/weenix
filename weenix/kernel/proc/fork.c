@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "types.h"
 #include "globals.h"
 #include "errno.h"
@@ -65,92 +52,82 @@ fork_setup_stack(const regs_t *regs, void *kstack)
 int
 do_fork(struct regs *regs)
 {
-        int i;
-        proc_t *proc = NULL;
-        kthread_t *thr = NULL;
-        vmarea_t *vmac, *vmap;
-        mmobj_t *shadowc, *shadowp;
+        /*NOT_YET_IMPLEMENTED("VM: do_fork");*/
+	int i = 0;
 
-        KASSERT(regs != NULL);
+	KASSERT(regs != NULL);
+	dbg(DBG_PRINT, "GRADING3A 7.a\n");
         KASSERT(curproc != NULL);
+	dbg(DBG_PRINT, "GRADING3A 7.a\n");
         KASSERT(curproc->p_state == PROC_RUNNING);
-        dbg(DBG_PRINT, "(GRADING3A 7.a)\n");
+	dbg(DBG_PRINT, "GRADING3A 7.a\n");
+	
+	proc_t *child = proc_create("child");
+	if(child == NULL){
+		return -1;
+	}
+	KASSERT(child->p_state == PROC_RUNNING);
+	dbg(DBG_PRINT, "GRADING3A 7.a\n");
+	KASSERT(child->p_pagedir != NULL);
+	dbg(DBG_PRINT, "GRADING3A 7.a\n");
 
-        vmac = NULL;
-        vmap = NULL;
-        shadowc = NULL;
-        shadowp = NULL;
+	child->p_vmmap=vmmap_clone(curproc->p_vmmap);
+	dbginfo(DBG_VMMAP, vmmap_mapping_info, curproc->p_vmmap);
+	list_link_t *pList = &(curproc->p_vmmap->vmm_list);
+	list_link_t *cList = &(child->p_vmmap->vmm_list);
+	list_link_t *pLink;
+	list_link_t *cLink;
+	vmarea_t *aParent;
+	vmarea_t *aChild;	
+	for(pLink = pList->l_next, cLink = cList->l_next;
+		pList != pLink; pLink = pLink->l_next, cLink = cLink->l_next){
+			
+		aParent = list_item(pLink, vmarea_t, vma_plink);
+		aChild = list_item(cLink, vmarea_t, vma_plink);
+		
+		if(aParent->vma_flags == MAP_PRIVATE){
+	
+			mmobj_t *Child_shadowobj = shadow_create();
+			mmobj_t *Parent_shadowobj = shadow_create();
+			Child_shadowobj->mmo_shadowed = aParent->vma_obj;
+			Parent_shadowobj->mmo_shadowed = aParent->vma_obj;
+			aChild->vma_obj = Child_shadowobj;
+			aParent->vma_obj = Parent_shadowobj;
 
-        proc = proc_create("child");
+			pt_unmap_range(curproc->p_pagedir,(uintptr_t) PN_TO_ADDR(aParent->vma_start), (uintptr_t)PN_TO_ADDR(aChild->vma_end) ); 
+			tlb_flush_all();
+		}else if(aParent->vma_flags == MAP_SHARED){
+			aChild->vma_obj = aParent->vma_obj;
+		}
+		/*aChild->vma_obj->mmo_ops->ref(aChild->vma_obj);*/
+	}
+		dbginfo(DBG_VMMAP, vmmap_mapping_info, child->p_vmmap);
+	child->p_start_brk = curproc->p_start_brk;
+	child->p_brk = curproc->p_brk;
+	for(; i < NFILES; i++){
+		child->p_files[i] = curproc->p_files[i];
+		if(NULL != child->p_files[i]){
+			fref(child->p_files[i]);
+		}
+	}
+	child->p_cwd=curproc->p_cwd;
+	vref(child->p_cwd);
+	kthread_t *childthread=kthread_clone(curthr);
 
-        KASSERT(proc->p_state == PROC_RUNNING);
-        KASSERT(proc->p_pagedir != NULL);
-        dbg(DBG_PRINT, "(GRADING3A 7.a)\n");
+	KASSERT(childthread->kt_kstack != NULL);
+	dbg(DBG_PRINT, "GRADING3A 7.a\n");
 
-        proc->p_brk = curproc->p_brk;
-        proc->p_start_brk = curproc->p_start_brk;
-        proc->p_vmmap = vmmap_clone(curproc->p_vmmap);
-        proc->p_vmmap->vmm_proc = proc;
+	childthread->kt_proc=child;
+	list_insert_tail(&(child->p_threads), &(childthread->kt_plink));
+	(childthread->kt_ctx).c_eip = (uint32_t)userland_entry;
+	regs->r_eax = 0;
+	(childthread->kt_ctx).c_esp = fork_setup_stack(regs, childthread->kt_kstack); 
+	(childthread->kt_ctx).c_pdptr = childthread->kt_proc->p_pagedir;
+        (childthread->kt_ctx).c_kstack = (uintptr_t)childthread->kt_kstack;
+ 	(childthread->kt_ctx).c_kstacksz = DEFAULT_STACK_SIZE;
 
-        list_iterate_begin(&proc->p_vmmap->vmm_list, vmac, vmarea_t, vma_plink) {
-                vmap = vmmap_lookup(curproc->p_vmmap, vmac->vma_start);
+	sched_make_runnable(childthread);
 
-                vmac->vma_obj = vmap->vma_obj;
-                vmap->vma_obj->mmo_ops->ref(vmap->vma_obj);
-
-                if (vmap->vma_flags & MAP_PRIVATE) {
-                        dbg(DBG_PRINT,"(GRADING3C)\n" );
-
-                        shadowc = shadow_create();
-                        shadowp = shadow_create();
-
-                        shadowc->mmo_shadowed = vmap->vma_obj;
-                        shadowc->mmo_un.mmo_bottom_obj = mmobj_bottom_obj(vmap->vma_obj);
-                        
-
-                        shadowp->mmo_shadowed = vmap->vma_obj;
-                        shadowp->mmo_un.mmo_bottom_obj = mmobj_bottom_obj(vmap->vma_obj);
-
-
-
-                        vmac->vma_obj = shadowc;
-                        vmap->vma_obj = shadowp;
-
-                }
-
-                list_insert_tail(mmobj_bottom_vmas(vmac->vma_obj), &vmac->vma_olink);
-        } list_iterate_end();
-
-        pt_unmap_range(pt_get(), USER_MEM_LOW, USER_MEM_HIGH);
-        pt_unmap_range(proc->p_pagedir, USER_MEM_LOW, USER_MEM_HIGH);
-
-        thr = kthread_clone(curthr);
-
-        KASSERT(thr->kt_kstack != NULL);
-        dbg(DBG_PRINT, "(GRADING3A 7.a)\n");
-
-        thr->kt_proc = proc;
-        list_insert_tail(&proc->p_threads, &thr->kt_plink);
-
-        regs->r_eax = 0;
-        thr->kt_ctx.c_pdptr = proc->p_pagedir;
-        thr->kt_ctx.c_eip = (uint32_t)userland_entry;
-        thr->kt_ctx.c_esp = fork_setup_stack(regs, thr->kt_kstack);
-        regs->r_eax = proc->p_pid;
-
-        for (i = 0; i < NFILES; i++) {
-                if (curproc->p_files[i]) {
-                        dbg(DBG_PRINT, "(GRADING3B)\n");
-                        proc->p_files[i] = curproc->p_files[i];
-                        fref(curproc->p_files[i]);
-                }
-        }
-
-        sched_make_runnable(thr);
-
-        regs->r_eax = proc->p_pid;
-
-        tlb_flush_all();
-
-        return regs->r_eax;
+	regs->r_eax=child->p_pid;
+	return child->p_pid;
 }

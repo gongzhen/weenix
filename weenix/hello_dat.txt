@@ -1,0 +1,11 @@
+
+user/usr/bin/hello.exec:     file format elf32-i386
+
+
+Disassembly of section .data:
+
+0804e524 <malloc_cache>:
+ 804e524:	10 00 00 00                                         ....
+
+0804e528 <__progname>:
+ 804e528:	b8 bd 04 08                                         ....

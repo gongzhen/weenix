@@ -235,23 +235,23 @@ vfstest_stat(void)
         int fd;
         struct stat s;
 
-        printf("Testing stat\n");
-
         syscall_success(mkdir("stat", 0));
+	
         syscall_success(chdir("stat"));
 
         syscall_success(stat(".", &s));
         test_assert(S_ISDIR(s.st_mode), NULL);
 
         create_file("file");
+	
         syscall_success(stat("file", &s));
         test_assert(S_ISREG(s.st_mode), NULL);
 
-        /* file size is correct */
         syscall_success(fd = open("file", O_RDWR, 0));
         syscall_success(write(fd, "foobar", 6));
         syscall_success(stat("file", &s));
         test_assert(s.st_size == 6, "unexpected file size");
+	
         syscall_success(close(fd));
 
         /* error cases */
@@ -266,18 +266,16 @@ vfstest_stat(void)
 static void
 vfstest_mkdir(void)
 {
-        printf("Testing mkdir\n");
 
         syscall_success(mkdir("mkdir", 0777));
-        syscall_success(chdir("mkdir"));
+        
+	syscall_success(chdir("mkdir"));
 
-        /* mkdir an existing file or directory */
         create_file("file");
-        syscall_fail(mkdir("file", 0777), EEXIST);
+	syscall_fail(mkdir("file", 0777), EEXIST);
         syscall_success(mkdir("dir", 0777));
         syscall_fail(mkdir("dir", 0777), EEXIST);
 
-        /* mkdir an invalid path */
         syscall_fail(mkdir(LONGNAME, 0777), ENAMETOOLONG);
         syscall_fail(mkdir("file/dir", 0777), ENOTDIR);
         syscall_fail(mkdir("noent/dir", 0777), ENOENT);
@@ -291,19 +289,17 @@ vfstest_mkdir(void)
         syscall_fail(rmdir("noent/."), ENOENT);
         syscall_fail(rmdir("noent/.."), ENOENT);
 
-        /* unlink and rmdir the inappropriate types */
         syscall_fail(rmdir("file"), ENOTDIR);
         syscall_fail(unlink("dir"), EISDIR);
 
-        /* remove non-empty directory */
         create_file("dir/file");
         syscall_fail(rmdir("dir"), ENOTEMPTY);
 
-        /* remove empty directory */
         syscall_success(unlink("dir/file"));
         syscall_success(rmdir("dir"));
 
         syscall_success(chdir(".."));
+
 }
 
 static void
@@ -313,8 +309,6 @@ vfstest_chdir(void)
 
         struct stat ssrc, sdest, sparent, sdir;
         struct stat rsrc, rdir;
-
-        printf("Testing chdir\n");
 
         /* chdir back and forth to CHDIR_TEST_DIR */
         syscall_success(mkdir(CHDIR_TEST_DIR, 0777));
@@ -352,8 +346,6 @@ vfstest_paths(void)
 #define PATHS_TEST_DIR "paths"
 
         struct stat s;
-
-        printf("Testing paths\n");
 
         syscall_success(mkdir(PATHS_TEST_DIR, 0777));
         syscall_success(chdir(PATHS_TEST_DIR));
@@ -423,8 +415,6 @@ vfstest_fd(void)
         char buf[FD_BUFSIZE];
         struct dirent d;
 
-        printf("Testing fd\n");
-
         syscall_success(mkdir("fd", 0));
         syscall_success(chdir("fd"));
 
@@ -491,6 +481,7 @@ vfstest_fd(void)
         /* dup2-ing a file to itself works */
         syscall_success(fd2 = dup2(fd1, fd1));
         test_assert(fd1 == fd2, "dup2(%d, %d) returned %d", fd1, fd1, fd2);
+        syscall_success(close(fd2));
 
         /* dup2 closes previous file */
         int fd3;
@@ -501,8 +492,6 @@ vfstest_fd(void)
         test_fpos(fd1, 0); test_fpos(fd2, 0);
         syscall_success(lseek(fd2, 5, SEEK_SET));
         test_fpos(fd1, 5); test_fpos(fd2, 5);
-        syscall_success(close(fd2));
-        /* fd1 is not closed intentionally */
 
         syscall_success(chdir(".."));
 }
@@ -514,8 +503,6 @@ vfstest_infinite(void)
 {
         int res, fd;
         char buf[4096];
-
-        printf("Testing infinite\n");
 
         res = 1;
         syscall_success(fd = open("/dev/null", O_WRONLY, 0));
@@ -553,8 +540,6 @@ vfstest_open(void)
         char buf[OPEN_BUFSIZE];
         int fd, fd2;
         struct stat s;
-
-        printf("Testing open\n");
 
         syscall_success(mkdir("open", 0777));
         syscall_success(chdir("open"));
@@ -628,8 +613,6 @@ vfstest_read(void)
         int fd, ret;
         char buf[READ_BUFSIZE];
         struct stat s;
-
-        printf("Testing read\n");
 
         syscall_success(mkdir("read", 0777));
         syscall_success(chdir("read"));
@@ -734,8 +717,6 @@ vfstest_getdents(void)
         int fd, ret;
         dirent_t dirents[4];
 
-        printf("Testing getdents\n");
-
         syscall_success(mkdir("getdents", 0));
         syscall_success(chdir("getdents"));
 
@@ -785,8 +766,6 @@ vfstest_s5fs_vm(void)
         struct stat oldstatbuf, newstatbuf;
         void *addr;
 
-        printf("Testing s5fs_vm\n");
-
         syscall_success(mkdir("s5fs", 0));
         syscall_success(chdir("s5fs"));
 
@@ -824,7 +803,7 @@ vfstest_s5fs_vm(void)
         syscall_fail(link("parent", "newchld"), EISDIR);
 
         /* only rename test */
-        /*syscall_success(rename("oldchld", "newchld"));*/
+        syscall_success(rename("oldchld", "newchld"));
 
         /* mmap/munmap tests */
         syscall_success(fd = open("newchld", O_RDWR, 0));
@@ -832,7 +811,7 @@ vfstest_s5fs_vm(void)
         /* Check contents of memory */
         test_assert(0 == memcmp(addr, TESTSTR, strlen(TESTSTR)), NULL);
 
-        /* Write to it -> should pagefault */
+        /* Write to it -> we shouldn't pagefault */
         memcpy(addr, SHORTSTR, strlen(SHORTSTR));
         test_assert(0 == memcmp(addr, SHORTSTR, strlen(SHORTSTR)), NULL);
 
@@ -927,23 +906,34 @@ int vfstest_main(int argc, char **argv)
         }
 
         test_init();
+
+	
         vfstest_start();
-
+	
         syscall_success(chdir(root_dir));
-
+/*
         vfstest_stat();
+
         vfstest_chdir();
-        vfstest_mkdir();
+
+
+
+    	 vfstest_mkdir();
+	
         vfstest_paths();
+
         vfstest_fd();
+	
         vfstest_open();
         vfstest_read();
+	
         vfstest_getdents();
 
 #ifdef __VM__
         vfstest_s5fs_vm();
 #endif
 
+*/	
         /*vfstest_infinite();*/
 
         syscall_success(chdir(".."));

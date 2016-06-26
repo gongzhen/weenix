@@ -1,21 +1,5 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 /*
  * Author: Sung-Han Lin <sunghan@usc.edu>
- *
- * BC: You must NOT change this file.  If you submit a modified version
- * of this file, it will be deleted from your submission.
  */
 
 #include "kernel.h"
@@ -55,17 +39,17 @@ random_function() {
 void 
 check_sleep(char *str) {
 	if (random_function() % 10 < 5) {
-		dbg(DBG_TEST, "Thread %s goes to sleep\n", str);
+		dbg(DBG_SCHED, "Thread %s goes to sleep\n", str);
 		sched_broadcast_on(&mynode.my_queue);
 		sched_sleep_on(&mynode.my_queue);
-		dbg(DBG_TEST, "Thread %s awake\n", str);
+		dbg(DBG_SCHED, "Thread %s awake\n", str);
 	}
 }
 
 static void *
 add_my_node(int arg1, void *arg2) {
 	int counter = 10;
-	dbg(DBG_TEST, "Invoke add_mynode\n");
+	dbg(DBG_INIT, "Invoke add_mynode\n");
 
 	int rand_number, i=0;	
 
@@ -80,7 +64,7 @@ add_my_node(int arg1, void *arg2) {
 			counter--;
 		}
 
-		dbg(DBG_TEST, "Add node: %d\n", mynode.length);
+		dbg(DBG_INIT, "Add node: %d\n", mynode.length);
 		kmutex_unlock(&mynode.my_mutex);
 	}
 	
@@ -90,7 +74,7 @@ add_my_node(int arg1, void *arg2) {
 static void *
 remove_my_node(int arg1, void *arg2) {
 	int counter = 10;
-	dbg(DBG_TEST, "Invoke remove_mynode\n");
+	dbg(DBG_INIT, "Invoke remove_mynode\n");
 
 	int rand_number, i=0;	
 
@@ -106,7 +90,7 @@ remove_my_node(int arg1, void *arg2) {
 			counter--;
 		}
 
-		dbg(DBG_TEST, "Remove node: %d\n", mynode.length);		
+		dbg(DBG_INIT, "Remove node: %d\n", mynode.length);		
 		kmutex_unlock(&mynode.my_mutex);
 	}
 	
@@ -117,7 +101,7 @@ static void *
 watch_dog(int arg1, void *arg2)
 {
 	while(!sched_queue_empty(&mynode.my_queue)) {
-		dbg(DBG_TEST, "Watch_dog wake up all sleeping thread\n");
+		dbg(DBG_SCHED, "Watch_dog wake up all sleeping thread\n");
 		sched_broadcast_on(&mynode.my_queue);
 		sched_sleep_on(&mynode.my_queue);
 	}
@@ -134,7 +118,7 @@ sunghan_test(int arg1, void *arg2)
 
 	int i;
 
-	dbg(DBG_TEST, ">>> Start running sunghan_test()...\n");
+	dbg(DBG_INIT, "Start running sunghan_test()...\n");
 
 	mynode.length = 0;
 	kmutex_init(&mynode.my_mutex);
@@ -169,7 +153,7 @@ sunghan_test(int arg1, void *arg2)
 
 	while (!do_waitpid(p2->p_pid, 0, &status));
 
-	dbg(DBG_TEST, "sunghan_test() terminated\n");
+	dbg(DBG_INIT, "sunghan_test() terminated\n");
 
         return NULL;
 }
@@ -183,7 +167,7 @@ sunghan_deadlock_test(int arg1, void *arg2)
 
 	int i;
 
-	dbg(DBG_TEST, ">>> Start running sunghan_deadlock_test()...\n");
+	dbg(DBG_INIT, "Start running sunghan_deadlock_test()...\n");
 
 	mynode.length = 0;
 	kmutex_init(&mynode.my_mutex);
@@ -208,7 +192,7 @@ sunghan_deadlock_test(int arg1, void *arg2)
 	}
 	sched_broadcast_on(&mynode.my_queue);
 
-	dbg(DBG_TEST, "Shouldn't have gotten here in sunghan_deadlock_test().  Did NOT deadlock.\n");
+	dbg(DBG_INIT, "Shouldn't have gotten here in sunghan_deadlock_test().  Did NOT deadlock.\n");
 
         return NULL;
 }

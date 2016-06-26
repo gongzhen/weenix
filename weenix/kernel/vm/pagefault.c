@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "types.h"
 #include "globals.h"
 #include "kernel.h"
@@ -64,56 +51,40 @@
 void
 handle_pagefault(uintptr_t vaddr, uint32_t cause)
 {
-        int err;
-        uint32_t pdflags, ptflags;
-        uintptr_t paddr;
-        vmarea_t *vma = NULL;
-        pframe_t *pframe = NULL;
+        /*NOT_YET_IMPLEMENTED("VM: handle_pagefault");*/
+	vmmap_t *map = curproc->p_vmmap;
+	dbginfo(DBG_ERROR, proc_info, curproc);
+	dbginfo(DBG_ERROR, proc_list_info, NULL);
+	if(vaddr == NULL){
+	}	
+	vmarea_t *vma =	vmmap_lookup(map, ADDR_TO_PN(vaddr));
+	
+	/*uintptr_t pagenum = PAGE_OFFSET(vaddr);*/
+	if(vma == NULL ||  !(cause & FAULT_USER)){
+		/*XXX permission checks*/
+		curproc->p_status = EFAULT;
+		proc_kill(curproc, EFAULT);
+	}
+	pframe_t *pf;
+	uintptr_t pagenum =  ADDR_TO_PN(vaddr) - vma->vma_start+vma->vma_off;
+	/*XXX handle shadow objects*/	
+	/*
+	int forWrite = 0;
+	if(cause & FAULT_WRITE){
+		forWrite = 1;
+	}
+	*/		
+	/*
+	if(vma->vma_obj->mmo_shadowed != NULL){
+		shadow_lookuppage(vma->vma_obj->mmo_shadowed, pagenum, forWrite,&pf);
+	}else{
+	*/
+		pframe_get(vma->vma_obj, pagenum, &pf);
+	/*}*/
+	uintptr_t paddr = pt_virt_to_phys((uintptr_t)pf->pf_addr);
+	uintptr_t pdflags = PD_PRESENT | PD_WRITE | PD_USER;
+	uintptr_t ptflags = PT_PRESENT | PT_WRITE | PT_USER;
+	/*XXX tlb flush?*/
+	pt_map(curproc->p_pagedir,(uintptr_t)PAGE_ALIGN_DOWN(vaddr), paddr, pdflags, ptflags);
 
-        dbg(DBG_PRINT, "Go into handle_pagefault\n");
-
-        vma = vmmap_lookup(curproc->p_vmmap, ADDR_TO_PN(vaddr));
-
-        if (vma == NULL) {
-                dbg(DBG_PRINT, "(GRADING3C)\n");
-                proc_kill(curproc, EFAULT);
-        }
-        if (cause & FAULT_EXEC && ! (vma->vma_prot & PROT_EXEC)) {
-                proc_kill(curproc, EFAULT);
-        }
-        if (cause & FAULT_WRITE && ! (vma->vma_prot & PROT_WRITE)) {
-                proc_kill(curproc, EFAULT);
-        }
-        if (!(vma->vma_prot & PROT_READ)) {
-                proc_kill(curproc, EFAULT);
-        }
-
-        err = pframe_lookup(vma->vma_obj, vma->vma_off + ADDR_TO_PN(vaddr) - vma->vma_start, cause & FAULT_WRITE ? 1 : 0, &pframe);
-
-        if (err < 0) {
-                dbg(DBG_PRINT, "(GRADING3C)\n");
-                proc_kill(curproc, EFAULT);
-        }
-
-        pdflags = PD_PRESENT | PD_USER;
-        ptflags = PT_PRESENT | PT_USER;
-
-        if (cause & FAULT_WRITE) {
-                dbg(DBG_PRINT, "(GRADING3B)\n");
-                pdflags |= PD_WRITE;
-                ptflags |= PT_WRITE;
-                pframe_dirty(pframe);
-        }
-
-        pframe_pin(pframe);
-
-        paddr = pt_virt_to_phys((uintptr_t)pframe->pf_addr);
-
-        
-        pt_map(curproc->p_pagedir, (uint32_t)PAGE_ALIGN_DOWN(vaddr),
-               (uint32_t)PAGE_ALIGN_DOWN(paddr), pdflags, ptflags) ;
-
-        pframe_unpin(pframe);
-
-        dbg(DBG_PRINT, "Leave handle_pagefault\n");
 }

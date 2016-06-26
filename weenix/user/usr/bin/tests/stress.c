@@ -410,10 +410,11 @@ int main(int argc, char **argv)
 
 
         mmap_test();
-
+	
         null_test();
         zero_test();
-        brk_test();
+        /*
+	brk_test();
 
         fault_test();
 
@@ -421,7 +422,7 @@ int main(int argc, char **argv)
         cow_fork();
 
         fork_test();
-
+	*/
         return 0;
 }
 

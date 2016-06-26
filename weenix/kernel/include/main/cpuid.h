@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #pragma once
 
 /* Vendor-strings. */
@@ -101,21 +88,4 @@ enum cpuid_requests {
 static inline void cpuid(int request, uint32_t *a, uint32_t *d)
 {
         __asm__ volatile("cpuid":"=a"(*a), "=d"(*d):"0"(request));
-}
-
-static inline void cpuid_get_msr(uint32_t msr, uint32_t* lo, uint32_t* hi)
-{
-	__asm__ volatile("rdmsr":"=a"(*lo),"=d"(*hi):"c"(msr));
-}
-
-static inline void cpuid_set_msr(uint32_t msr, uint32_t lo, uint32_t hi)
-{
-	__asm__ volatile("wrmsr"::"a"(lo),"d"(hi),"c"(msr));
-}
-
-static inline void io_wait(void)
-{
-	__asm__ volatile("jmp 1f\n\t"
-			 "1:jmp 2f\n\t"
-			 "2:" );
 }

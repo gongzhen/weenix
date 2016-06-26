@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #pragma once
 
 #include "types.h"
@@ -69,6 +56,14 @@ typedef struct proc {
 void proc_init(void);
 
 /**
+ * This function allocates and initializes a new process.
+ *
+ * @param name the name to give the newly created process
+ * @return the newly created process
+ */
+proc_t *proc_create(char *name);
+
+/**
  * Finds the process with the specified PID.
  *
  * @param pid the PID of the process to find
@@ -85,14 +80,6 @@ proc_t *proc_lookup(int pid);
 list_t *proc_list(void);
 
 /**
- * This function allocates and initializes a new process.
- *
- * @param name the name to give the newly created process
- * @return the newly created process
- */
-proc_t *proc_create(char *name);
-
-/**
  * Stops another process from running again by cancelling all its
  * threads.
  *
@@ -102,7 +89,8 @@ proc_t *proc_create(char *name);
 void proc_kill(proc_t *p, int status);
 
 /**
- * Kill every process except for the idle process and direct children of the idle process.
+ * Kill every process except for the idle process and direct children of
+ * the idle process.
  */
 void proc_kill_all(void);
 

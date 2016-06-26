@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "types.h"
 #include "kernel.h"
 #include "config.h"
@@ -120,7 +107,8 @@ pt_get(void)
 int
 pt_map(pagedir_t *pd, uintptr_t vaddr, uintptr_t paddr, uint32_t pdflags, uint32_t ptflags)
 {
-        KASSERT(PAGE_ALIGNED(vaddr) && PAGE_ALIGNED(paddr));
+        
+	KASSERT(PAGE_ALIGNED(vaddr) && PAGE_ALIGNED(paddr));
         KASSERT(USER_MEM_LOW <= vaddr && USER_MEM_HIGH > vaddr);
 
         int index = vaddr_to_pdindex(vaddr);
@@ -146,6 +134,7 @@ pt_map(pagedir_t *pd, uintptr_t vaddr, uintptr_t paddr, uint32_t pdflags, uint32
         KASSERT((ptflags & ~PAGE_MASK) == ptflags);
         pt[index] = paddr | ptflags;
 
+	/*dbginfo(DBG_ERROR, pt_mapping_info, pt);*/
         return 0;
 }
 
@@ -240,7 +229,6 @@ _pt_fault_handler(regs_t *regs)
         /* Get the address where the fault occurred */
         __asm__ volatile("movl %%cr2, %0" : "=r"(vaddr));
         uint32_t cause = regs->r_err;
-
         /* Check if pagefault was in user space (otherwise, BAD!) */
         if (cause & FAULT_USER) {
                 handle_pagefault(vaddr, cause);

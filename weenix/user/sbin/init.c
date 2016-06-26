@@ -47,8 +47,8 @@ static void spawn_shell_on(char *tty)
 
                 chdir(home);
 
-                printf(hi,NULL);
-                printf(tty,NULL);
+                printf(hi, NULL);
+                printf(tty, NULL);
                 printf("\n");
 
                 execve(sh, empty, empty);
@@ -73,7 +73,7 @@ int main(int argc, char **argv, char **envp)
         chdir("/dev");
 
         devdir = open("/dev", O_RDONLY, 0);
-        while (getdents(devdir, &d, sizeof(d)) > 0) {
+        while(getdents(devdir, &d, sizeof(d)) > 0) {
                 if (0 == strncmp(d.d_name, ttystr, strlen(ttystr))) {
                         spawn_shell_on(d.d_name);
                 }
@@ -91,7 +91,7 @@ int main(int argc, char **argv, char **envp)
                 printf("error: wait: %s\n", strerror(errno));
                 return 1;
         } else {
-                printf(alldone,NULL);
+                printf(alldone, NULL);
                 return 0;
         }
 }

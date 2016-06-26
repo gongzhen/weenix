@@ -1,16 +1,3 @@
-/******************************************************************************/
-/* Important Spring 2015 CSCI 402 usage information:                          */
-/*                                                                            */
-/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
-/* Please understand that you are NOT permitted to distribute or publically   */
-/*         display a copy of this file (or ANY PART of it) for any reason.    */
-/* If anyone (including your prospective employer) asks you to post the code, */
-/*         you must inform them that you do NOT have permissions to do so.    */
-/* You are also NOT permitted to remove or alter this comment block.          */
-/* If this comment block is removed or altered in a submitted file, 20 points */
-/*         will be deducted.                                                  */
-/******************************************************************************/
-
 #include "globals.h"
 #include "errno.h"
 
@@ -133,25 +120,21 @@ fail:
  * function should return 1 on success, and 0 on failure (think of it as
  * anwering the question "does process p have permission perm on address vaddr?")
  */
-int
-addr_perm(struct proc *p, const void *vaddr, int perm)
+int addr_perm(struct proc *p, const void *vaddr, int perm)
 {
-        vmarea_t *vma = NULL;
-
-        dbg(DBG_PRINT, "(GRADING3B)\n");
-        if (USER_MEM_LOW > (uintptr_t)vaddr || USER_MEM_HIGH <= (uintptr_t)vaddr) {
-                dbg(DBG_PRINT, "(GRADING3C)\n");
-                return 0;
-        }
-        vma = vmmap_lookup(p->p_vmmap, ADDR_TO_PN((uintptr_t)vaddr));
-
-        if (vma && (vma->vma_prot & perm)) {
-                dbg(DBG_PRINT, "(GRADING3B)\n");
-                return 1; 
-        }
-
-        dbg(DBG_PRINT, "(GRADING3C)\n");
-        return 0;
+        /*NOT_YET_IMPLEMENTED("VM: addr_perm");*/
+	vmmap_t *Pmap = p->p_vmmap;
+	int access=0;
+        if(Pmap==NULL)
+		return access;
+	
+	vmarea_t *Pvmarea=vmmap_lookup(Pmap,ADDR_TO_PN(vaddr));
+	if(Pvmarea==NULL)
+		return access;
+	int permissions= Pvmarea->vma_prot;
+	if(permissions & perm)
+		access=1;
+	return access;
 }
 
 /*
@@ -163,18 +146,16 @@ addr_perm(struct proc *p, const void *vaddr, int perm)
  * Like addr_perm, this function should return 1 if the range is valid for
  * the given permissions, and 0 otherwise.
  */
-int
-range_perm(struct proc *p, const void *avaddr, size_t len, int perm)
+int range_perm(struct proc *p, const void *avaddr, size_t len, int perm)
 {
-        uint32_t i;
-
-        dbg(DBG_PRINT, "(GRADING3B)\n");
-        for (i = 0; i < len; i += PAGE_SIZE) {
-                if (!addr_perm(p, (void *)((uint32_t)avaddr + i), perm)) {
-                        dbg(DBG_PRINT, "(GRADING3C)\n");
-                        return 0;
-                }
-        }
-
+        /*NOT_YET_IMPLEMENTED("VM: range_perm");*/
+	
+	char *temp = (char *) avaddr;
+	for( ;temp <= ((char *)avaddr+len); temp += PAGE_SIZE){
+		if( 0 == addr_perm(p, (void *)temp, perm)){
+			return 1;
+		}
+	}
+	
         return 1;
 }
