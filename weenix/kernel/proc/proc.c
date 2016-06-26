@@ -26,7 +26,6 @@
 #include "fs/vnode.h"
 #include "fs/file.h"
 
-
 proc_t *curproc = NULL; /* global */
 static slab_allocator_t *proc_allocator = NULL;
 
@@ -83,55 +82,8 @@ failed:
 proc_t *
 proc_create(char *name)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: proc_create");*/
-	
-	proc_t *parentProc = NULL;
-	proc_t *proc = NULL;
-	if(curproc != NULL){
-		parentProc = curproc;
-	}
-	proc =(proc_t *)slab_obj_alloc(proc_allocator);
-	list_init(&(proc->p_threads));
-	list_init(&(proc->p_children));
-	list_link_init(&proc->p_list_link);
-	list_link_init(&proc->p_child_link);
-	sched_queue_init(&(proc->p_wait));
-	proc->p_pid = _proc_getid();
-	pid_t pid = proc->p_pid;
-	proc->p_cwd = NULL;
-	vmmap_t *map = vmmap_create();
-	map->vmm_proc = proc;
-	proc->p_vmmap = map;
-	
-	if(proc->p_pid == PID_INIT){
-                proc_initproc = proc;
-        }
-
-	int i;
-	for(i=0;i<NFILES;i++)
-        {
-                proc->p_files[i]=NULL;
-        }
-        /*FIXME: struct initialization */
-	KASSERT(PID_IDLE != pid || list_empty(&_proc_list)); /* pid can only be PID_IDLE if this is the first process */
-	dbg_print("GRADING1 2.a PASSED: pid can only be PID_IDLE if this is the first process.\n");
-
-	KASSERT(PID_INIT != pid || PID_IDLE == parentProc->p_pid); /* pid can only be PID_INIT when creating from idle process */
-	dbg_print("GRADING2 2.a PASSED: pid can only be PID_INIT when creating from idle process.\n");
-
-	proc->p_pagedir=pt_create_pagedir();
-	proc->p_state = PROC_RUNNING;
-	proc->p_status = 0;
-	/*list_init(&(proc->p_wait.tq_list));*/
-
-	strncpy(proc->p_comm, name, PROC_NAME_LEN); /*null character added?TODO*/
-	proc->p_pproc = parentProc;
-	if(parentProc != NULL){
-		list_insert_tail(&(parentProc->p_children), &(proc->p_child_link));
-	}
-	list_insert_tail(&(_proc_list), &(proc->p_list_link));
-        
-	return proc;
+        NOT_YET_IMPLEMENTED("PROCS: proc_create");
+        return NULL;
 }
 
 /**
@@ -161,48 +113,7 @@ proc_create(char *name)
 void
 proc_cleanup(int status)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: proc_cleanup");*/
-	KASSERT(NULL != proc_initproc); /* should have an "init" process */
-	dbg_print("GRADING 2.b PASSED: should have an init process.\n");
-	KASSERT(1 <= curproc->p_pid); /* this process should not be idle process */
-	dbg_print("GRADING 2.b PASSED: this process should not be idle process.\n");
-        KASSERT(NULL != curproc->p_pproc); /* this process should have parent process */
-	dbg_print("GRADING 2.b PASSED: this process should have parent process.\n");
-
-	proc_t *myChildProc = NULL;
-	proc_t *myParentProc = curproc->p_pproc;
-	/*TODO wake up myParentProc, if it is waiting*/
-	sched_wakeup_on(&(myParentProc->p_wait));
-	int fd;
-	if(curproc->p_cwd != NULL){
-		vput(curproc->p_cwd);
-	}		
-        for(fd=0;fd<NFILES;fd++)
-        {
-              if(curproc->p_files[fd]!=NULL)
-              {
-                 do_close(fd);
-              }
-        }
-	if(curproc->p_vmmap != NULL){
-		vmmap_destroy(curproc->p_vmmap);
-	}
-	list_t *list = &(curproc->p_children);
-	list_link_t *link = NULL;
-	for( link = list->l_next; link != list; link = list->l_next ){
-		myChildProc = list_item(link, proc_t, p_child_link);	
-		list_remove(&(myChildProc->p_child_link));
-		list_insert_tail(&proc_initproc->p_children, &(myChildProc->p_child_link));
-		myChildProc->p_pproc = proc_initproc;
-	}
-	
-	curproc->p_state = PROC_DEAD;
-	curproc->p_status = status;
-
-	KASSERT(NULL != curproc->p_pproc); /* this process should have parent process */
-	dbg_print("GRADING 2.b PASSED: this process should have parent process.\n");
-
-
+        NOT_YET_IMPLEMENTED("PROCS: proc_cleanup");
 }
 
 /*
@@ -216,29 +127,7 @@ proc_cleanup(int status)
 void
 proc_kill(proc_t *p, int status)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: proc_kill");*/
-	int fd;
-        for(fd=0;fd<NFILES;fd++)
-        {
-              if(curproc->p_files[fd]!=NULL)
-              {
-                 int fd=do_close(fd);
-              }
-        }
-	if(NULL != curproc->p_vmmap){
-		vmmap_destroy(curproc->p_vmmap);
-	}
-	if(p == curproc){
-		do_exit(status);	
-	}else{
-		list_t *list = &(p->p_threads);
-		list_link_t *link = NULL;
-		kthread_t *pThread = NULL;
-		for(link = list->l_next; link !=list; link= link->l_next){
-			pThread = list_item(link, kthread_t, kt_plink);
-			kthread_cancel(pThread, (void *)0);	
-		}	
-	}
+        NOT_YET_IMPLEMENTED("PROCS: proc_kill");
 }
 
 /*
@@ -250,20 +139,7 @@ proc_kill(proc_t *p, int status)
 void
 proc_kill_all()
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: proc_kill_all");*/
-	if( list_empty(&_proc_list) != 1){
-		list_link_t *link = NULL;
-		list_t *list =& _proc_list;
-		proc_t *pProc = NULL;
-		for(link = _proc_list.l_next; link != list; link = link->l_next){
-			pProc = list_item(link, proc_t, p_list_link);
-			if(pProc->p_pid == PID_IDLE || pProc->p_pproc->p_pid == PID_IDLE){
-				continue;	
-			}
-	
-			proc_kill(pProc, pProc->p_status);/* status set pending TODO*/	
-		} 
-	}
+        NOT_YET_IMPLEMENTED("PROCS: proc_kill_all");
 }
 
 proc_t *
@@ -295,9 +171,7 @@ proc_list()
 void
 proc_thread_exited(void *retval)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: proc_thread_exited");*/
-	proc_cleanup(*(int *)retval);
-	sched_switch();
+        NOT_YET_IMPLEMENTED("PROCS: proc_thread_exited");
 }
 
 /* If pid is -1 dispose of one of the exited children of the current
@@ -318,124 +192,8 @@ proc_thread_exited(void *retval)
 pid_t
 do_waitpid(pid_t pid, int options, int *status)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: do_waitpid");*/
-	proc_t *pProc = NULL;
-
-	if(list_empty(&curproc->p_children) == 1){
-		return -ECHILD;
-	}
-	 
-	
-	KASSERT(NULL != curproc); /* the process should not be NULL */
-	dbg_print("GRADING1 2.c PASSED: the process should not be NULL.\n");
-
-        
-	if(pid == -1){
-
-		KASSERT(-1 == pid || pProc->p_pid == pid); /* should be able to find the process */
-		dbg_print("GRADING1 2.c PASSED: should be able to find the process.\n");
-
-		while(1)
-		{
-			pProc = curproc;
-			proc_t *child = NULL;
-			proc_t *deadChild = NULL;
-			list_t *list = &(pProc->p_children);
-			list_link_t *link=NULL;
-			for(link = list->l_next; link != list; link = link->l_next){
-				child = list_item(link, proc_t, p_child_link);
-				if(child->p_state == PROC_DEAD){
-					deadChild = child;
-					if(status != NULL){
-						*status = deadChild->p_status;
-					}
-					break;
-				}
-			}
-			if(deadChild != NULL){
-		
-				KASSERT(NULL != deadChild->p_pagedir); /* this process should have pagedir */
-				dbg_print("GRADING1 2.c PASSED: this process should have pagedir.\n");
-				kthread_t *pThread = NULL;
-				list_iterate_begin(&deadChild->p_threads, pThread, kthread_t, kt_plink){	
-						KASSERT(KT_EXITED == pThread->kt_state);/* thr points to a thread to be destroied */ 
-						dbg_print("GRADING1 2.c PASSED: thr points to a thread to be destroyed.\n");
-						kthread_destroy(pThread);	
-					}list_iterate_end();	
-				
-
-				pt_destroy_pagedir(deadChild->p_pagedir);
-				list_remove(&deadChild->p_child_link);
-				list_remove(&deadChild->p_list_link);
-				slab_obj_free(proc_allocator,(void *)deadChild);
-				
-				return (pid_t)deadChild->p_pid;
-			}else{
-				
-				sched_sleep_on(&(curproc->p_wait));
-			
-			}
-		}	
-	}
-	else 
-	if(pid > 0){
-		
-		pProc = proc_lookup(pid);
-		if(pProc == NULL || pProc->p_pproc != curproc){
-			return -ECHILD;
-		}
-
-		KASSERT(-1 == pid || pProc->p_pid == pid); /* should be able to find the process */
-		dbg_print("GRADING1 2.c PASSED: should be able to find the process.\n");
-
-
-		if(pProc->p_pproc == curproc){
-			while(1){
-				pProc = curproc;
-				proc_t *child = NULL;
-				proc_t *deadChild = NULL;
-				list_t *list = &(pProc->p_children);
-				list_link_t *link=NULL;
-
-				for(link = list->l_next; link != list; link = link->l_next){
-					child = list_item(link, proc_t, p_child_link);
-					if(child->p_state == PROC_DEAD){
-						deadChild = child;
-						if(status != NULL){
-							*status = deadChild->p_status;
-						}
-						break;
-					}
-				}
-				if(deadChild!=NULL){
-					KASSERT(NULL != deadChild->p_pagedir); /* this process should have pagedir */
-					dbg_print("GRADING1 2.c PASSED: this process should have pagedir.\n");
-				
-					kthread_t *pThread = NULL;
-					
-					list_iterate_begin(&deadChild->p_threads, pThread, kthread_t, kt_plink){	
-						KASSERT(KT_EXITED == pThread->kt_state);/* thr points to a thread to be destroied */ 
-						dbg_print("GRADING1 2.c PASSED: thr points to a thread to be destroyed.\n");
-						kthread_destroy(pThread);	
-					}list_iterate_end();	
-
-					pt_destroy_pagedir(deadChild->p_pagedir);
-					list_remove(&deadChild->p_child_link);
-					list_remove(&deadChild->p_list_link);
-					slab_obj_free(proc_allocator, (void *)deadChild);
-				
-					return deadChild->p_pid;
-				}else{
-					sched_sleep_on(&curproc->p_wait);
-				}	
-			}
-		}
-		else {
-			return -ECHILD;
-		}
-	}
-	
-		return pid;
+        NOT_YET_IMPLEMENTED("PROCS: do_waitpid");
+        return 0;
 }
 
 /*
@@ -447,20 +205,7 @@ do_waitpid(pid_t pid, int options, int *status)
 void
 do_exit(int status)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: do_exit");*/	
-	int *pStatus = &status;
-	list_t *list = &(curproc->p_threads);
-	kthread_t *pThread = NULL;
-	list_link_t *link=NULL;
-	for( link=list->l_next; link != list; link=link->l_next){
-		
-		pThread = list_item(link, kthread_t, kt_plink);	
-		if(pThread != curthr){
-			kthread_cancel(pThread, &status);
-			/*kthread_join(pThread, (void **) &pStatus);*/
-		}
-	}		
-	kthread_exit(&status);
+        NOT_YET_IMPLEMENTED("PROCS: do_exit");
 }
 
 size_t

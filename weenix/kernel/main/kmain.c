@@ -42,8 +42,6 @@
 
 #include "test/kshell/kshell.h"
 
-#include "fs/open.h"
-
 GDB_DEFINE_HOOK(boot)
 GDB_DEFINE_HOOK(initialized)
 GDB_DEFINE_HOOK(shutdown)
@@ -57,64 +55,6 @@ static void       hard_shutdown(void);
 static context_t bootstrap_context;
 
 static int gdb_wait = GDBWAIT;
-extern void *sunghan_test(int, void*);
-extern void *sunghan_deadlock_test(int, void*);
-extern void *testproc(int, void*);
-extern void *vfstest_main(int argc, void *);	
-
-    #ifdef __DRIVERS__
-
-        int faber(kshell_t *kshell, int argc, char **argv)
-        {
-            KASSERT(kshell != NULL);
-            dbg(DBG_INIT, "(GRADING): testproc() is invoked, argc = %d, argv = 0x%08x\n",
-                    argc, (unsigned int)argv);
-		testproc(argc, *argv);
-            return 0;
-        }
-	int sunghan(kshell_t *kshell, int argc, char **argv)
-        {
-            KASSERT(kshell != NULL);
-            dbg(DBG_INIT, "(GRADING): sunghan_test() and sunghan_deadlock_test are invoked, argc = %d, argv = 0x%08x\n",
-                    argc, (unsigned int)argv);
-		sunghan_test(argc, *argv);
-            return 0;
-        }
-	int deadlock(kshell_t *kshell, int argc, char **argv)
-        {
-            KASSERT(kshell != NULL);
-            dbg(DBG_INIT, "(GRADING): sunghan_test() and sunghan_deadlock_test are invoked, argc = %d, argv = 0x%08x\n",
-                    argc, (unsigned int)argv);
-		sunghan_deadlock_test(argc, *argv);
-            return 0;
-        }
-
-	int vfstest(kshell_t *kshell, int argc, char **argv){
-            
-		KASSERT(kshell != NULL);
-		/*
-		dbg(DBG_PRINT, "(GRADING): sunghan_test() and sunghan_deadlock_test are invoked, argc = %d, argv = 0x%08x\n",
-                    argc, (unsigned int)argv);
-		*/
-             	vfstest_main(argc, NULL);	
-		return 0;
-	}
-	int rename(kshell_t *kshell, int argc, char **argv){
-		KASSERT(kshell!=NULL);
-		const char *newname="tty0RENAMED";
-		do_rename("dev/tty0",newname);
-		return 0;	
-	}
-	int hello(kshell_t *kshell, int argc, char **argv){
-		KASSERT(kshell!=NULL);
-		char *a[] = { NULL };
-		char *e[] = { NULL };
-		kernel_execve("/usr/bin/vfstest", a, e);
-		return 0;	
-	}
-	
-	
-    #endif /* __DRIVERS__ */
 /**
  * This is the first real C function ever called. It performs a lot of
  * hardware-specific initialization, then creates a pseudo-context to
@@ -203,22 +143,7 @@ bootstrap(int arg1, void *arg2)
         /* necessary to finalize page table information */
         pt_template_init();
 
-        /*NOT_YET_IMPLEMENTED("PROCS: bootstrap");*/
-	
-	proc_t *pProc = proc_create("idle process");
-	curproc = pProc; 
-	
-	KASSERT(NULL != curproc);
-	dbg_print("GRADING1 1.a PASSED: idle process has been created successfully.\n");
-	
-	KASSERT(PID_IDLE == curproc->p_pid);
-	dbg_print("GRADING1 1.a PASSED: what has been created is the idle process.\n");
-	
-	curthr = kthread_create(curproc, idleproc_run, NULL, NULL);
-	KASSERT(NULL != curthr);	
-	dbg_print("GRADING1 1.a PASSED: the thread for the idle process has been created successfully.\n");
-
-        context_make_active(&(curthr->kt_ctx));
+        NOT_YET_IMPLEMENTED("PROCS: bootstrap");
 
         panic("weenix returned to bootstrap()!!! BAD!!!\n");
         return NULL;
@@ -257,21 +182,7 @@ idleproc_run(int arg1, void *arg2)
         /* Here you need to make the null, zero, and tty devices using mknod */
         /* You can't do this until you have VFS, check the include/drivers/dev.h
          * file for macros with the device ID's you will need to pass to mknod */
-        /*NOT_YET_IMPLEMENTED("VFS: idleproc_run");*/
-
-	
-        curproc->p_cwd = vfs_root_vn;
-        initthr->kt_proc->p_cwd = vfs_root_vn;
-	vref(curproc->p_cwd);
-	vref(curproc->p_cwd);
-	
-
-	do_mkdir("/dev");
-	do_mknod("/dev/null", S_IFCHR, MKDEVID(1,0));	
-	do_mknod("/dev/zero", S_IFCHR, MKDEVID(1,1));	
-	do_mknod("/dev/tty0", S_IFCHR, MKDEVID(2,0));	
-	/*do_mknod("/dev/tty2", S_IFCHR, MKDEVID(2,3));tty first*/	
-	/*TODO: tty devide 2?*/
+        NOT_YET_IMPLEMENTED("VFS: idleproc_run");
 #endif
 
         /* Finally, enable interrupts (we want to make sure interrupts
@@ -322,23 +233,8 @@ idleproc_run(int arg1, void *arg2)
 static kthread_t *
 initproc_create(void)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: initproc_create");*/
-	
-	/*create the init process*/
-	kthread_t *pThread = NULL;
-	proc_t *pProc = proc_create("init process");
-	KASSERT(NULL != pProc); 	
-	dbg_print("GRADING1 1.b PASSED: init process has been created.\n");
-	
-	KASSERT(PID_INIT == pProc->p_pid);
-	dbg_print("GRADING1 1.b PASSED: what has been created is the init process.\n");
-	
-	/*create a thread to execute init process*/
-	pThread = kthread_create(pProc, initproc_run, NULL, NULL);
-	KASSERT(/* pointer to the thread for the "init" process */ pThread != NULL);
-	dbg_print("GRADING1 1.b PASSED: thread for the init process has been created.\n");
-
-        return pThread;
+        NOT_YET_IMPLEMENTED("PROCS: initproc_create");
+        return NULL;
 }
 
 /**
@@ -352,42 +248,11 @@ initproc_create(void)
  * @param arg1 the first argument (unused)
  * @param arg2 the second argument (unused)
  */
-
 static void *
 initproc_run(int arg1, void *arg2)
 {
-       /* NOT_YET_IMPLEMENTED("PROCS: initproc_run");*/
+        NOT_YET_IMPLEMENTED("PROCS: initproc_run");
 
-
-    #ifdef __DRIVERS__
-	
-        kshell_add_command("faber", faber, "faber tests");
-        kshell_add_command("sunghan", sunghan, "sunghan tests");
-        kshell_add_command("deadlock", deadlock, "sunghan deadlock tests");
-        kshell_add_command("renametest",rename,"Renames dev/tty0 to tty0RENAMED");
-	kshell_add_command("vfstest", vfstest, "vfs tests");
-        /*
-	kshell_t *kshell = kshell_create(0);
-        if (NULL == kshell) panic("init: Couldn't create kernel shell\n");
-	kshell_add_command("hello", hello, "vfs tests");
-        while(kshell_execute_next(kshell));
-	*/	
-	char *argv[] = {  NULL };
-    	char *envp[] = {  NULL };
-       	
-	kernel_execve("/sbin/init", argv, envp); 
-	/*do_open("/dev/tty0", O_RDONLY);*/
-	
-	
-        /*kshell_destroy(kshell);*/
-
-    #endif /* __DRIVERS__ */
-/*	
-	if(curproc->p_cwd != NULL){
-		vput(curproc->p_cwd);
-
-	}
-*/
         return NULL;
 }
 

@@ -73,7 +73,7 @@ int main(int argc, char **argv, char **envp)
         chdir("/dev");
 
         devdir = open("/dev", O_RDONLY, 0);
-        while(getdents(devdir, &d, sizeof(d)) > 0) {
+        while (getdents(devdir, &d, sizeof(d)) > 0) {
                 if (0 == strncmp(d.d_name, ttystr, strlen(ttystr))) {
                         spawn_shell_on(d.d_name);
                 }

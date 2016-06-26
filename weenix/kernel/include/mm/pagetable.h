@@ -76,5 +76,3 @@ void pt_set(pagedir_t *pd);
 
 /* Retreives the virtual address of the page directory currently in cr3. */
 pagedir_t *pt_get();
-size_t
-pt_mapping_info(const void *pt, char *buf, size_t osize);

@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 #include <stdio.h>
-#include <fcntl.h>
 
 char *TAS = "weenix brought to you by:\n"
             "1998: jal, dep, kma, mcc, cd, tor\n"
@@ -39,7 +38,8 @@ int main(int argc, char **argv)
                         }
                 }
         }
-	if (argc == 1)
+
+        if (argc == 1)
                 doflag('s');
         fprintf(stdout, "\n");
         return 0;

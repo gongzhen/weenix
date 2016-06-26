@@ -74,27 +74,8 @@ free_stack(char *stack)
 kthread_t *
 kthread_create(struct proc *p, kthread_func_t func, long arg1, void *arg2)
 {
-        
-        /*NOT_YET_IMPLEMENTED("PROCS: kthread_create");*/
-	KASSERT(NULL != p); /* should have associated process */
-	dbg_print("GRADING1 3.a PASSED: should have associated process.\n");
-
-        context_t context; /*FIXME local variable fine?*/
-	
-        kthread_t *thr = (kthread_t *)slab_obj_alloc(kthread_allocator);
-	thr->kt_retval = 0;
-	thr->kt_errno = 0;
-	thr->kt_cancelled = 0;	
-        thr->kt_kstack = alloc_stack();
-        thr->kt_proc = p;
-        thr->kt_state = KT_NO_STATE; /* TODO: currently running or on runq */
-	thr->kt_wchan = NULL;
-	list_link_init(&thr->kt_plink);
-	list_link_init(&thr->kt_qlink);
-        list_insert_tail(&(p->p_threads), &(thr->kt_plink)); 
-        
-	context_setup(&(thr->kt_ctx), func, arg1, arg2, thr->kt_kstack, DEFAULT_STACK_SIZE, p->p_pagedir);
-        return thr;
+        NOT_YET_IMPLEMENTED("PROCS: kthread_create");
+        return NULL;
 }
 
 void
@@ -122,18 +103,7 @@ kthread_destroy(kthread_t *t)
 void
 kthread_cancel(kthread_t *kthr, void *retval)
 {
-	KASSERT(NULL != kthr); /* should have thread */
-	dbg_print("GRADING1 3.b PASSED: should have thread.\n");
-
-        /*NOT_YET_IMPLEMENTED("PROCS: kthread_cancel");*/
-
-        if(curthr == kthr){
-                kthread_exit(retval);   
-        }else{
-	
-        	kthr->kt_retval = retval;
-		sched_cancel(kthr);
-	}
+        NOT_YET_IMPLEMENTED("PROCS: kthread_cancel");
 }
 
 /*
@@ -149,20 +119,7 @@ kthread_cancel(kthread_t *kthr, void *retval)
 void
 kthread_exit(void *retval)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: kthread_exit");*/
-        curthr->kt_retval = retval;
-        curthr->kt_state = KT_EXITED;
-  	
-	KASSERT(!curthr->kt_wchan); /* queue should be empty */
-	dbg_print("GRADING1 3.c PASSED: queue should be empty.\n");
-	
-       	KASSERT(!curthr->kt_qlink.l_next && !curthr->kt_qlink.l_prev); /* queue should be empty */
-	dbg_print("GRADING1 3.c PASSED: queue should be empty.\n");
-        
-	KASSERT(curthr->kt_proc == curproc);
-	dbg_print("GRADING1 3.c PASSED: current process and the process associated with current thread are same.\n");
-        
-        proc_thread_exited(retval);
+        NOT_YET_IMPLEMENTED("PROCS: kthread_exit");
 }
 
 /*
@@ -175,28 +132,8 @@ kthread_exit(void *retval)
 kthread_t *
 kthread_clone(kthread_t *thr)
 {
-        /*NOT_YET_IMPLEMENTED("VM: kthread_clone");*/
-	KASSERT(KT_RUN == thr->kt_state);	
-	dbg(DBG_PRINT, "GRADING3A 8.a\n");
-        context_t context; /*FIXME local variable fine?*/
-
-        kthread_t *newthr = (kthread_t *)slab_obj_alloc(kthread_allocator);
-        newthr->kt_retval = thr->kt_retval;
-        newthr->kt_errno = thr->kt_errno;
-        newthr->kt_cancelled = thr->kt_cancelled;
-        newthr->kt_kstack = alloc_stack();
-        /*newthr->kt_proc = thr->kt_proc;*//*TODO:change this to the child process later at some point of code*/
-        newthr->kt_state = thr->kt_state; /* TODO: currently running or on runq */
-        newthr->kt_wchan = NULL;
-        list_link_init(&newthr->kt_plink);
-        list_link_init(&newthr->kt_qlink);
-        /*list_insert_tail(&(p->p_threads), &(newthr->kt_plink));*//*TODO?insert it to the child process*/
-
-        /*context_setup(&(newthr->kt_ctx), NULL, NULL, NULL, newthr->kt_kstack, DEFAULT_STACK_SIZE, thr->kt_proc->p_pagedir);*/
-	KASSERT(KT_RUN == newthr->kt_state);
-	dbg(DBG_PRINT, "GRADING3A 8.a\n");
-        
-	return newthr;
+        NOT_YET_IMPLEMENTED("VM: kthread_clone");
+        return NULL;
 }
 
 /*

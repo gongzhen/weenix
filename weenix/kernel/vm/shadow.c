@@ -52,10 +52,7 @@ static mmobj_ops_t shadow_mmobj_ops = {
 void
 shadow_init()
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_init");*/
-	shadow_allocator = slab_allocator_create("sahdowobject", sizeof(mmobj_t));
-	KASSERT(shadow_allocator);
-        dbg(DBG_PRINT, "GRADING3A 6.a\n");
+        NOT_YET_IMPLEMENTED("VM: shadow_init");
 }
 
 /*
@@ -67,14 +64,8 @@ shadow_init()
 mmobj_t *
 shadow_create()
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_create");*/
-	mmobj_t *shadowobj = (mmobj_t*)slab_obj_alloc(shadow_allocator);
-	if(shadowobj){
-		mmobj_init(shadowobj,&shadow_mmobj_ops);
-		shadowobj->mmo_refcount++;
-		shadowobj->mmo_un.mmo_bottom_obj=NULL;
-	}
-        return shadowobj;
+        NOT_YET_IMPLEMENTED("VM: shadow_create");
+        return NULL;
 }
 
 /* Implementation of mmobj entry points: */
@@ -85,10 +76,7 @@ shadow_create()
 static void
 shadow_ref(mmobj_t *o)
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_ref");*/
-	KASSERT(o && (0 < o->mmo_refcount) && (&shadow_mmobj_ops == o->mmo_ops));
-	dbg(DBG_PRINT, "GRADING3A 6.b\n");
-	o->mmo_refcount++;
+        NOT_YET_IMPLEMENTED("VM: shadow_ref");
 }
 
 /*
@@ -102,26 +90,7 @@ shadow_ref(mmobj_t *o)
 static void
 shadow_put(mmobj_t *o)
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_put");*/
-        KASSERT(o && (0 < o->mmo_refcount) && (&shadow_mmobj_ops == o->mmo_ops));
-        dbg(DBG_PRINT, "GRADING3A 6.c\n");
-        o->mmo_refcount--;
-        if(o->mmo_refcount == o->mmo_nrespages){
-                if(!list_empty(&(o->mmo_respages))){
-                        pframe_t *pageframe;
-                        list_iterate_begin(&(o->mmo_respages),pageframe,pframe_t,pf_olink){
-                                while(pframe_is_pinned(pageframe))
-                                        pframe_unpin(pageframe);
-                                if(pframe_is_busy(pageframe)){
-					pframe_clear_busy(pageframe);
-                                        sched_sleep_on(&pageframe->pf_waitq);
-				}
-                                if(pframe_is_dirty(pageframe))
-                                        pframe_clean(pageframe);
-                        }list_iterate_end();
-                	slab_obj_free(shadow_allocator,o);
-                }
-        }
+        NOT_YET_IMPLEMENTED("VM: shadow_put");
 }
 
 /* This function looks up the given page in this shadow object. The
@@ -134,29 +103,8 @@ shadow_put(mmobj_t *o)
 static int
 shadow_lookuppage(mmobj_t *o, uint32_t pagenum, int forwrite, pframe_t **pf)
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_lookuppage");*/
-
-	mmobj_t *shadow_obj = o;	
-	mmobj_t *bottom_obj = o->mmo_un.mmo_bottom_obj;
-	if(!forwrite){
-		while(shadow_obj != NULL){
-			*pf = pframe_get_resident(shadow_obj, pagenum);	
-			if(*pf != NULL){
-				return 1;
-			}
-			shadow_obj = shadow_obj->mmo_shadowed;
-		}
-		/*	
-		*pf = pframe_get_resident(bottom_obj, pagenum);
-		if(*pf == NULL){
-			return -1;
-		}else{
-			return 1;
-		}	
-		*/	
-	}
-		
-	return -1;	
+        NOT_YET_IMPLEMENTED("VM: shadow_lookuppage");
+        return 0;
 }
 
 /* As per the specification in mmobj.h, fill the page frame starting
@@ -170,39 +118,8 @@ shadow_lookuppage(mmobj_t *o, uint32_t pagenum, int forwrite, pframe_t **pf)
 static int
 shadow_fillpage(mmobj_t *o, pframe_t *pf)
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_fillpage");*/
-	KASSERT(pframe_is_busy(pf));
-	dbg(DBG_PRINT, "GRADING3A 6.d\n");
-        KASSERT(!pframe_is_pinned(pf));
-	dbg(DBG_PRINT, "GRADING3A 6.d\n");
-
-	pframe_t *src=NULL;
-	
-	mmobj_t *shadow_obj = o->mmo_shadowed;
-	mmobj_t *temp=NULL;
-	mmobj_t *bottom_obj = o->mmo_un.mmo_bottom_obj;
-		while(shadow_obj != NULL){
-			src = pframe_get_resident(shadow_obj, pf->pf_pagenum);	
-			if(src != NULL){
-				break;
-			}
-			temp=shadow_obj;
-			shadow_obj = shadow_obj->mmo_shadowed;
-		}
-		/*	
-		*pf = pframe_get_resident(bottom_obj, pagenum);
-		if(*pf == NULL){
-			return -1;
-		}else{
-			return 1;
-		}	
-		*/	
-	if(src==NULL){
-		pframe_get(temp,pf->pf_pagenum,&src);
-	}
-	memcpy(pf->pf_addr, src->pf_addr, PAGE_SIZE);
-	
-	return 0;
+        NOT_YET_IMPLEMENTED("VM: shadow_fillpage");
+        return 0;
 }
 
 /* These next two functions are not difficult. */
@@ -210,31 +127,13 @@ shadow_fillpage(mmobj_t *o, pframe_t *pf)
 static int
 shadow_dirtypage(mmobj_t *o, pframe_t *pf)
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_dirtypage");*/
-	if(!(pframe_is_dirty(pf))){
-		pframe_set_dirty(pf);
-		return 0;
-	}else{
-		return -1;
-	}
+        NOT_YET_IMPLEMENTED("VM: shadow_dirtypage");
+        return -1;
 }
 
 static int
 shadow_cleanpage(mmobj_t *o, pframe_t *pf)
 {
-        /*NOT_YET_IMPLEMENTED("VM: shadow_cleanpage");*/
-	pframe_t *pageframe;
-	shadow_lookuppage(o,pf->pf_pagenum,0,&pageframe);
-	if(pageframe == NULL){
-		return -1;
-	}
-	if(pframe_is_busy(pageframe)){
-		pframe_clear_busy(pageframe);
-		sched_broadcast_on(&(pageframe->pf_waitq));
-	}
-	while(pframe_is_pinned(pageframe)) /*XXX*/
-		pframe_unpin(pageframe);
-	memcpy(pageframe->pf_addr,pf->pf_addr,PAGE_SIZE);
-	pframe_free(pf);
-        return 0;
+        NOT_YET_IMPLEMENTED("VM: shadow_cleanpage");
+        return -1;
 }

@@ -51,40 +51,5 @@
 void
 handle_pagefault(uintptr_t vaddr, uint32_t cause)
 {
-        /*NOT_YET_IMPLEMENTED("VM: handle_pagefault");*/
-	vmmap_t *map = curproc->p_vmmap;
-	dbginfo(DBG_ERROR, proc_info, curproc);
-	dbginfo(DBG_ERROR, proc_list_info, NULL);
-	if(vaddr == NULL){
-	}	
-	vmarea_t *vma =	vmmap_lookup(map, ADDR_TO_PN(vaddr));
-	
-	/*uintptr_t pagenum = PAGE_OFFSET(vaddr);*/
-	if(vma == NULL ||  !(cause & FAULT_USER)){
-		/*XXX permission checks*/
-		curproc->p_status = EFAULT;
-		proc_kill(curproc, EFAULT);
-	}
-	pframe_t *pf;
-	uintptr_t pagenum =  ADDR_TO_PN(vaddr) - vma->vma_start+vma->vma_off;
-	/*XXX handle shadow objects*/	
-	/*
-	int forWrite = 0;
-	if(cause & FAULT_WRITE){
-		forWrite = 1;
-	}
-	*/		
-	/*
-	if(vma->vma_obj->mmo_shadowed != NULL){
-		shadow_lookuppage(vma->vma_obj->mmo_shadowed, pagenum, forWrite,&pf);
-	}else{
-	*/
-		pframe_get(vma->vma_obj, pagenum, &pf);
-	/*}*/
-	uintptr_t paddr = pt_virt_to_phys((uintptr_t)pf->pf_addr);
-	uintptr_t pdflags = PD_PRESENT | PD_WRITE | PD_USER;
-	uintptr_t ptflags = PT_PRESENT | PT_WRITE | PT_USER;
-	/*XXX tlb flush?*/
-	pt_map(curproc->p_pagedir,(uintptr_t)PAGE_ALIGN_DOWN(vaddr), paddr, pdflags, ptflags);
-
+        NOT_YET_IMPLEMENTED("VM: handle_pagefault");
 }

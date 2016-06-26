@@ -152,8 +152,7 @@ lib/libtest.so
 EXEC_TARGETS := bin/ed bin/ls bin/sh bin/uname \
 sbin/halt sbin/init \
 usr/bin/args usr/bin/hello usr/bin/kshell usr/bin/segfault usr/bin/spin \
-usr/bin/eatmem usr/bin/forkbomb usr/bin/memtest usr/bin/stress usr/bin/vfstest \
-usr/bin/fork-and-wait
+usr/bin/eatmem usr/bin/forkbomb usr/bin/memtest usr/bin/stress usr/bin/vfstest
 
 EXEC_SUFFIX := .exec
 EXEC_TARGETS_WITH_SUFFIX := $(addsuffix $(EXEC_SUFFIX),$(EXEC_TARGETS))

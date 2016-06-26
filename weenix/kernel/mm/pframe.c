@@ -297,32 +297,8 @@ pframe_fill(pframe_t *pf)
 int
 pframe_get(struct mmobj *o, uint32_t pagenum, pframe_t **result)
 {
-        /*NOT_YET_IMPLEMENTED("VM: pframe_get");*/
-	pframe_t * f = pframe_get_resident(o, pagenum);
-	if(f == NULL){
-		if(pageoutd_needed()){
-			/*TODO: pageoutd not sleeping?
-			if(){
-			}
-			*/
-			pageoutd_wakeup();
-			pageoutd_run(NULL, NULL);
-		}
-		f = pframe_alloc(o, pagenum);	
-		if(f == NULL){
-			return -1;
-		}
-		pframe_fill(f);	
-		*result = f;
-		return 0;
-	}else{
-		if(pframe_is_busy(f)){
-                        sched_sleep_on(&f->pf_waitq);
-		}/*TODO is this correct way of waiting*/
-		*result = f;
-		return 0;
-	}
-        return -1;
+        NOT_YET_IMPLEMENTED("VM: pframe_get");
+        return 0;
 }
 
 int
@@ -381,20 +357,7 @@ pframe_migrate(pframe_t *pf, mmobj_t *dest)
 void
 pframe_pin(pframe_t *pf)
 {
-        /*NOT_YET_IMPLEMENTED("VM: pframe_pin");*/
-	KASSERT(!pframe_is_free(pf));	
-	dbg(DBG_PRINT, "GRADING3A 1.a\n");
-	KASSERT(pf->pf_pincount >= 0);
-	dbg(DBG_PRINT, "GRADING3A 1.a\n");
-
-	if(!pframe_is_pinned(pf)){
-		list_remove(&pf->pf_link);
-		--nallocated;
-		list_insert_tail(&pinned_list, &pf->pf_link);
-	}
-	++npinned;
-	++pf->pf_pincount;
-	
+        NOT_YET_IMPLEMENTED("VM: pframe_pin");
 }
 
 /*
@@ -410,22 +373,7 @@ pframe_pin(pframe_t *pf)
 void
 pframe_unpin(pframe_t *pf)
 {
-        /*NOT_YET_IMPLEMENTED("VM: pframe_unpin");*/
-	KASSERT(!pframe_is_free(pf));	
-	dbg(DBG_PRINT, "GRADING3A 1.b\n");
-	
-	KASSERT(pf->pf_pincount > 0);
-	dbg(DBG_PRINT, "GRADING3A 1.b\n");
-
-	--pf->pf_pincount;
-	--npinned;
-	if(pf->pf_pincount == 0){
-		list_remove(&pf->pf_link);
-		list_insert_tail(&alloc_list, &pf->pf_link);
-		++nallocated;
-	}
-	
-			
+        NOT_YET_IMPLEMENTED("VM: pframe_unpin");
 }
 
 /*

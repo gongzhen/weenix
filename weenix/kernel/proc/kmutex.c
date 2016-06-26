@@ -6,11 +6,6 @@
 #include "proc/kthread.h"
 #include "proc/kmutex.h"
 
-/*my includes*/
-#include "mm/slab.h"
-#include "util/string.h"
-#include "proc/sched.h"
-
 /*
  * IMPORTANT: Mutexes can _NEVER_ be locked or unlocked from an
  * interrupt context. Mutexes are _ONLY_ lock or unlocked from a
@@ -20,9 +15,7 @@
 void
 kmutex_init(kmutex_t *mtx)
 {
-        /*NOT_YET_IMPLEMENTED("PROCS: kmutex_init");*/
-	sched_queue_init(&(mtx->km_waitq));
-	mtx->km_holder = NULL;	
+        NOT_YET_IMPLEMENTED("PROCS: kmutex_init");
 }
 
 /*
@@ -34,18 +27,7 @@ kmutex_init(kmutex_t *mtx)
 void
 kmutex_lock(kmutex_t *mtx)
 {
-
-	KASSERT(curthr && (curthr != mtx->km_holder));
-	dbg_print("GRADING1:5.a PASSED: curthr is not null and curthr is not the mutex holder.\n");
-
-        /*NOT_YET_IMPLEMENTED("PROCS: kmutex_lock");*/
-        
-        if(mtx->km_holder != NULL){
-                /* mutex locked */
-		sched_sleep_on(&(mtx->km_waitq));
-        }else{
-                mtx->km_holder = curthr;
-	}
+        NOT_YET_IMPLEMENTED("PROCS: kmutex_lock");
 }
 
 /*
@@ -55,20 +37,8 @@ kmutex_lock(kmutex_t *mtx)
 int
 kmutex_lock_cancellable(kmutex_t *mtx)
 {
-
-	 KASSERT(curthr && (curthr != mtx->km_holder));
-	 dbg_print("GRADING1 5.b PASSED: curthr is not null and curthr is not the mutex holder.\n");
-	 int returnvalue=0;
-
-        /*NOT_YET_IMPLEMENTED("PROCS: kmutex_lock_cancellable"); */
-        if(mtx->km_holder == NULL){
-		mtx->km_holder = curthr;
-		return 0;
-        }else{
-		returnvalue=sched_cancellable_sleep_on(&(mtx->km_waitq));
-		return returnvalue;
-	}
-        
+        NOT_YET_IMPLEMENTED("PROCS: kmutex_lock_cancellable");
+        return 0;
 }
 
 /*
@@ -88,16 +58,5 @@ kmutex_lock_cancellable(kmutex_t *mtx)
 void
 kmutex_unlock(kmutex_t *mtx)
 {
-
-	KASSERT(curthr && (curthr == mtx->km_holder));
-	dbg_print("GRADING1:5.c PASSED: curthr is not null and curthr IS the mutex holder.\n");
-	if((mtx->km_waitq).tq_size!=0){
-		mtx->km_holder=sched_wakeup_on(&mtx->km_waitq);
-	}else{
-		mtx->km_holder = NULL;	
-	}
-	KASSERT(curthr != mtx->km_holder);
-	dbg_print("GRADING1:5.c PASSED: curthr is NOT the mutex holder.\n");
-
+        NOT_YET_IMPLEMENTED("PROCS: kmutex_unlock");
 }
-

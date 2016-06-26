@@ -236,22 +236,20 @@ vfstest_stat(void)
         struct stat s;
 
         syscall_success(mkdir("stat", 0));
-	
         syscall_success(chdir("stat"));
 
         syscall_success(stat(".", &s));
         test_assert(S_ISDIR(s.st_mode), NULL);
 
         create_file("file");
-	
         syscall_success(stat("file", &s));
         test_assert(S_ISREG(s.st_mode), NULL);
 
+        /* file size is correct */
         syscall_success(fd = open("file", O_RDWR, 0));
         syscall_success(write(fd, "foobar", 6));
         syscall_success(stat("file", &s));
         test_assert(s.st_size == 6, "unexpected file size");
-	
         syscall_success(close(fd));
 
         /* error cases */
@@ -266,16 +264,16 @@ vfstest_stat(void)
 static void
 vfstest_mkdir(void)
 {
-
         syscall_success(mkdir("mkdir", 0777));
-        
-	syscall_success(chdir("mkdir"));
+        syscall_success(chdir("mkdir"));
 
+        /* mkdir an existing file or directory */
         create_file("file");
-	syscall_fail(mkdir("file", 0777), EEXIST);
+        syscall_fail(mkdir("file", 0777), EEXIST);
         syscall_success(mkdir("dir", 0777));
         syscall_fail(mkdir("dir", 0777), EEXIST);
 
+        /* mkdir an invalid path */
         syscall_fail(mkdir(LONGNAME, 0777), ENAMETOOLONG);
         syscall_fail(mkdir("file/dir", 0777), ENOTDIR);
         syscall_fail(mkdir("noent/dir", 0777), ENOENT);
@@ -289,17 +287,19 @@ vfstest_mkdir(void)
         syscall_fail(rmdir("noent/."), ENOENT);
         syscall_fail(rmdir("noent/.."), ENOENT);
 
+        /* unlink and rmdir the inappropriate types */
         syscall_fail(rmdir("file"), ENOTDIR);
         syscall_fail(unlink("dir"), EISDIR);
 
+        /* remove non-empty directory */
         create_file("dir/file");
         syscall_fail(rmdir("dir"), ENOTEMPTY);
 
+        /* remove empty directory */
         syscall_success(unlink("dir/file"));
         syscall_success(rmdir("dir"));
 
         syscall_success(chdir(".."));
-
 }
 
 static void
@@ -803,7 +803,7 @@ vfstest_s5fs_vm(void)
         syscall_fail(link("parent", "newchld"), EISDIR);
 
         /* only rename test */
-        syscall_success(rename("oldchld", "newchld"));
+        /*syscall_success(rename("oldchld", "newchld"));*/
 
         /* mmap/munmap tests */
         syscall_success(fd = open("newchld", O_RDWR, 0));
@@ -906,34 +906,23 @@ int vfstest_main(int argc, char **argv)
         }
 
         test_init();
-
-	
         vfstest_start();
-	
+
         syscall_success(chdir(root_dir));
-/*
+
         vfstest_stat();
-
         vfstest_chdir();
-
-
-
-    	 vfstest_mkdir();
-	
+        vfstest_mkdir();
         vfstest_paths();
-
         vfstest_fd();
-	
         vfstest_open();
         vfstest_read();
-	
         vfstest_getdents();
 
 #ifdef __VM__
         vfstest_s5fs_vm();
 #endif
 
-*/	
         /*vfstest_infinite();*/
 
         syscall_success(chdir(".."));

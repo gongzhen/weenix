@@ -313,17 +313,15 @@ void *testproc(int arg1, void *arg2) {
     pid = do_waitpid(2323, 0, &rv);
     if ( pid != -ECHILD ) dbg_print("Allowed wait on non-existent pid\n");
     wait_for_proc(pt.p);
-/*
+
     dbg_print("kthread exit test");
     start_proc(&pt, "kthread exit test", kthread_exit_test, 0);
     wait_for_proc(pt.p);
-*/
-/*
+
     dbg_print("many test");
     for (i = 0; i < 10; i++) 
 	start_proc(NULL, "many test", waitpid_test, i);
-    wait_for_all();a
-*/
+    wait_for_all();
 #endif
 
 #if CS402TESTS > 1

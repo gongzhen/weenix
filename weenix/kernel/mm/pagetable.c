@@ -107,8 +107,7 @@ pt_get(void)
 int
 pt_map(pagedir_t *pd, uintptr_t vaddr, uintptr_t paddr, uint32_t pdflags, uint32_t ptflags)
 {
-        
-	KASSERT(PAGE_ALIGNED(vaddr) && PAGE_ALIGNED(paddr));
+        KASSERT(PAGE_ALIGNED(vaddr) && PAGE_ALIGNED(paddr));
         KASSERT(USER_MEM_LOW <= vaddr && USER_MEM_HIGH > vaddr);
 
         int index = vaddr_to_pdindex(vaddr);
@@ -134,7 +133,6 @@ pt_map(pagedir_t *pd, uintptr_t vaddr, uintptr_t paddr, uint32_t pdflags, uint32
         KASSERT((ptflags & ~PAGE_MASK) == ptflags);
         pt[index] = paddr | ptflags;
 
-	/*dbginfo(DBG_ERROR, pt_mapping_info, pt);*/
         return 0;
 }
 
@@ -229,6 +227,7 @@ _pt_fault_handler(regs_t *regs)
         /* Get the address where the fault occurred */
         __asm__ volatile("movl %%cr2, %0" : "=r"(vaddr));
         uint32_t cause = regs->r_err;
+
         /* Check if pagefault was in user space (otherwise, BAD!) */
         if (cause & FAULT_USER) {
                 handle_pagefault(vaddr, cause);

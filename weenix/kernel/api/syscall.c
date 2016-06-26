@@ -56,26 +56,8 @@ init_func(syscall_init);
 static int
 sys_read(read_args_t *arg)
 {
-        /*NOT_YET_IMPLEMENTED("VM: sys_read");*/
-	read_args_t readkaddr;
-	int readbytes=0;
-	readbytes = copy_from_user(&readkaddr, arg, sizeof(read_args_t));
-	if(readbytes < 0){
-		curthr->kt_errno = readbytes;
-		return -1;
-	}
-	void *buff=page_alloc();
-	readbytes = do_read(readkaddr.fd,buff,readkaddr.nbytes);
-	if(readbytes<0){
-		curthr->kt_errno = readbytes;
-		return -1;
-	}
-	if (copy_to_user(arg->buf,buff,readbytes) < 0){
-		curthr->kt_errno=EFAULT;
-		return -1;
-	}
-        page_free(buff);
-	return readbytes;
+        NOT_YET_IMPLEMENTED("VM: sys_read");
+        return -1;
 }
 
 /*
@@ -84,28 +66,8 @@ sys_read(read_args_t *arg)
 static int
 sys_write(write_args_t *arg)
 {
-        /*NOT_YET_IMPLEMENTED("VM: sys_write");*/
-
-	write_args_t writekaddr;
-	int writebytes=0;
-	writebytes = copy_from_user(&writekaddr, arg, sizeof(write_args_t));
-	if(writebytes < 0){
-		curthr->kt_errno = writebytes;
-		return -1;
-	}
-	void *buff=page_alloc();
-	copy_from_user(buff, writekaddr.buf, writekaddr.nbytes);
-	writebytes = do_write(writekaddr.fd,buff,writekaddr.nbytes);
-	if(writebytes<0){
-		curthr->kt_errno = writebytes;
-		return -1;
-	}
-	if (copy_to_user(arg->buf,buff,writebytes) < 0){
-		curthr->kt_errno=EFAULT;
-		return -1;
-	}
-        page_free(buff);
-	return writebytes;
+        NOT_YET_IMPLEMENTED("VM: sys_write");
+        return -1;
 }
 
 /*
@@ -120,28 +82,8 @@ sys_write(write_args_t *arg)
 static int
 sys_getdents(getdents_args_t *arg)
 {
-        /*NOT_YET_IMPLEMENTED("VM: sys_getdents");*/
-	getdents_args_t tempgetdent;
-	int result;
-	result=copy_from_user(&tempgetdent,arg,sizeof(getdents_args_t));
-	if(result<0){
-		curthr->kt_errno=result;
-		return -1;
-	}
-	int i=0, loopcount = tempgetdent.count;
-	while(i<(int)(loopcount/sizeof(dirent_t))){
-		result=do_getdent(tempgetdent.fd,tempgetdent.dirp);
-		if(result <= 0){
-	
-			curthr->kt_errno=result;
-			return -1;
-		}else{
-			return result;
-		}
-		i++;
-	}
-	
-	return 0;
+        NOT_YET_IMPLEMENTED("VM: sys_getdents");
+        return -1;
 }
 
 #ifdef __MOUNTING__
