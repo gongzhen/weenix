@@ -171,7 +171,7 @@ class FsmakerShell(cmd.Cmd):
         line = ""
         for i in xrange(int(math.floor(len(data) / 2))):
             unpacked = struct.unpack("BB", data[i * 2:(i + 1) * 2])
-            binary += "{0:02x}{0:02x} ".format(*unpacked)
+            binary += "{0:02x}{1:02x} ".format(*unpacked)
             for d in unpacked:
                 if (curses.ascii.isprint(d)):
                     line += chr(d)
@@ -584,7 +584,7 @@ class FsmakerShell(cmd.Cmd):
             try:
                 return self.real_filepath_completion(text, line, begin, end)
             except Exception as e:
-                print str(e)
+                print(str(e))
         elif (argnum == 2):
             return self.filepath_completion(text, line, begin, end, types=set([ api.S5_TYPE_DATA ]))
         else:

@@ -148,7 +148,7 @@ int main(int argc, char **argv)
                         yield();
                 }
         } else if (*opts & OPT_ITER) {
-                while (--iter) {
+                while (--(*iter)) {
                         yield();
                 }
         }

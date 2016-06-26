@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "types.h"
 #include "globals.h"
 #include "kernel.h"
@@ -51,5 +64,56 @@
 void
 handle_pagefault(uintptr_t vaddr, uint32_t cause)
 {
-        NOT_YET_IMPLEMENTED("VM: handle_pagefault");
+        int err;
+        uint32_t pdflags, ptflags;
+        uintptr_t paddr;
+        vmarea_t *vma = NULL;
+        pframe_t *pframe = NULL;
+
+        dbg(DBG_PRINT, "Go into handle_pagefault\n");
+
+        vma = vmmap_lookup(curproc->p_vmmap, ADDR_TO_PN(vaddr));
+
+        if (vma == NULL) {
+                dbg(DBG_PRINT, "(GRADING3C)\n");
+                proc_kill(curproc, EFAULT);
+        }
+        if (cause & FAULT_EXEC && ! (vma->vma_prot & PROT_EXEC)) {
+                proc_kill(curproc, EFAULT);
+        }
+        if (cause & FAULT_WRITE && ! (vma->vma_prot & PROT_WRITE)) {
+                proc_kill(curproc, EFAULT);
+        }
+        if (!(vma->vma_prot & PROT_READ)) {
+                proc_kill(curproc, EFAULT);
+        }
+
+        err = pframe_lookup(vma->vma_obj, vma->vma_off + ADDR_TO_PN(vaddr) - vma->vma_start, cause & FAULT_WRITE ? 1 : 0, &pframe);
+
+        if (err < 0) {
+                dbg(DBG_PRINT, "(GRADING3C)\n");
+                proc_kill(curproc, EFAULT);
+        }
+
+        pdflags = PD_PRESENT | PD_USER;
+        ptflags = PT_PRESENT | PT_USER;
+
+        if (cause & FAULT_WRITE) {
+                dbg(DBG_PRINT, "(GRADING3B)\n");
+                pdflags |= PD_WRITE;
+                ptflags |= PT_WRITE;
+                pframe_dirty(pframe);
+        }
+
+        pframe_pin(pframe);
+
+        paddr = pt_virt_to_phys((uintptr_t)pframe->pf_addr);
+
+        
+        pt_map(curproc->p_pagedir, (uint32_t)PAGE_ALIGN_DOWN(vaddr),
+               (uint32_t)PAGE_ALIGN_DOWN(paddr), pdflags, ptflags) ;
+
+        pframe_unpin(pframe);
+
+        dbg(DBG_PRINT, "Leave handle_pagefault\n");
 }

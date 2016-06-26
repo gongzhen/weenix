@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #pragma once
 
 #include "types.h"
@@ -36,6 +49,8 @@ typedef struct vmarea {
 
 void vmmap_init(void);
 
+size_t vmmap_mapping_info(const void *map, char *buf, size_t size);
+
 vmmap_t *vmmap_create(void);
 void vmmap_destroy(vmmap_t *map);
 
@@ -49,5 +64,3 @@ int vmmap_read(vmmap_t *map, const void *vaddr, void *buf, size_t count);
 int vmmap_write(vmmap_t *map, void *vaddr, const void *buf, size_t count);
 
 vmmap_t *vmmap_clone(vmmap_t *map);
-
-size_t vmmap_mapping_info(const void *map, char *buf, size_t size);

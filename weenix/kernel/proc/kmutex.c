@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "globals.h"
 #include "errno.h"
 
@@ -15,7 +28,8 @@
 void
 kmutex_init(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_init");
+        sched_queue_init(&mtx->km_waitq);
+        mtx->km_holder = NULL;
 }
 
 /*
@@ -27,7 +41,12 @@ kmutex_init(kmutex_t *mtx)
 void
 kmutex_lock(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_lock");
+        KASSERT(curthr && (curthr != mtx->km_holder));
+        dbg(DBG_PRINT, "(GRADING1A 5.a)\n");
+
+        if (mtx->km_holder != NULL)
+                sched_sleep_on(&mtx->km_waitq);
+        mtx->km_holder = curthr;
 }
 
 /*
@@ -37,7 +56,18 @@ kmutex_lock(kmutex_t *mtx)
 int
 kmutex_lock_cancellable(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_lock_cancellable");
+        int retval;
+
+        KASSERT(curthr && (curthr != mtx->km_holder));
+        dbg(DBG_PRINT, "(GRADING1A 5.b)\n");
+
+        if (mtx->km_holder != NULL) {
+                retval = sched_cancellable_sleep_on(&mtx->km_waitq);
+                if (retval != -EINTR)
+                        mtx->km_holder = curthr;
+                return retval;
+        }
+        mtx->km_holder = curthr;
         return 0;
 }
 
@@ -58,5 +88,13 @@ kmutex_lock_cancellable(kmutex_t *mtx)
 void
 kmutex_unlock(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_unlock");
+        KASSERT(curthr && (curthr == mtx->km_holder));
+        dbg(DBG_PRINT, "(GRADING1A 5.c)\n");
+
+        mtx->km_holder = NULL;
+        if ((mtx->km_waitq).tq_size != 0)
+                mtx->km_holder = sched_wakeup_on(&mtx->km_waitq);
+
+        KASSERT(curthr != mtx->km_holder);
+        dbg(DBG_PRINT, "(GRADING1A 5.c)\n");
 }

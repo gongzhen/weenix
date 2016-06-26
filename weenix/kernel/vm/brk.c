@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "globals.h"
 #include "errno.h"
 #include "util/debug.h"
@@ -11,6 +24,7 @@
 
 #include "proc/proc.h"
 
+#include "util/string.h"
 /*
  * This function implements the brk(2) system call.
  *
@@ -56,6 +70,58 @@
 int
 do_brk(void *addr, void **ret)
 {
-        NOT_YET_IMPLEMENTED("VM: do_brk");
+        uint32_t curbrk_pn, newbrk_pn;
+        vmarea_t *vma = NULL;
+        void *buffer = NULL;
+
+        if (addr == NULL) {
+                dbg(DBG_PRINT, "(GRADING3B)\n");
+                *ret = curproc->p_brk;
+                return 0;
+        }
+
+        dbg(DBG_PRINT, "(GRADING3B)\n");
+        if ((uintptr_t)addr < (uintptr_t)curproc->p_start_brk || (uintptr_t)addr > (uintptr_t)USER_MEM_HIGH) {
+                dbg(DBG_PRINT, "(GRADING3B)\n");
+                return -ENOMEM;
+        }
+
+        curbrk_pn = ADDR_TO_PN((uintptr_t)curproc->p_brk - 1);
+        newbrk_pn = ADDR_TO_PN((uintptr_t)addr - 1);
+
+        if (newbrk_pn == curbrk_pn) {
+                dbg(DBG_PRINT,"(GRADING3C)\n");
+                *ret = addr;
+                curproc->p_brk = addr;
+                return 0;
+        }
+
+        if (newbrk_pn <  curbrk_pn) {
+                dbg(DBG_PRINT,"(GRADING3C)\n");
+                *ret = addr;
+                curproc->p_brk = addr;
+                /*
+                buffer = page_alloc_n(curbrk_pn - newbrk_pn);
+                KASSERT(NULL != buffer);
+
+                memset(buffer, 0, PAGE_SIZE * (curbrk_pn - newbrk_pn));
+                vmmap_write(curproc->p_vmmap, addr, buffer, (uintptr_t)curproc->p_brk - (uintptr_t)addr);
+                page_free_n(buffer, curbrk_pn - newbrk_pn + 1);
+                */
+                vmmap_remove(curproc->p_vmmap, newbrk_pn + 1, curbrk_pn - newbrk_pn);
+                return 0;
+        }
+
+        if (!vmmap_is_range_empty(curproc->p_vmmap, curbrk_pn +1, newbrk_pn - curbrk_pn)) {
+                dbg(DBG_PRINT, "(GRADING3C)\n");
+                return -ENOMEM;
+        }
+
+        vma = vmmap_lookup(curproc->p_vmmap, curbrk_pn);
+        KASSERT(NULL != vma);
+        vma->vma_end = newbrk_pn + 1;
+        *ret = addr;
+        curproc->p_brk = addr;
+
         return 0;
 }

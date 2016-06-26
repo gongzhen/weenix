@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "kernel.h"
 #include "globals.h"
 #include "errno.h"
@@ -56,8 +69,32 @@ init_func(syscall_init);
 static int
 sys_read(read_args_t *arg)
 {
-        NOT_YET_IMPLEMENTED("VM: sys_read");
-        return -1;
+        read_args_t karg;
+        int ret, err;
+        void *buffer = NULL;
+
+        dbg(DBG_PRINT, "(GRADING3B)\n");
+        err = copy_from_user(&karg, arg, sizeof(read_args_t));
+        if (err < 0) {
+                curthr->kt_errno = -err;
+                return -1;
+        }
+
+        buffer = page_alloc();
+        KASSERT(NULL != buffer);
+
+        ret = do_read(karg.fd, buffer, karg.nbytes);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                curthr->kt_errno = -ret;
+                page_free(buffer);
+                return -1;
+        }
+
+        err = copy_to_user(arg->buf, buffer, ret);
+        page_free(buffer);
+
+        return ret;
 }
 
 /*
@@ -66,8 +103,40 @@ sys_read(read_args_t *arg)
 static int
 sys_write(write_args_t *arg)
 {
-        NOT_YET_IMPLEMENTED("VM: sys_write");
-        return -1;
+        write_args_t karg;
+        int ret, err;
+        void *buffer;
+
+        dbg(DBG_PRINT, "(GRADING3B)\n");
+        err = copy_from_user(&karg, arg, sizeof(write_args_t));
+        if (err < 0) {
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                curthr->kt_errno = -err;
+                return -1;
+        }
+
+        buffer = page_alloc();
+        KASSERT(NULL != buffer);
+
+        err = copy_from_user(buffer, arg->buf, arg->nbytes);
+        if (err < 0) {
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                page_free(buffer);
+                curthr->kt_errno = -err;
+                return -1;
+        }
+
+        ret = do_write(karg.fd, buffer, karg.nbytes);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                curthr->kt_errno = -ret;
+                page_free(buffer);
+                return -1;
+        }
+
+        page_free(buffer);
+
+        return ret;
 }
 
 /*
@@ -82,8 +151,42 @@ sys_write(write_args_t *arg)
 static int
 sys_getdents(getdents_args_t *arg)
 {
-        NOT_YET_IMPLEMENTED("VM: sys_getdents");
-        return -1;
+        getdents_args_t karg;
+        int ret, err;
+        uint32_t count;
+        dirent_t dirent;
+        dirent_t *index = NULL;
+
+        err = copy_from_user(&karg, arg, sizeof(write_args_t));
+        if (err < 0) {
+                curthr->kt_errno = -err;
+                return -1;
+        }
+
+        count = 0;
+        index = arg->dirp;
+        while (karg.count > count) {
+                ret = do_getdent(karg.fd, &dirent);
+                if (ret < 0) {
+                        dbg(DBG_PRINT, "(GRADING3C)\n");
+                        curthr->kt_errno = -ret;
+                        return -1;
+                }
+
+                if (ret == 0) break;
+
+                err = copy_to_user(index, &dirent, ret);
+                if (err < 0) {
+                        dbg(DBG_PRINT, "(GRADING3C)\n");
+                        curthr->kt_errno = -ret;
+                        return -1;
+                }
+
+                index ++;
+                count += ret;
+        }
+
+        return count;
 }
 
 #ifdef __MOUNTING__

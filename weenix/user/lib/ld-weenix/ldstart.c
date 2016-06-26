@@ -332,7 +332,7 @@ void _ldmapsect(int fd, unsigned long baseaddr, Elf32_Phdr *phdr, int textrel)
                 addr = mmap((char *)map_addr, map_len, perms,
                             MAP_PRIVATE | MAP_FIXED, zfd, 0);
                 if (addr == MAP_FAILED) {
-                        printf(err_zeromap);
+                        printf(err_zeromap,NULL);
                         exit(1);
                 }
                 close(zfd);

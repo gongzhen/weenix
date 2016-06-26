@@ -47,8 +47,8 @@ static void spawn_shell_on(char *tty)
 
                 chdir(home);
 
-                printf(hi);
-                printf(tty);
+                printf(hi,NULL);
+                printf(tty,NULL);
                 printf("\n");
 
                 execve(sh, empty, empty);
@@ -91,7 +91,7 @@ int main(int argc, char **argv, char **envp)
                 printf("error: wait: %s\n", strerror(errno));
                 return 1;
         } else {
-                printf(alldone);
+                printf(alldone,NULL);
                 return 0;
         }
 }

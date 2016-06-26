@@ -1,22 +1,24 @@
 CFLAGS    := -ffreestanding
 LDFLAGS   := -m elf_i386 -z nodefaultlib
-EFLAGS	  := ./libdrivers.a ./libmm.a ./libs5fs.a
+EFLAGS    := ./libdrivers.a ./libs5fs.a
 # XXX should have --omagic?
 
 include ../Global.mk
 
-CFLAGS    += -D__KERNEL__
+# The "-Wno-attributes" is needed to suppress "inline functions not always inlinable" warnings in gcc-4.8
+CFLAGS    += -D__KERNEL__ -DCS402TESTS=${CS402TESTS} -DCS402INITCHOICE=${CS402INITCHOICE} -DGDBWAIT=${GDBWAIT} -Wno-attributes
 
 ###
 
 HEAD      := $(wildcard include/*/*.h include/*/*/*.h)
 #SRCDIR    := main boot util drivers/disk drivers/tty drivers mm proc fs/ramfs fs/s5fs fs vm api test test/kshell entry test/vfstest
-SRCDIR    := main boot util proc fs/ramfs fs vm api test test/kshell entry test/vfstest
-#LIBDIR    := mm drivers/disk drivers/tty drivers fs/s5fs
+SRCDIR    := main boot util mm proc fs/ramfs fs vm api test test/kshell entry test/vfstest
 SRC       := $(foreach dr, $(SRCDIR), $(wildcard $(dr)/*.[cS]))
 OBJS      := $(addsuffix .o,$(basename $(SRC)))
-#LIB_OBJS  := $(foreach dr, $(LIBDIR), $(wildcard $(dr)/*.o))
-SCRIPTS   := $(foreach dr, $(SRCDIR), $(abspath $(wildcard $(dr)/*.gdb $(dr)/*.py)))
+SCRIPTS   := $(foreach dr, $(SRCDIR), $(wildcard $(dr)/*.gdb $(dr)/*.py))
+
+# List of prebuilt modules that do not include the source
+PREBUILT  :=
 
 ifneq "$(shell which mkisofs 2>/dev/null)" ""
     MAKEISO := mkisofs
@@ -33,9 +35,12 @@ GDBCOMM   := gdb-commands
 
 .PHONY: all cscope clean
 
+%.a:
+	touch $@
+
 all: $(BSYMBOLS) $(ISO_IMAGE) $(GDBCOMM)
 
-$(SYMBOLS): $(OBJS) $(LIB_OBJS)
+$(SYMBOLS): $(OBJS) $(PREBUILT)
 	@ echo "  Linking for \"kernel/$@\"..."
 	@ $(LD) $(LDFLAGS) -T link.ld $(filter-out entry/entry.o,$^) -o $@ $(EFLAGS) # entry.o included from link.ld
 
@@ -64,7 +69,7 @@ $(ISO_IMAGE): $(IMAGE)
 
 $(GDBCOMM): $(SCRIPTS)
 	@ echo "  Creating gdb command list..."
-	@ $(foreach script, $(SCRIPTS), echo $(script) >> $(dir $(script))$(shell basename $(dir $(script))).gdbcomm; )
+	@ $(foreach script, $(SCRIPTS), echo $(abspath $(script)) >> $(dir $(script))$(shell basename $(dir $(script))).gdbcomm; )
 	@ cat */*.gdbcomm > $@
 
 %.o: %.c 

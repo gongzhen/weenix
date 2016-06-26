@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "kernel.h"
 #include "globals.h"
 #include "types.h"
@@ -25,7 +38,42 @@
 int
 lookup(vnode_t *dir, const char *name, size_t len, vnode_t **result)
 {
-        NOT_YET_IMPLEMENTED("VFS: lookup");
+        int ret;
+
+        KASSERT(NULL != dir);
+        KASSERT(NULL != name);
+        KASSERT(NULL != result);
+        dbg(DBG_PRINT, "(GRADING2A 2.a)\n");
+
+        if(dir->vn_ops->lookup==NULL) {
+                dbg(DBG_PRINT,"(GRADING2D)\n");
+                return -ENOTDIR;
+        }
+
+        if (len == 0) {
+                dbg(DBG_PRINT,"(GRADING2D)\n");
+                return -EINVAL;
+        }
+        if (len == 1 && name[0] == '.') {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                *result = dir;
+                vref(*result);
+                return 0;
+        }
+
+        if (len > STR_MAX) {
+                dbg(DBG_PRINT,"(GRADING2D)\n");
+                return -ENAMETOOLONG;
+        }
+
+        ret = dir->vn_ops->lookup(dir, name, len, result);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return ret;
+        }
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+
         return 0;
 }
 
@@ -52,14 +100,65 @@ int
 dir_namev(const char *pathname, size_t *namelen, const char **name,
           vnode_t *base, vnode_t **res_vnode)
 {
-        NOT_YET_IMPLEMENTED("VFS: dir_namev");
+        vnode_t *dir = NULL;
+        int index, len, ret;
+
+        KASSERT(NULL != pathname);
+        KASSERT(NULL != namelen);
+        KASSERT(NULL != name);
+        KASSERT(NULL != res_vnode);
+        dbg(DBG_PRINT, "(GRADING2A 2.b)\n");
+
+        index = 0;
+        if (pathname[0] == '\0') {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EINVAL;
+        }
+        if (pathname[0] == '/') {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                dir = vfs_root_vn;
+                index ++;
+        } else if (base == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                dir = curproc->p_cwd;
+        } else {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                dir = base;
+        }
+
+        *res_vnode = dir;
+        vref(dir);
+        *namelen = 0;
+        *name = &pathname[index];
+        while (pathname[index] != '\0') {
+                *namelen = *namelen + 1;
+                index ++;
+                if (pathname[index] == '/') {
+                        ret = lookup(dir, *name, *namelen, res_vnode);
+                        if (ret < 0) {
+                                vput(dir);
+                                dbg(DBG_PRINT, "(GRADING2D)\n");
+                                return ret;
+                        }
+
+                        KASSERT(NULL != *res_vnode);
+                        dbg(DBG_PRINT, "(GRADING2A 2.b)\n");
+
+                        while(pathname[++index] == '/');
+                        vput(dir);
+                        dir = *res_vnode;
+                        *name = &pathname[index];
+                        *namelen = 0;
+                }
+        } 
+
         return 0;
 }
 
 /* This returns in res_vnode the vnode requested by the other parameters.
  * It makes use of dir_namev and lookup to find the specified vnode (if it
  * exists).  flag is right out of the parameters to open(2); see
- * <weenix/fnctl.h>.  If the O_CREAT flag is specified, and the file does
+ * <weenix/fcntl.h>.  If the O_CREAT flag is specified, and the file does
  * not exist call create() in the parent directory vnode.
  *
  * Note: Increments vnode refcount on *res_vnode.
@@ -67,8 +166,25 @@ dir_namev(const char *pathname, size_t *namelen, const char **name,
 int
 open_namev(const char *pathname, int flag, vnode_t **res_vnode, vnode_t *base)
 {
-        NOT_YET_IMPLEMENTED("VFS: open_namev");
-        return 0;
+        int ret;
+        size_t len;
+        const char *name = NULL;
+        vnode_t *dir = NULL;
+
+        ret = dir_namev(pathname, &len, &name, base, &dir);
+        if (ret >= 0) {
+                ret = lookup(dir, name, len, res_vnode);
+                if ((ret == -ENOENT)&&(flag & O_CREAT)) {
+                        KASSERT(NULL != dir->vn_ops->create);
+                        dbg(DBG_PRINT, "(GRADING2A 2.c)\n");
+
+                        ret = dir->vn_ops->create(dir, name, len, res_vnode);
+                }
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+        }
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        return ret;
 }
 
 #ifdef __GETCWD__

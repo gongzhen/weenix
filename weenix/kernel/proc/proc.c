@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "kernel.h"
 #include "config.h"
 #include "globals.h"
@@ -38,6 +51,24 @@ proc_init()
         list_init(&_proc_list);
         proc_allocator = slab_allocator_create("proc", sizeof(proc_t));
         KASSERT(proc_allocator != NULL);
+}
+
+proc_t *
+proc_lookup(int pid)
+{
+        proc_t *p;
+        list_iterate_begin(&_proc_list, p, proc_t, p_list_link) {
+                if (p->p_pid == pid) {
+                        return p;
+                }
+        } list_iterate_end();
+        return NULL;
+}
+
+list_t *
+proc_list()
+{
+        return &_proc_list;
 }
 
 static pid_t next_pid = 0;
@@ -82,8 +113,61 @@ failed:
 proc_t *
 proc_create(char *name)
 {
-        NOT_YET_IMPLEMENTED("PROCS: proc_create");
-        return NULL;
+        pid_t pid;
+        proc_t *proc = NULL;
+
+        /* get a vaild pid */
+        pid = _proc_getid();
+        KASSERT(PID_IDLE != pid || list_empty(&_proc_list));
+        KASSERT(PID_INIT != pid || PID_IDLE == curproc->p_pid);
+        dbg(DBG_PRINT, "(GRADING1A 2.a)\n");
+
+        /* alloc memory */
+        proc = (proc_t *)slab_obj_alloc(proc_allocator);
+        memset(proc, 0, sizeof(proc_t));
+
+        /* init the PCB */
+        proc->p_pid = pid;
+        strncpy(proc->p_comm, name, PROC_NAME_LEN);
+        list_init(&proc->p_threads);
+        list_init(&proc->p_children);
+        if (proc->p_pid == PID_IDLE) {
+                proc->p_pproc = NULL;
+        } else if (proc->p_pid == PID_INIT) {
+                proc_initproc = proc;
+                proc->p_pproc = curproc;
+                list_insert_tail(&curproc->p_children, &proc->p_child_link);
+        } else {
+                proc->p_pproc = curproc;
+                list_insert_tail(&curproc->p_children, &proc->p_child_link);
+        }
+        proc->p_status = 0;
+        proc->p_state = PROC_RUNNING;
+        sched_queue_init(&proc->p_wait);
+        proc->p_pagedir = pt_create_pagedir();
+        list_insert_tail(&_proc_list, &proc->p_list_link);
+#ifdef __VFS__
+        int fd;
+
+        if (pid != PID_IDLE && pid != PID_INIT) {
+                proc->p_cwd = curproc->p_cwd;
+                if (proc->p_cwd) {
+                        dbg(DBG_PRINT, "(GRADING2D)\n");
+                        vref(proc->p_cwd);
+                }
+        }
+        for (fd = 0; fd < NFILES; fd++) {
+                proc->p_files[fd] = NULL;
+        }
+#endif
+
+#ifdef __VM__
+        proc->p_vmmap = vmmap_create();
+        proc->p_vmmap->vmm_proc = proc;
+        proc->p_brk = NULL;
+        proc->p_start_brk = NULL;
+#endif
+        return proc;
 }
 
 /**
@@ -113,7 +197,47 @@ proc_create(char *name)
 void
 proc_cleanup(int status)
 {
-        NOT_YET_IMPLEMENTED("PROCS: proc_cleanup");
+        proc_t *child = NULL;
+        int fd;
+
+        KASSERT(NULL != proc_initproc);
+        KASSERT(1 <= curproc->p_pid);
+        KASSERT(NULL != curproc->p_pproc);
+        dbg(DBG_PRINT, "(GRADING1A 2.b)\n");
+        /* VFS */
+#ifdef __VFS__
+        for (fd = 0; fd < NFILES; fd++) {
+                if (curproc->p_files[fd] != NULL)
+                        do_close(fd);
+        }
+        if (curproc->p_cwd) vput(curproc->p_cwd);
+#endif
+        /* wake up parent */
+        if (curproc->p_pproc->p_wait.tq_size != 0)
+                sched_wakeup_on(&curproc->p_pproc->p_wait);
+
+        /* reparenting */
+        list_iterate_begin(&curproc->p_children, child, proc_t, p_child_link) {
+                list_remove(&child->p_child_link);
+                child->p_pproc = proc_initproc;
+                list_insert_tail(&proc_initproc->p_children, &child->p_child_link);
+        } list_iterate_end();
+
+        /* setting state and status */
+        curproc->p_state = PROC_DEAD;
+        curproc->p_status = status;
+
+        list_remove(&curproc->p_list_link);
+
+        KASSERT(NULL != curproc->p_pproc);
+        dbg(DBG_PRINT, "(GRADING1A 2.b)\n");
+        /* VM */
+#ifdef __VM__
+        vmmap_destroy(curproc->p_vmmap);
+        curproc->p_vmmap = NULL;
+#endif
+
+        sched_switch();
 }
 
 /*
@@ -127,7 +251,17 @@ proc_cleanup(int status)
 void
 proc_kill(proc_t *p, int status)
 {
-        NOT_YET_IMPLEMENTED("PROCS: proc_kill");
+        proc_t *child = NULL;
+        kthread_t *thr = NULL;
+
+        if (p == curproc) {
+                do_exit(status);
+        } else {
+                list_iterate_begin(&p->p_threads, thr, kthread_t, kt_plink) {
+                        if (thr->kt_state != KT_EXITED) 
+                                kthread_cancel(thr, NULL);
+                } list_iterate_end();
+        }
 }
 
 /*
@@ -139,25 +273,11 @@ proc_kill(proc_t *p, int status)
 void
 proc_kill_all()
 {
-        NOT_YET_IMPLEMENTED("PROCS: proc_kill_all");
-}
-
-proc_t *
-proc_lookup(int pid)
-{
-        proc_t *p;
+        proc_t *p = NULL;
         list_iterate_begin(&_proc_list, p, proc_t, p_list_link) {
-                if (p->p_pid == pid) {
-                        return p;
-                }
+                if (p->p_pproc != NULL && p->p_pproc->p_pid != PID_IDLE && p!= curproc)
+                        proc_kill(p, -1);
         } list_iterate_end();
-        return NULL;
-}
-
-list_t *
-proc_list()
-{
-        return &_proc_list;
 }
 
 /*
@@ -171,7 +291,7 @@ proc_list()
 void
 proc_thread_exited(void *retval)
 {
-        NOT_YET_IMPLEMENTED("PROCS: proc_thread_exited");
+        proc_cleanup((int)retval);
 }
 
 /* If pid is -1 dispose of one of the exited children of the current
@@ -192,8 +312,65 @@ proc_thread_exited(void *retval)
 pid_t
 do_waitpid(pid_t pid, int options, int *status)
 {
-        NOT_YET_IMPLEMENTED("PROCS: do_waitpid");
-        return 0;
+        proc_t *p = NULL;
+        kthread_t *thr = NULL;
+        pid_t c_pid;
+
+        KASSERT(pid == -1 || pid >= 0);
+        KASSERT(options == 0);
+
+        while (pid == -1) {
+                if (list_empty(&curproc->p_children))
+                        return -ECHILD;
+                list_iterate_begin(&curproc->p_children, p, proc_t, p_child_link) {
+                        if (p->p_state == PROC_DEAD) {
+                                if (curproc->p_pid == PID_IDLE && p->p_pid == 2) {
+                                        return p->p_pid;
+                                }
+                                KASSERT(NULL != p);
+                                KASSERT(-1 == pid || p->p_pid == pid);
+                                KASSERT(NULL != p->p_pagedir);
+                                dbg(DBG_PRINT, "(GRADING1A 2.c)\n");
+
+                                list_iterate_begin(&p->p_threads, thr, kthread_t, kt_plink) {
+                                        KASSERT(KT_EXITED == thr->kt_state);
+                                        dbg(DBG_PRINT, "(GRADING1A 2.c)\n");
+
+                                        kthread_destroy(thr);
+                                } list_iterate_end();
+                                c_pid = p->p_pid;
+                                *status = p->p_status;
+                                list_remove(&p->p_child_link);
+                                pt_destroy_pagedir(p->p_pagedir);
+                                slab_obj_free(proc_allocator, p);
+                                return c_pid;
+                        }
+                } list_iterate_end();
+                sched_sleep_on(&curproc->p_wait);
+        }
+        p = proc_lookup(pid);
+        if (p == NULL || p->p_pproc != curproc)
+                return -ECHILD;
+        KASSERT(NULL != p);
+        KASSERT(-1 == pid || p->p_pid == pid);
+        KASSERT(NULL != p->p_pagedir);
+        dbg(DBG_PRINT, "(GRADING1A 2.c)\n");
+
+        while (p->p_state != PROC_DEAD)
+                sched_sleep_on(&curproc->p_wait);
+        list_iterate_begin(&p->p_threads, thr, kthread_t, kt_plink) {
+                KASSERT(KT_EXITED == thr->kt_state);
+                dbg(DBG_PRINT, "(GRADING1A 2.c)\n");
+
+                kthread_destroy(thr);
+        } list_iterate_end();
+        c_pid = p->p_pid;
+        *status = p->p_status;
+        list_remove(&p->p_child_link);
+        pt_destroy_pagedir(p->p_pagedir);
+        slab_obj_free(proc_allocator, p);
+
+        return c_pid;
 }
 
 /*
@@ -205,7 +382,7 @@ do_waitpid(pid_t pid, int options, int *status)
 void
 do_exit(int status)
 {
-        NOT_YET_IMPLEMENTED("PROCS: do_exit");
+        kthread_cancel(curthr, (void *)status);
 }
 
 size_t

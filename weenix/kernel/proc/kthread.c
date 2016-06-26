@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "config.h"
 #include "globals.h"
 
@@ -63,6 +76,17 @@ free_stack(char *stack)
         page_free_n(stack, 1 + (DEFAULT_STACK_SIZE >> PAGE_SHIFT));
 }
 
+void
+kthread_destroy(kthread_t *t)
+{
+        KASSERT(t && t->kt_kstack);
+        free_stack(t->kt_kstack);
+        if (list_link_is_linked(&t->kt_plink))
+                list_remove(&t->kt_plink);
+
+        slab_obj_free(kthread_allocator, t);
+}
+
 /*
  * Allocate a new stack with the alloc_stack function. The size of the
  * stack is DEFAULT_STACK_SIZE.
@@ -74,19 +98,30 @@ free_stack(char *stack)
 kthread_t *
 kthread_create(struct proc *p, kthread_func_t func, long arg1, void *arg2)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kthread_create");
-        return NULL;
-}
+        kthread_t *kthr = NULL;
 
-void
-kthread_destroy(kthread_t *t)
-{
-        KASSERT(t && t->kt_kstack);
-        free_stack(t->kt_kstack);
-        if (list_link_is_linked(&t->kt_plink))
-                list_remove(&t->kt_plink);
+        KASSERT(NULL != p);
+        dbg(DBG_PRINT, "(GRADING1A 3.a)\n");
 
-        slab_obj_free(kthread_allocator, t);
+        kthr = (kthread_t *)slab_obj_alloc(kthread_allocator);
+        memset(kthr, 0, sizeof(kthread_t));
+
+        /* initialize the TCB */
+        kthr->kt_kstack = alloc_stack();
+        kthr->kt_retval = 0;
+        kthr->kt_errno = 0;
+        kthr->kt_proc = p;
+        kthr->kt_cancelled = 0;
+        kthr->kt_wchan = NULL;
+        kthr->kt_state = KT_NO_STATE;
+        list_link_init(&kthr->kt_qlink);
+        list_link_init(&kthr->kt_plink);
+        list_insert_tail(&p->p_threads, &kthr->kt_plink);
+
+        /* initialize the context */
+        context_setup(&kthr->kt_ctx, func, arg1, arg2, kthr->kt_kstack,
+                      DEFAULT_STACK_SIZE, p->p_pagedir);
+        return kthr;
 }
 
 /*
@@ -103,7 +138,17 @@ kthread_destroy(kthread_t *t)
 void
 kthread_cancel(kthread_t *kthr, void *retval)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kthread_cancel");
+        KASSERT(NULL != kthr);
+        dbg(DBG_PRINT, "(GRADING1A 3.b)\n");
+
+        if (kthr == curthr) {
+                kthread_exit(retval);
+        } else {
+                kthr->kt_cancelled = 1;
+                kthr->kt_retval = retval;
+                if (kthr->kt_state == KT_SLEEP_CANCELLABLE)
+                        sched_cancel(kthr);
+        }
 }
 
 /*
@@ -119,7 +164,14 @@ kthread_cancel(kthread_t *kthr, void *retval)
 void
 kthread_exit(void *retval)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kthread_exit");
+        KASSERT(!curthr->kt_wchan);
+        KASSERT(!curthr->kt_qlink.l_next && !curthr->kt_qlink.l_prev);
+        KASSERT(curthr->kt_proc == curproc);
+        dbg(DBG_PRINT, "(GRADING1A 3.c)\n");
+
+        curthr->kt_retval = retval;
+        curthr->kt_state = KT_EXITED;
+        proc_thread_exited(retval);
 }
 
 /*
@@ -132,8 +184,37 @@ kthread_exit(void *retval)
 kthread_t *
 kthread_clone(kthread_t *thr)
 {
-        NOT_YET_IMPLEMENTED("VM: kthread_clone");
-        return NULL;
+        kthread_t *newthr = NULL;
+
+        KASSERT(KT_RUN == thr->kt_state);
+        dbg(DBG_PRINT, "(GRADING3A 8.a)\n");
+
+        newthr = (kthread_t *)slab_obj_alloc(kthread_allocator);
+        KASSERT(NULL != newthr);
+
+        newthr->kt_kstack = alloc_stack();
+        KASSERT(NULL != newthr->kt_kstack);
+        newthr->kt_ctx.c_kstack = (uintptr_t)newthr->kt_kstack;
+        newthr->kt_ctx.c_kstacksz = thr->kt_ctx.c_kstacksz;
+        newthr->kt_retval = thr->kt_retval;
+        newthr->kt_errno = thr->kt_errno;
+        newthr->kt_proc = NULL;
+        newthr->kt_cancelled = thr->kt_cancelled;
+        newthr->kt_state = KT_RUN;
+        newthr->kt_wchan = thr->kt_wchan;
+        list_link_init(&newthr->kt_qlink);
+        list_link_init(&newthr->kt_plink);
+        
+        if (newthr->kt_wchan) {
+                dbg(DBG_PRINT,"(GRADING3B)\n");
+                list_insert_head(&newthr->kt_wchan->tq_list, &newthr->kt_qlink);
+                newthr->kt_wchan->tq_size ++;
+        }
+
+        KASSERT(KT_RUN == newthr->kt_state);
+        dbg(DBG_PRINT, "(GRADING3A 8.a)\n");
+
+        return newthr;
 }
 
 /*

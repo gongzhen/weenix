@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 /*
  *  FILE: open.c
  *  AUTH: mcc | jal
@@ -41,7 +54,7 @@ get_empty_fd(proc_t *p)
  *      3. Save the file_t in curproc's file descriptor table.
  *      4. Set file_t->f_mode to OR of FMODE_(READ|WRITE|APPEND) based on
  *         oflags, which can be O_RDONLY, O_WRONLY or O_RDWR, possibly OR'd with
- *         O_APPEND.
+ *         O_APPEND or O_CREAT.
  *      5. Use open_namev() to get the vnode for the file_t.
  *      6. Fill in the fields of the file_t.
  *      7. Return new fd.
@@ -73,6 +86,60 @@ get_empty_fd(proc_t *p)
 int
 do_open(const char *filename, int oflags)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_open");
-        return -1;
+        int fd, ret;
+        file_t *f = NULL;
+        vnode_t *res_vnode = NULL;
+
+        fd = get_empty_fd(curproc);
+        if (fd == -EMFILE) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EMFILE;
+        }
+        f = fget(-1);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -ENOMEM;
+        }
+
+        if ((oflags & O_WRONLY) == O_WRONLY && (oflags & O_RDWR) == O_RDWR) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EINVAL;
+        } else if ((oflags & O_WRONLY) == O_WRONLY) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                f->f_mode = FMODE_WRITE;
+        } else if ((oflags & O_RDWR) == O_RDWR) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                f->f_mode = FMODE_READ | FMODE_WRITE;
+        } else {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                f->f_mode = FMODE_READ;
+        }
+        if ((oflags & O_APPEND) == O_APPEND) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                f->f_mode = f->f_mode | FMODE_APPEND;
+        }
+
+        ret = open_namev(filename, oflags, &res_vnode, NULL);
+
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                fput(f);
+                curproc->p_files[fd] = NULL;
+
+                return ret;
+        }
+        if (S_ISDIR(res_vnode->vn_mode) && (oflags & O_WRONLY || oflags & O_RDWR)) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                fput(f);
+                curproc->p_files[fd] = NULL;
+                vput(res_vnode);
+                return -EISDIR;
+        }
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        curproc->p_files[fd] = f;
+        f->f_vnode = res_vnode;
+        f->f_pos = 0;
+
+        return fd;
 }

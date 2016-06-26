@@ -55,11 +55,10 @@ vm-submit:
 		kernel/fs/open.c \
 		kernel/fs/vfs_syscall.c \
 		kernel/fs/vnode.c \
+		kernel/mm/pframe.c \
 		kernel/api/access.c \
 		kernel/api/syscall.c \
-		kernel/fs/vnode.c \
 		kernel/proc/fork.c \
-		kernel/proc/kthread.c \
 		kernel/vm/anon.c \
 		kernel/vm/brk.c \
 		kernel/vm/mmap.c \

@@ -1,9 +1,22 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 /*
  *  FILE: vfs_syscall.c
  *  AUTH: mcc | jal
  *  DESC:
  *  DATE: Wed Apr  8 02:46:19 1998
- *  $Id: vfs_syscall.c,v 1.1 2012/10/10 20:06:46 william Exp $
+ *  $Id: vfs_syscall.c,v 1.10 2014/12/22 16:15:17 william Exp $
  */
 
 #include "kernel.h"
@@ -24,7 +37,7 @@
 
 /* To read a file:
  *      o fget(fd)
- *      o call its virtual read f_op
+ *      o call its virtual read fs_op
  *      o update f_pos
  *      o fput() it
  *      o return the number of bytes read, or an error
@@ -41,13 +54,46 @@
 int
 do_read(int fd, void *buf, size_t nbytes)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_read");
-        return -1;
+        file_t *f = NULL;
+        unsigned int bytes;
+
+        if (fd == -1) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        f = fget(fd);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        if ((f->f_mode & FMODE_READ) != FMODE_READ) {
+                fput(f);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        if (S_ISDIR(f->f_vnode->vn_mode)) {
+                fput(f);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EISDIR;
+        }
+
+        bytes = f->f_vnode->vn_ops->read(f->f_vnode, f->f_pos, buf, nbytes);
+
+        if (bytes == nbytes) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                do_lseek(fd, bytes, SEEK_CUR);
+        } else {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                do_lseek(fd, 0, SEEK_END);
+        }
+        fput(f);
+
+        return bytes;
 }
 
 /* Very similar to do_read.  Check f_mode to be sure the file is writable.  If
  * f_mode & FMODE_APPEND, do_lseek() to the end of the file, call the write
- * f_op, and fput the file.  As always, be mindful of refcount leaks.
+ * fs_op, and fput the file.  As always, be mindful of refcount leaks.
  *
  * Error cases you must handle for this function at the VFS level:
  *      o EBADF
@@ -56,8 +102,42 @@ do_read(int fd, void *buf, size_t nbytes)
 int
 do_write(int fd, const void *buf, size_t nbytes)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_write");
-        return -1;
+        file_t *f = NULL;
+        int bytes;
+
+        if (fd == -1) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        f = fget(fd);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        if ((f->f_mode & FMODE_WRITE) != FMODE_WRITE &&
+            (f->f_mode & FMODE_APPEND) != FMODE_APPEND ) {
+                fput(f);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        if ((f->f_mode & FMODE_APPEND) == FMODE_APPEND) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                do_lseek(fd, 0, SEEK_END);
+        }
+
+        bytes = f->f_vnode->vn_ops->write(f->f_vnode, f->f_pos, buf, nbytes);
+        if (bytes > 0) {
+                KASSERT((S_ISCHR(f->f_vnode->vn_mode)) ||
+                        (S_ISBLK(f->f_vnode->vn_mode)) ||
+                        ((S_ISREG(f->f_vnode->vn_mode)) && (f->f_pos <= f->f_vnode->vn_len)));
+                dbg(DBG_PRINT, "(GRADING2A 3.a)\n");
+
+                do_lseek(fd, bytes, SEEK_CUR);
+        }
+
+        fput(f);
+
+        return bytes;
 }
 
 /*
@@ -70,8 +150,25 @@ do_write(int fd, const void *buf, size_t nbytes)
 int
 do_close(int fd)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_close");
-        return -1;
+        file_t *f = NULL;
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+
+        if (fd == -1) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        f = fget(fd);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        fput(f);
+        fput(f);
+        curproc->p_files[fd] = NULL;
+
+        return 0;
 }
 
 /* To dup a file:
@@ -93,8 +190,32 @@ do_close(int fd)
 int
 do_dup(int fd)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_dup");
-        return -1;
+        file_t *f = NULL;
+        int new_fd;
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+
+        if (fd == -1) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        f = fget(fd);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+
+        new_fd = get_empty_fd(curproc);
+        if (new_fd == -EMFILE) {
+                fput(f);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EMFILE;
+        }
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        curproc->p_files[new_fd] = f;
+
+        return new_fd;
 }
 
 /* Same as do_dup, but insted of using get_empty_fd() to get the new fd,
@@ -109,8 +230,39 @@ do_dup(int fd)
 int
 do_dup2(int ofd, int nfd)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_dup2");
-        return -1;
+        file_t *f = NULL;
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+
+        if (ofd == -1) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        if (nfd < 0 || nfd >= NFILES) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        f = fget(ofd);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+
+
+        if (curproc->p_files[nfd] != NULL) {
+                if (nfd != ofd) {
+                        dbg(DBG_PRINT, "(GRADING2D)\n");
+                        do_close(nfd);
+                } else {
+                        dbg(DBG_PRINT, "(GRADING2D)\n");
+                        fput(f);
+                }
+        }
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        curproc->p_files[nfd] = f;
+        
+        return nfd;
 }
 
 /*
@@ -141,8 +293,45 @@ do_dup2(int ofd, int nfd)
 int
 do_mknod(const char *path, int mode, unsigned devid)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_mknod");
-        return -1;
+        size_t namelen;
+        const char *name = NULL;
+        vnode_t *dir, *result;
+        int ret;
+
+        dir = NULL;
+        result = NULL;
+        if (!S_ISCHR(mode) && !S_ISBLK(mode)) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EINVAL;
+        }
+        ret = dir_namev(path, &namelen, &name, NULL, &dir);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        ret = lookup(dir, name, namelen, &result);
+        if (ret < 0) {
+                if (ret == -ENOTDIR || dir->vn_ops->mknod == NULL || !S_ISDIR(dir->vn_mode)){
+                        vput(dir);
+                        dbg(DBG_PRINT, "(GRADING2D)\n");
+                        return -ENOTDIR;
+                }
+                if (ret == -ENOENT) {
+                        KASSERT(NULL != dir->vn_ops->mknod);
+                        dbg(DBG_PRINT, "(GRADING2A 3.b)\n");
+
+                        ret = dir->vn_ops->mknod(dir, name, namelen, mode, devid);
+                        vput(dir);
+                        return ret;
+                }
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        vput(dir);
+        vput(result);
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        return -EEXIST;
 }
 
 /* Use dir_namev() to find the vnode of the dir we want to make the new
@@ -162,8 +351,47 @@ do_mknod(const char *path, int mode, unsigned devid)
 int
 do_mkdir(const char *path)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_mkdir");
-        return -1;
+        size_t namelen;
+        const char *name = NULL;
+        vnode_t *dir, *result;
+        int ret;
+
+        dir = NULL;
+        result = NULL;
+
+        ret = dir_namev(path, &namelen, &name, NULL, &dir);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        if (namelen == 0) {
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EEXIST;
+        }
+        ret = lookup(dir, name, namelen, &result);
+        if (ret < 0) {
+                if (ret == -ENOTDIR || dir->vn_ops->mkdir == NULL || !S_ISDIR(dir->vn_mode)){
+                        vput(dir);
+                        dbg(DBG_PRINT, "(GRADING2D)\n");
+                        return -ENOTDIR;
+                }
+                if (ret == -ENOENT) {
+                        KASSERT(NULL != dir->vn_ops->mkdir);
+                        dbg(DBG_PRINT, "(GRADING2A 3.c)\n");
+
+                        ret = dir->vn_ops->mkdir(dir, name, namelen);
+                        vput(dir);
+                        return ret;
+                }
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        vput(dir);
+        vput(result);
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        return -EEXIST;
 }
 
 /* Use dir_namev() to find the vnode of the directory containing the dir to be
@@ -187,8 +415,43 @@ do_mkdir(const char *path)
 int
 do_rmdir(const char *path)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_rmdir");
-        return -1;
+        size_t namelen;
+        const char *name = NULL;
+        vnode_t *dir;
+        int ret;
+
+        dir = NULL;
+
+        ret = dir_namev(path, &namelen, &name, NULL, &dir);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+
+        if (namelen == 1 && name[0] == '.') {
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EINVAL;
+        }
+
+        if (namelen == 2 && name[0] == '.' && name[1] == '.') {
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -ENOTEMPTY;
+        }
+
+        if (dir->vn_ops->rmdir == NULL || !S_ISDIR(dir->vn_mode)) {
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -ENOTDIR;
+                 
+        }
+        KASSERT(NULL != dir->vn_ops->rmdir);
+        dbg(DBG_PRINT, "(GRADING2A 3.d)\n");
+
+        ret = dir->vn_ops->rmdir(dir, name, namelen);
+        vput(dir);
+        return ret;
 }
 
 /*
@@ -207,8 +470,39 @@ do_rmdir(const char *path)
 int
 do_unlink(const char *path)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_unlink");
-        return -1;
+        size_t namelen;
+        const char *name = NULL;
+        vnode_t *dir, *result;
+        int ret;
+
+        dir = NULL;
+        result = NULL;
+
+        ret = dir_namev(path, &namelen, &name, NULL, &dir);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        ret = lookup(dir, name, namelen, &result);
+
+        if (ret < 0) {
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        if (S_ISDIR(result->vn_mode)) {
+                vput(dir);
+                vput(result);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EISDIR;
+        }
+        KASSERT(NULL != dir->vn_ops->unlink);
+        dbg(DBG_PRINT, "(GRADING2A 3.e)\n");
+
+        ret = dir->vn_ops->unlink(dir, name, namelen);
+        vput(dir);
+        vput(result);
+        return ret;
 }
 
 /* To link:
@@ -229,12 +523,68 @@ do_unlink(const char *path)
  *        directory.
  *      o ENAMETOOLONG
  *        A component of from or to was too long.
+ *      o EISDIR
+ *        from is a directory.
  */
 int
 do_link(const char *from, const char *to)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_link");
-        return -1;
+        size_t namelen;
+        const char *name = NULL;
+        vnode_t *from_vnode, *dir, *to_vnode;
+        int ret;
+
+        from_vnode = NULL;
+        dir = NULL;
+        to_vnode = NULL;
+        
+        ret = open_namev(from, 0, &from_vnode, NULL);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return ret;
+        }
+        if (S_ISDIR(from_vnode->vn_mode)) {
+                vput(from_vnode);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return -EISDIR;
+        }
+        ret = dir_namev(to, &namelen, &name, NULL, &dir);
+        if (ret < 0) {
+                vput(from_vnode);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return ret;
+        }
+        ret = lookup(dir, name, namelen, &to_vnode);
+        if (ret < 0) {
+                if (ret == -ENOENT) {
+                        if (NULL == dir->vn_ops->link) {
+                                dbg(DBG_PRINT, "(GRADING2D)\n");
+                                vput(from_vnode);
+                                vput(dir);
+
+                                return -ENOTDIR;
+                        }
+                        ret = dir->vn_ops->link(from_vnode, dir, name, namelen);
+                        dbg(DBG_PRINT, "(GRADING2D)\n");
+                        vput(from_vnode);
+                        vput(dir);
+
+                        return ret;
+                }
+                vput(from_vnode);
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        vput(from_vnode);
+        vput(dir);
+        vput(to_vnode);
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+
+        return -EEXIST;
 }
 
 /*      o link newname to oldname
@@ -248,8 +598,16 @@ do_link(const char *from, const char *to)
 int
 do_rename(const char *oldname, const char *newname)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_rename");
-        return -1;
+        int ret;
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        ret = do_link(oldname, newname);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return ret;
+        }
+        return do_unlink(oldname);
 }
 
 /* Make the named directory the current process's cwd (current working
@@ -268,12 +626,30 @@ do_rename(const char *oldname, const char *newname)
 int
 do_chdir(const char *path)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_chdir");
-        return -1;
+        vnode_t *dir;
+        int ret;
+
+        ret = open_namev(path, 0, &dir, NULL);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return ret;
+        }
+        if (!S_ISDIR(dir->vn_mode)) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                vput(dir);
+
+                return -ENOTDIR;
+        }
+        vput(curproc->p_cwd);
+        curproc->p_cwd = dir;
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+
+        return 0; 
 }
 
-/* Call the readdir f_op on the given fd, filling in the given dirent_t*.
- * If the readdir f_op is successful, it will return a positive value which
+/* Call the readdir fs_op on the given fd, filling in the given dirent_t*.
+ * If the readdir fs_op is successful, it will return a positive value which
  * is the number of bytes copied to the dirent_t.  You need to increment the
  * file_t's f_pos by this amount.  As always, be aware of refcounts, check
  * the return value of the fget and the virtual function, and be sure the
@@ -290,8 +666,38 @@ do_chdir(const char *path)
 int
 do_getdent(int fd, struct dirent *dirp)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_getdent");
-        return -1;
+        file_t *f = NULL;
+        int bytes;
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+
+        if (fd == -1) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        f = fget(fd);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+
+        if (!S_ISDIR(f->f_vnode->vn_mode) || f->f_vnode->vn_ops->readdir == NULL) {
+                fput(f);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -ENOTDIR;
+        }
+
+        bytes = f->f_vnode->vn_ops->readdir(f->f_vnode, f->f_pos, dirp);
+
+        fput(f);
+
+        if (bytes == 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return 0;
+        }
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        do_lseek(fd, bytes, SEEK_CUR);
+        return sizeof(*dirp);
 }
 
 /*
@@ -307,8 +713,44 @@ do_getdent(int fd, struct dirent *dirp)
 int
 do_lseek(int fd, int offset, int whence)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_lseek");
-        return -1;
+        file_t *f = NULL;
+
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        if (!(whence == SEEK_SET) && !(whence == SEEK_CUR) && !(whence == SEEK_END) ) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return -EINVAL;
+        }
+
+        if (fd == -1) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+        f = fget(fd);
+        if (f == NULL) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return -EBADF;
+        }
+
+        if (whence == SEEK_SET && offset >= 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                f->f_pos = offset;
+        } else if (whence == SEEK_CUR && f->f_pos+offset >= 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                f->f_pos += offset;
+        } else if (whence == SEEK_END && f->f_vnode->vn_len + offset >= 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                f->f_pos = f->f_vnode->vn_len + offset;
+        } else {
+                fput(f);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+
+                return -EINVAL;
+        }
+        dbg(DBG_PRINT, "(GRADING2D)\n");
+        fput(f);
+
+        return f->f_pos;
 }
 
 /*
@@ -325,8 +767,42 @@ do_lseek(int fd, int offset, int whence)
 int
 do_stat(const char *path, struct stat *buf)
 {
-        NOT_YET_IMPLEMENTED("VFS: do_stat");
-        return -1;
+        size_t namelen;
+        const char *name = NULL;
+        vnode_t *dir, *result;
+        int ret;
+
+        dir = NULL;
+        result = NULL;
+
+        ret = dir_namev(path, &namelen, &name, NULL, &dir);
+        if (ret < 0) {
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+        if (namelen == 0) {
+                KASSERT(NULL != dir->vn_ops->stat);
+                dbg(DBG_PRINT, "(GRADING2A 3.f)\n");
+                dir->vn_ops->stat(dir, buf);
+                vput(dir);
+                return 0;
+        }
+        ret = lookup(dir, name, namelen, &result);
+        if (ret < 0) {
+                vput(dir);
+                dbg(DBG_PRINT, "(GRADING2D)\n");
+                return ret;
+        }
+
+        KASSERT(NULL != result->vn_ops->stat);
+        dbg(DBG_PRINT, "(GRADING2A 3.f)\n");
+
+        result->vn_ops->stat(result, buf);
+
+        vput(dir);
+        vput(result);
+
+        return 0;
 }
 
 #ifdef __MOUNTING__

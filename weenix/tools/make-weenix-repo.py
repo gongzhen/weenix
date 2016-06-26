@@ -39,44 +39,46 @@ import types
 ## ==============================================
 ## binKeepdir
 ## ==============================================
-def binKeepdir(root_dir, dir_list, keep_exts=[], keep_files=[]):
-    """Performs binary keeping of directory list from root. 
+def binKeepdir(root_dir, kernel_dir, module_dirs, module_names, keep_exts=[], keep_files=[]):
+    """Performs binary keeping of directory list from root.
        Keep object files based on extensions provided in keep_exts
        from dir_list
     """
     assert type(root_dir) == types.StringType
-    assert type(dir_list) == types.ListType or type(dir_list) == types.TupleType
+    assert type(kernel_dir) == types.StringType
+    assert type(module_dirs) == types.ListType or type(module_dirs) == types.TupleType
+    assert type(module_names) == types.ListType or type(module_names) == types.TupleType
     assert type(keep_exts) == types.ListType or type(keep_exts) == types.TupleType
     assert type(keep_files) == types.ListType or type(keep_exts) == types.TupleType
     # Assumes we have compiled the tree before working on it.
     # Compiling the tree is necessary if we want to submit the .a
     # libraries to non-lab students.
 
-
     # Keeps object files from subdir of dir_list based on file
     # extension pattern. Non-lab students must only have access to
     # libraries, but not be permitted to view source code. This prevents
     # lab students from retrieving the non-lab repo and peeking at the
     # library source code they should be implementing.
-    for directory in dir_list:
-        path = os.path.join(root_dir, directory)
-        if not os.path.isdir(path):
-            dbgPrint("\t%s is not a valid directory\n" % path, dbg_msg.WARNING)
-            continue
+
+    # Call external script to build libraries. Assumes the script is correct.
+    for i, module_dir in enumerate(module_dirs):
+        subprocess.call([os.path.join(root_dir, "tools", "archive_module.sh"), kernel_dir, module_dir, module_names[i]])
+
+        path = os.path.join(kernel_dir, module_dir)
 
         # Let's start by ignoring all files. We will add exceptions
-		# later. This guarantees that no source code is kept on our new
-		# git repo
+        # later. This guarantees that no source code is kept in our new
+        # git repo
 
-		# WARNING: relies on git. If not using git, we need to remove
-		# the file
+        # WARNING: relies on git. If not using git, we need to remove
+        # the file
         with open(os.path.join(path, ".gitignore"), "a") as fin:
             fin.write("*\n")
 
-		# Now let's include our wanted files based on their extensions.
-		# We can use this to keep the static libraries.
-		# Note that we force its inclusion with git add since the files
-		# might be ignore by .gitignore the root dir
+        # Now let's include our wanted files based on their extensions.
+        # We can use this to keep the static libraries.
+        # Note that we force its inclusion with git add since the files
+        # might be ignore by .gitignore the root dir
 
         filenames = os.listdir(path)
         for file in filenames:
@@ -88,9 +90,9 @@ def binKeepdir(root_dir, dir_list, keep_exts=[], keep_files=[]):
 
         # Finally, let's keep files based on their names
         for file in keep_files:
-           if file in filenames:
-               dbgPrint("\tKeeping %s\n" % file, dbg_msg.DEBUG)
-               subprocess.call(["git", "add", "-f", os.path.join(path, file)])
+            if file in filenames:
+                dbgPrint("\tKeeping %s\n" % file, dbg_msg.DEBUG)
+                subprocess.call(["git", "add", "-f", os.path.join(path, file)])
 
 ## ==============================================
 ## findRoot
@@ -106,8 +108,8 @@ def findRoot(base, max_depth=5):
     # Keep going up the tree until we find the root
     while depth < max_depth:
         filenames = os.listdir(base)
-        
-		# Root for Weenix repo contains weenix and fsmaker files
+
+        # Root for Weenix repo contains weenix and fsmaker files
         if ("weenix" in filenames) and ("fsmaker" in filenames):
             root_dir = os.path.abspath(base)
             break
@@ -124,7 +126,7 @@ def listModules(prefix="", modules=[]):
     assert type(modules) == types.ListType or type(modules) == types.TupleType
 
     sys.stdout.write(prefix)
-    print " ".join(m for m in modules)
+    print (" ".join(m for m in modules))
 
 remove_files = [ "tools/make-weenix-repo.help" ]
 keep_files = [ "Submodules" ]
@@ -134,21 +136,28 @@ remove_extensions = [ ".bin",".dbg",".files",".gdbcomm",".img",".o",".out" ]
 src_extensions = [ ".h",".c",".py" ]
 lib_extensions = [ ".a",".gdb" ]
 
-# Map between module names and their source-code location
+kernel_dir_prefix = "kernel"
+
+# Map between module names, source-code location and submodule names
 modules = {
-    "DRIVERS": { "dirs": { "src": [ "kernel/drivers","kernel/drivers/disk","kernel/drivers/tty" ], "lib": [ "kernel/drivers","kernel/drivers/disk","kernel/drivers/tty" ] } },\
-    "PROCS": { "dirs": { "src": [ "kernel/main","kernel/proc" ], "lib": [ "kernel/proc" ] } }, \
-    "S5FS": { "dirs": { "src": [ "kernel/fs/s5fs","kernel/mm" ], "lib": [ "kernel/fs/s5fs" ] } }, \
-    "VFS":  { "dirs": { "src": [ "kernel/fs" ], "lib": [ "kernel/fs" ] } }, \
-    "VM":   { "dirs": { "src": [ "kernel/api","kernel/drivers","kernel/fs/s5fs","kernel/proc","kernel/vm" ], "lib": [ "kernel/vm" ] } }
+    "DRIVERS": { "dirs": { "src": [ "drivers/disk","drivers/tty","drivers" ], "lib": [ "drivers/disk","drivers/tty","drivers" ] }, \
+                 "names": [ "disk","tty","drivers" ] },
+    "PROCS": { "dirs": { "src": [ "main","proc" ], "lib": [ "proc" ] }, \
+               "names": [ "proc" ] },
+    "S5FS": { "dirs": { "src": [ "fs/s5fs","mm" ], "lib": [ "fs/s5fs" ] }, \
+              "names": [ "s5fs" ] },
+    "VFS":  { "dirs": { "src": [ "fs" ], "lib": [ "fs" ] }, \
+              "names": [ "fs" ] },
+    "VM":   { "dirs": { "src": [ "api","drivers","fs/s5fs","proc","vm" ], "lib": [ "vm" ] }, \
+              "names": [ "vm" ] },
 }
 
 # Map between extra features and their source-code location
 extras = {
-    "GETCWD":   { "dirs": [ "kernel/fs" ] }, \
-	"MOUNTING": { "dirs": [ "kernel/fs" ] }, \
-	"MTP":      { "dirs": [ "kernel/proc" ] }, \
-	"UPREEMPT": { "dirs": [ "kernel/util" ] }
+    "GETCWD":   { "dirs": [ "fs" ] }, \
+    "MOUNTING": { "dirs": [ "fs" ] }, \
+    "MTP":      { "dirs": [ "proc" ] }, \
+    "UPREEMPT": { "dirs": [ "util" ] }
 }
 
 ## ==============================================
@@ -172,7 +181,7 @@ def main():
     extra_strip = False
 
     aparser = argparse.ArgumentParser(description="Weenix repository generator from support code")
-    aparser.add_argument("--list-modules", action="store_true",	help="list available Weenix modules")
+    aparser.add_argument("--list-modules", action="store_true",    help="list available Weenix modules")
     aparser.add_argument("--list-extra", action="store_true", help="list available extra Weenix features")
     aparser.add_argument("--verbose", action="store_true", help="enable verbose output mode")
     aparser.add_argument("--binary", type=str, metavar="module_list", help="enable binary keeping for Weenix modules")
@@ -251,13 +260,13 @@ def main():
             sys.exit(1)
 
     # Finally make sure we are not applying multiple operations to the
-	# same module
+    # same module
     if (binary_keep and src_strip) and len(set(binary_list).intersection(src_list)) > 0:
         sys.stderr.write("ERROR: We can't apply multiple operations to the same modules\n")
         sys.exit(1)
 
     # Compile code first to make sure that there are no errors. Also
-	# needed for keeping binaries
+    # needed for keeping binaries
     dbgPrint("Compiling code...\n")
 
     # If you don't use redo, substitute the following clode block
@@ -287,10 +296,11 @@ def main():
 
         # Remove support code and produce stencil for students
         dbgPrint("Generating stencil code for modules %s...\n" % args["cutsource"])
-        modules_dirs = []
+        module_dirs = []
         for m in src_list:
-            if m in modules.keys(): modules_dirs.extend(modules[m]["dirs"]["src"])
-        srcCutdir(root_dir, modules_dirs, diff.union(extras.keys()))
+            if m in modules.keys():
+                module_dirs.extend([os.path.join(kernel_dir_prefix, m) for m in modules[m]["dirs"]["src"]])
+        srcCutdir(root_dir, module_dirs, diff.union(extras.keys()))
 
         if len(diff) > 0:
             dbgPrint("The following modules were left intact: %s\n" % (", ".join(m for m in diff)), dbg_msg.WARNING)
@@ -302,7 +312,7 @@ def main():
         dbgPrint("Generating stencil code for extras %s...\n" % args["cutextra"])
         extras_dirs = []
         for m in extra_list:
-            if m in extras.keys(): extras_dirs.extend(extras[m]["dirs"])
+            if m in extras.keys(): extras_dirs.extend([os.path.join(kernel_dir_prefix, e) for e in extras[m]["dirs"]])
         srcCutdir(root_dir, extras_dirs, diff.union(modules.keys()))
 
         if len(diff) > 0:
@@ -311,37 +321,18 @@ def main():
     if binary_keep:
         # Do not include library source code for non-lab students
         dbgPrint("Ignoring source from modules %s...\n" % args["binary"])
-        modules_dirs = []
+        module_dirs = []
+        module_names = []
         for m in binary_list:
-            if m in modules.keys(): modules_dirs.extend(modules[m]["dirs"]["lib"])
-        binKeepdir(root_dir, modules_dirs, lib_extensions)
+            if m in modules.keys():
+                module_dirs.extend(modules[m]["dirs"]["lib"])
+                module_names.extend(modules[m]["names"])
+
+        binKeepdir(root_dir, os.path.join(root_dir, kernel_dir_prefix), module_dirs, module_names, lib_extensions)
 
         diff = set(modules.keys()) - binary_list
         if len(diff) > 0:
             dbgPrint("The following modules were left intact: %s\n" % (", ".join(m for m in diff)), dbg_msg.WARNING)
-
-    # For those modules that only have binaries available, let's modify
-	# redo rules, so that the .a files are not deleted when 'redo clean' is
-	# called from the new repository
-    if binary_keep:
-        dbgPrint("Modifying redo files...\n")
-        with open(os.path.join(root_dir, "kernel/Kernel.sh"), "r") as fin:
-            lines = fin.readlines()
-			# A line starting with CLEAN_MODULES= defines the list of
-			# subdirectories available in kernel. Let's remove those who
-			# have a binary-only file, so that it is not deleted.
-            for n, line in enumerate(lines):
-                match = re.match(r"\ACLEAN_MODULES=.*", line)
-                if match:
-                    for m in binary_list:
-                        # I hate doing this, but it's necessary
-                        if m == "VFS" or m == "S5FS": m = "fs"
-                        line = re.sub(r"\s%s\s" % m.lower(), " ", line)
-                        lines[n] = line
-                    break
-
-        with open(os.path.join(root_dir, "kernel/Kernel.sh"), "w") as fin:
-            fin.writelines(lines)
 
     dbgPrint("Setting correct file/dir permissions...\n")
     os.chmod(root_dir, 0770)

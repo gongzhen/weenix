@@ -579,7 +579,7 @@ class Simdisk:
 
         self.set_last_free_block(0xffffffff)
         i = 0
-        for num in xrange(iblocks, blocks):
+        for num in xrange(iblocks+1, blocks):
             if (i == S5_NBLKS_PER_FNODE - 1):
                 block = self.get_block(num)
                 for j in xrange(S5_NBLKS_PER_FNODE - 1):

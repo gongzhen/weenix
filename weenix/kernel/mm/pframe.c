@@ -1,3 +1,16 @@
+/******************************************************************************/
+/* Important Spring 2015 CSCI 402 usage information:                          */
+/*                                                                            */
+/* This fils is part of CSCI 402 kernel programming assignments at USC.       */
+/* Please understand that you are NOT permitted to distribute or publically   */
+/*         display a copy of this file (or ANY PART of it) for any reason.    */
+/* If anyone (including your prospective employer) asks you to post the code, */
+/*         you must inform them that you do NOT have permissions to do so.    */
+/* You are also NOT permitted to remove or alter this comment block.          */
+/* If this comment block is removed or altered in a submitted file, 20 points */
+/*         will be deducted.                                                  */
+/******************************************************************************/
+
 #include "globals.h"
 #include "config.h"
 #include "errno.h"
@@ -255,52 +268,6 @@ pframe_alloc(mmobj_t *o, uint32_t pagenum)
         return pf;
 }
 
-/*
- * Fills the contents of the page (using the mmobj's fillpage op).
- * Make sure to mark the page busy while it's being filled.
- * @param pf the page to fill
- */
-static int
-pframe_fill(pframe_t *pf)
-{
-        int ret;
-
-        pframe_set_busy(pf);
-        ret = pf->pf_obj->mmo_ops->fillpage(pf->pf_obj, pf);
-        pframe_clear_busy(pf);
-
-        sched_broadcast_on(&pf->pf_waitq);
-
-        return ret;
-}
-
-/*
- * Find and return the pframe representing the page identified by the object
- * and page number. If the page is already resident in memory, then we return
- * the existing page. Otherwise, we allocate a new page and fill it (in which
- * case this routine may block). After allocating the new pframe, we check to
- * see if we need to call pageoutd and wake it up if necessary.
- *
- * If the page is found (resident) but busy, then we will wait for it to become
- * unbusy and then try again (since it may have been freed after that). Thus,
- * as long as this routine returns successfully, the returned page will be a
- * non-busy page that will be guaranteed to remain resident until the calling
- * context blocks without first pinning the page.
- *
- * This routine may block at the mmobj operation level.
- *
- * @param o the parent object of the page
- * @param pagenum the page number of this page in the object
- * @param result used to return the pframe (NULL if there's an error)
- * @return 0 on success, < 0 on failure.
- */
-int
-pframe_get(struct mmobj *o, uint32_t pagenum, pframe_t **result)
-{
-        NOT_YET_IMPLEMENTED("S5FS: pframe_get");
-        return 0;
-}
-
 int
 pframe_lookup(struct mmobj *o, uint32_t pagenum, int forwrite, pframe_t **result)
 {
@@ -342,6 +309,87 @@ pframe_migrate(pframe_t *pf, mmobj_t *dest)
 }
 
 /*
+ * Fills the contents of the page (using the mmobj's fillpage op).
+ * Make sure to mark the page busy while it's being filled.
+ * @param pf the page to fill
+ */
+static int
+pframe_fill(pframe_t *pf)
+{
+        int ret;
+
+        pframe_set_busy(pf);
+        ret = pf->pf_obj->mmo_ops->fillpage(pf->pf_obj, pf);
+        pframe_clear_busy(pf);
+
+        sched_broadcast_on(&pf->pf_waitq);
+
+        return ret;
+}
+
+/*
+ * Find and return the pframe representing the page identified by the object
+ * and page number. If the page is already resident in memory, then we return
+ * the existing page. Otherwise, we allocate a new page and fill it (in which
+ * case this routine may block). Before allocating the new pframe, we check to
+ * see if we need to call pageoutd and wake it up if necessary.
+ *
+ * If the page is found (resident) but busy, then we will wait for it to become
+ * unbusy and then try again (since it may have been freed after that). Thus,
+ * as long as this routine returns successfully, the returned page will be a
+ * non-busy page that will be guaranteed to remain resident until the calling
+ * context blocks without first pinning the page.
+ *
+ * This routine may block at the mmobj operation level.
+ *
+ * @param o the parent object of the page
+ * @param pagenum the page number of this page in the object
+ * @param result used to return the pframe (NULL if there's an error)
+ * @return 0 on success, < 0 on failure.
+ */
+int
+pframe_get(struct mmobj *o, uint32_t pagenum, pframe_t **result)
+{
+        pframe_t *pframe = NULL;
+
+        pframe = pframe_get_resident(o, pagenum);
+        if (pframe != NULL) {
+                if (pframe_is_busy(pframe)) {
+                        sched_sleep_on(&pframe->pf_waitq);
+                        dbg(DBG_PRINT, "(GRADING3D)\n");
+                        return pframe_get(o, pagenum, result);
+                }
+                *result = pframe;
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                return 0;
+        }
+
+        if (pageoutd_needed()) {
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                pageoutd_wakeup();
+                sched_sleep_on(&alloc_waitq);
+        }
+
+        pframe = pframe_alloc(o, pagenum);
+        if (pframe == NULL) {
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                return -EFAULT;
+        }
+
+        if (pframe_fill(pframe) < 0) {
+                dbg(DBG_PRINT, "(GRADING3D)\n");
+                pframe_free(pframe);
+                return -EFAULT;
+        }
+
+        *result = pframe;
+
+        dbg(DBG_PRINT, "(GRADING3B)\n");
+
+        return 0;
+}
+
+/*
  * Increases the pin count on this page. Pages with a pin count > 0 will not be
  * paged out by pageoutd, so this ensures that the page will remain resident
  * until the pin count is decreased.
@@ -357,7 +405,20 @@ pframe_migrate(pframe_t *pf, mmobj_t *dest)
 void
 pframe_pin(pframe_t *pf)
 {
-        NOT_YET_IMPLEMENTED("S5FS: pframe_pin");
+        KASSERT(!pframe_is_free(pf));
+        KASSERT(pf->pf_pincount >= 0);
+        dbg(DBG_PRINT, "(GRADING3A 1.a)\n");
+
+        if (pf->pf_pincount == 0) {
+                dbg(DBG_PRINT, "(GRADING3B)\n");
+                nallocated --;
+                list_remove(&pf->pf_link);
+                npinned ++;
+                list_insert_tail(&pinned_list, &pf->pf_link);
+        }
+        dbg(DBG_PRINT, "(GRADING3B)\n");
+
+        pf->pf_pincount ++;
 }
 
 /*
@@ -373,7 +434,20 @@ pframe_pin(pframe_t *pf)
 void
 pframe_unpin(pframe_t *pf)
 {
-        NOT_YET_IMPLEMENTED("S5FS: pframe_unpin");
+        KASSERT(!pframe_is_free(pf));
+        KASSERT(pf->pf_pincount > 0);
+        dbg(DBG_PRINT, "(GRADING3A 1.a)\n");
+
+        pf->pf_pincount --;
+
+        if (pf->pf_pincount == 0) {
+                dbg(DBG_PRINT, "(GRADING3B)\n");
+                npinned --;
+                list_remove(&pf->pf_link);
+                nallocated ++;
+                list_insert_tail(&alloc_list, &pf->pf_link);
+        }
+        dbg(DBG_PRINT, "(GRADING3B)\n");
 }
 
 /*

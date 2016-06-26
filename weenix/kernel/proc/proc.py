@@ -14,13 +14,13 @@ class ProcCommand(weenix.Command):
 
 	def invoke(self, args, tty):
 		if (len(args.strip()) == 0):
-			print weenix.proc.str_proc_tree()
+			print (weenix.proc.str_proc_tree())
 		else:
 			for pid in args.split():
 				if (pid == "curproc"):
-					print weenix.proc.curproc()
+					print (weenix.proc.curproc())
 				else:
-					print weenix.proc.lookup(pid)
+					print (weenix.proc.lookup(pid))
 
 	def complete(self, line, word):
 		l = map(lambda x: str(x.pid()), weenix.proc.iter())

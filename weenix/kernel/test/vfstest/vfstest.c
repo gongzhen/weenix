@@ -235,6 +235,8 @@ vfstest_stat(void)
         int fd;
         struct stat s;
 
+        printf("Testing stat\n");
+
         syscall_success(mkdir("stat", 0));
         syscall_success(chdir("stat"));
 
@@ -264,6 +266,8 @@ vfstest_stat(void)
 static void
 vfstest_mkdir(void)
 {
+        printf("Testing mkdir\n");
+
         syscall_success(mkdir("mkdir", 0777));
         syscall_success(chdir("mkdir"));
 
@@ -310,6 +314,8 @@ vfstest_chdir(void)
         struct stat ssrc, sdest, sparent, sdir;
         struct stat rsrc, rdir;
 
+        printf("Testing chdir\n");
+
         /* chdir back and forth to CHDIR_TEST_DIR */
         syscall_success(mkdir(CHDIR_TEST_DIR, 0777));
         syscall_success(stat(".", &ssrc));
@@ -346,6 +352,8 @@ vfstest_paths(void)
 #define PATHS_TEST_DIR "paths"
 
         struct stat s;
+
+        printf("Testing paths\n");
 
         syscall_success(mkdir(PATHS_TEST_DIR, 0777));
         syscall_success(chdir(PATHS_TEST_DIR));
@@ -415,6 +423,8 @@ vfstest_fd(void)
         char buf[FD_BUFSIZE];
         struct dirent d;
 
+        printf("Testing fd\n");
+
         syscall_success(mkdir("fd", 0));
         syscall_success(chdir("fd"));
 
@@ -481,7 +491,6 @@ vfstest_fd(void)
         /* dup2-ing a file to itself works */
         syscall_success(fd2 = dup2(fd1, fd1));
         test_assert(fd1 == fd2, "dup2(%d, %d) returned %d", fd1, fd1, fd2);
-        syscall_success(close(fd2));
 
         /* dup2 closes previous file */
         int fd3;
@@ -492,6 +501,8 @@ vfstest_fd(void)
         test_fpos(fd1, 0); test_fpos(fd2, 0);
         syscall_success(lseek(fd2, 5, SEEK_SET));
         test_fpos(fd1, 5); test_fpos(fd2, 5);
+        syscall_success(close(fd2));
+        /* fd1 is not closed intentionally */
 
         syscall_success(chdir(".."));
 }
@@ -503,6 +514,8 @@ vfstest_infinite(void)
 {
         int res, fd;
         char buf[4096];
+
+        printf("Testing infinite\n");
 
         res = 1;
         syscall_success(fd = open("/dev/null", O_WRONLY, 0));
@@ -540,6 +553,8 @@ vfstest_open(void)
         char buf[OPEN_BUFSIZE];
         int fd, fd2;
         struct stat s;
+
+        printf("Testing open\n");
 
         syscall_success(mkdir("open", 0777));
         syscall_success(chdir("open"));
@@ -614,6 +629,8 @@ vfstest_read(void)
         char buf[READ_BUFSIZE];
         struct stat s;
 
+        printf("Testing read\n");
+
         syscall_success(mkdir("read", 0777));
         syscall_success(chdir("read"));
 
@@ -629,7 +646,7 @@ vfstest_read(void)
         /* cannot read from a directory */
         syscall_success(mkdir("dir01", 0));
         syscall_success(fd = open("dir01", O_RDONLY, 0));
-        syscall_fail(read(fd, buf, READ_BUFSIZE), EBADF);
+        syscall_fail(read(fd, buf, READ_BUFSIZE), EISDIR);
         syscall_success(close(fd));
 
         /* Can seek to beginning, middle, and end of file */
@@ -717,6 +734,8 @@ vfstest_getdents(void)
         int fd, ret;
         dirent_t dirents[4];
 
+        printf("Testing getdents\n");
+
         syscall_success(mkdir("getdents", 0));
         syscall_success(chdir("getdents"));
 
@@ -766,6 +785,8 @@ vfstest_s5fs_vm(void)
         struct stat oldstatbuf, newstatbuf;
         void *addr;
 
+        printf("Testing s5fs_vm\n");
+
         syscall_success(mkdir("s5fs", 0));
         syscall_success(chdir("s5fs"));
 
@@ -811,7 +832,7 @@ vfstest_s5fs_vm(void)
         /* Check contents of memory */
         test_assert(0 == memcmp(addr, TESTSTR, strlen(TESTSTR)), NULL);
 
-        /* Write to it -> we shouldn't pagefault */
+        /* Write to it -> should pagefault */
         memcpy(addr, SHORTSTR, strlen(SHORTSTR));
         test_assert(0 == memcmp(addr, SHORTSTR, strlen(SHORTSTR)), NULL);
 
