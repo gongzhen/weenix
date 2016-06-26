@@ -96,6 +96,7 @@ int kshell_cat(kshell_t *ksh, int argc, char **argv)
 
 int kshell_ls(kshell_t *ksh, int argc, char **argv)
 {
+         dbg(DBG_INIT,"YYYYYYYYYYYYYYYYYYYYYYYY called kshell_ls\n");
         int arglen, ret, fd;
         dirent_t dirent;
         struct stat statbuf;
@@ -124,6 +125,7 @@ int kshell_ls(kshell_t *ksh, int argc, char **argv)
                         kprintf(ksh, "Could not find directory: %s\n", argv[1]);
                         return 0;
                 }
+                dbg(DBG_INIT,"ZZZZZZZZZZZZZZZZZZZZ returned from do_open in ls\n");
                 arglen = strnlen(argv[1], KSH_BUF_SIZE);
         } else {
                 KASSERT(argc == 1);

@@ -15,7 +15,12 @@
 void
 kmutex_init(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_init");
+        
+        dbg(DBG_INIT,"Mutex is initialized\n");
+        /* Mutex acquired by none */
+        mtx->km_holder = NULL;
+        /* Mutex queue is initialized */
+        sched_queue_init(&mtx->km_waitq);
 }
 
 /*
@@ -27,7 +32,23 @@ kmutex_init(kmutex_t *mtx)
 void
 kmutex_lock(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_lock");
+        KASSERT(curthr && (curthr != mtx->km_holder));
+        dbg(DBG_INIT,"(GRADING1 5.a) : Current thread is not null and current thread is not the holder of mutex \n"); 
+        if (mtx->km_holder == NULL ) {
+            /* Run in case of mutex available */
+            dbg(DBG_INIT,"Mutex is not taken by anything, assigning mutex to  %d process thread\n", 
+                            curthr->kt_proc->p_pid);
+            mtx->km_holder = curthr;
+        }
+        else {
+            /* Run in case of mutex is not available */
+            dbg(DBG_INIT,"Mutex is taken already by %d process thread, Adding the %d process thread in KM_WAITQ \n", 
+                            mtx->km_holder->kt_proc->p_pid, curthr->kt_proc->p_pid);
+            /* Sleep on the KM_WAITQ */
+            sched_sleep_on(&mtx->km_waitq);
+            /* Rise up when wakeup_upon is called. */
+            dbg(DBG_INIT,"Woked up %d process thread from KM_WAITQ\n", curthr->kt_proc->p_pid);
+        }
 }
 
 /*
@@ -37,7 +58,25 @@ kmutex_lock(kmutex_t *mtx)
 int
 kmutex_lock_cancellable(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_lock_cancellable");
+        KASSERT(curthr && (curthr != mtx->km_holder));
+        dbg(DBG_INIT,"(GRADING1 5.b) : Current thread is not null and current thread is not the holder of mutex.\n"); 
+        if (mtx->km_holder == NULL ) {
+            /* Run in case of mutex available */
+            dbg(DBG_INIT,"Mutex is not taken by anything, assigning mutex to  %d process thread in cancellable lock\n", 
+                            curthr->kt_proc->p_pid);
+            mtx->km_holder = curthr;
+        }
+        else {
+            /* Run in case of mutex is not available */
+            dbg(DBG_INIT,"Mutex is taken already by %d process thread, Adding the %d process thread in KM_WAITQ in cancellable lock\n", 
+                            mtx->km_holder->kt_proc->p_pid, curthr->kt_proc->p_pid);
+            int status = sched_cancellable_sleep_on(&mtx->km_waitq);
+            if (status == -EINTR){
+                /* Return in case of thread is cancelled */
+                return -EINTR;
+            } 
+            dbg(DBG_INIT,"Woked up %d process thread from KM_WAITQ\n", curthr->kt_proc->p_pid);
+        }
         return 0;
 }
 
@@ -58,5 +97,18 @@ kmutex_lock_cancellable(kmutex_t *mtx)
 void
 kmutex_unlock(kmutex_t *mtx)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kmutex_unlock");
+        KASSERT(curthr && (curthr == mtx->km_holder));
+        dbg(DBG_INIT,"(GRADING1 5.c) : Current thread is not null and current thread is the holder of the lock.\n"); 
+        dbg(DBG_INIT, "The %d process thread is giving up the lock\n", curthr->kt_proc->p_pid);
+        /* Freeing the lock */
+        mtx->km_holder = NULL;
+        /* Waking one of the thread sleeping upon KM_WAITQ. */
+        kthread_t *unlocked_thread = sched_wakeup_on(&mtx->km_waitq);
+        if (unlocked_thread!=NULL){
+            dbg(DBG_INIT,"Unlocked %d process thread \n", unlocked_thread->kt_proc->p_pid);
+        }
+        /* Assign the woken up thread to the lock */
+        mtx->km_holder = unlocked_thread;
+        KASSERT(curthr != mtx->km_holder);
+        dbg(DBG_INIT,"(GRADING1 5.c) : Current thread is the not the holder of the lock.\n"); 
 }

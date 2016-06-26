@@ -74,8 +74,26 @@ free_stack(char *stack)
 kthread_t *
 kthread_create(struct proc *p, kthread_func_t func, long arg1, void *arg2)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kthread_create");
-        return NULL;
+        KASSERT(NULL != p);
+        dbg(DBG_INIT,"(GRADING1 3.a) : Process is not NULL \n");
+
+        /*KASSERT(p && curproc && (p->p_pid == curproc->p_pid));*/
+
+	kthread_t *new_thread=(kthread_t*)slab_obj_alloc(kthread_allocator);
+        /* Create stack */
+	new_thread->kt_kstack=alloc_stack();
+
+	new_thread->kt_proc=p;
+	new_thread->kt_cancelled=0;
+	new_thread->kt_wchan=NULL;
+	new_thread->kt_state=KT_NO_STATE;
+	list_insert_head(&((new_thread->kt_proc)->p_threads),&(new_thread->kt_plink));
+        dbg(DBG_INIT, "Context setup for  %d process's thread\n", p->p_pid);
+        context_setup(&new_thread->kt_ctx,func,arg1,arg2,new_thread->kt_kstack,DEFAULT_STACK_SIZE,new_thread->kt_proc->p_pagedir);
+        dbg(DBG_INIT, "Finished creating %d process's thread\n", p->p_pid);
+
+       return new_thread;
+
 }
 
 void
@@ -83,10 +101,11 @@ kthread_destroy(kthread_t *t)
 {
         KASSERT(t && t->kt_kstack);
         free_stack(t->kt_kstack);
-        if (list_link_is_linked(&t->kt_plink))
+        if (list_link_is_linked(&t->kt_plink)){
                 list_remove(&t->kt_plink);
-
+        }
         slab_obj_free(kthread_allocator, t);
+return;
 }
 
 /*
@@ -103,7 +122,18 @@ kthread_destroy(kthread_t *t)
 void
 kthread_cancel(kthread_t *kthr, void *retval)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kthread_cancel");
+        KASSERT(NULL != kthr);
+        dbg(DBG_INIT,"(GRADING1 3.b) : Thread to be cancelled is not NULL \n");
+
+        dbg(DBG_INIT, "Thread for %dth process is going to be cancelled\n", kthr->kt_proc->p_pid);
+        if(curthr==kthr){
+		kthread_exit((retval));
+        }
+	else{
+		sched_cancel(kthr);
+		kthr->kt_retval=retval;
+        }
+return;
 }
 
 /*
@@ -119,7 +149,18 @@ kthread_cancel(kthread_t *kthr, void *retval)
 void
 kthread_exit(void *retval)
 {
-        NOT_YET_IMPLEMENTED("PROCS: kthread_exit");
+        KASSERT(!curthr->kt_wchan);
+        dbg(DBG_INIT,"(GRADING1 3.c) : Current thread's wchan is not NULL \n");
+        KASSERT(!curthr->kt_qlink.l_next && !curthr->kt_qlink.l_prev);
+        dbg(DBG_INIT,"(GRADING1 3.c) : Current thread's kt_qlink is empty \n");
+        KASSERT(curthr->kt_proc == curproc);
+        dbg(DBG_INIT,"(GRADING1 3.c) : Current thread's process is the current process \n");
+	curthr->kt_retval=retval;
+        /* Set state */
+	curthr->kt_state=KT_EXITED;
+	/*Call exited*/
+	proc_thread_exited(retval);
+return;
 }
 
 /*

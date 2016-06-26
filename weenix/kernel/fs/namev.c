@@ -22,11 +22,39 @@
  *
  * Note: returns with the vnode refcount on *result incremented.
  */
-int
+int 
 lookup(vnode_t *dir, const char *name, size_t len, vnode_t **result)
 {
-        NOT_YET_IMPLEMENTED("VFS: lookup");
+        /*NOT_YET_IMPLEMENTED("VFS: lookup");*/
+	dbg(DBG_PRINT,"(GRADING2C) looking up\n");
+	
+        KASSERT(NULL != dir);
+        dbg(DBG_PRINT,"(GRADING2A 2.a)  Directory is not null\n");
+        KASSERT(NULL != name);
+        dbg(DBG_PRINT,"(GRADING2A 2.a)  name is not null\n");
+        KASSERT(NULL != result);
+        dbg(DBG_PRINT,"(GRADING2A 2.a)  result pointer is not null\n");
+
+        /*Check input*/
+        if(len==0){
+        *result=vget(dir->vn_fs,dir->vn_vno);
         return 0;
+        }
+        
+        if(len > NAME_LEN){
+            return -ENAMETOOLONG;
+        }
+
+        if(dir->vn_ops->lookup == NULL)
+        {
+            /* The file system has no lookup implementation defined*/
+            dbg(DBG_PRINT,"(GRADING2C) Not a directory\n");
+            return -ENOTDIR;
+        }
+        /*returns with the vnode refcount on *result incremented*/
+        
+        int status = dir->vn_ops->lookup(dir, name, len, result);
+        return status;
 }
 
 
@@ -48,12 +76,69 @@ lookup(vnode_t *dir, const char *name, size_t len, vnode_t **result)
  * Note: A successful call to this causes vnode refcount on *res_vnode to
  * be incremented.
  */
-int
-dir_namev(const char *pathname, size_t *namelen, const char **name,
-          vnode_t *base, vnode_t **res_vnode)
+
+int 
+dir_namev(const char *pathname, size_t *namelen, const char **name, 
+          vnode_t *base,vnode_t **res_vnode)
 {
-        NOT_YET_IMPLEMENTED("VFS: dir_namev");
-        return 0;
+        /*NOT_YET_IMPLEMENTED("VFS: dir_namev");*/
+	KASSERT(NULL != pathname);
+	dbg(DBG_PRINT,"(GRADING2A 2.b)  pathname is not null\n");
+        KASSERT(NULL != namelen);
+        dbg(DBG_PRINT,"(GRADING2A 2.b)  namelen is not null\n");
+        KASSERT(NULL != name);
+        dbg(DBG_PRINT,"(GRADING2A 2.b)  name is not null\n");
+        KASSERT(NULL != res_vnode);
+        dbg(DBG_PRINT,"(GRADING2A 2.b) res_vnode not null\n");
+
+      int i=0,j=0,c=0;
+      char new_path[5000];
+      vnode_t *current_dir;
+      int ret_val;
+
+  if(pathname[0]=='/')
+  {
+     current_dir=vfs_root_vn;
+  }
+  else if(base==NULL)
+  {
+     dbg(DBG_PRINT,"(GRADING2C) base=NULL\n");
+     current_dir=curproc->p_cwd;
+  }
+  else
+   {
+     dbg(DBG_PRINT,"(GRADING2C) CURRENT_DIRECTORY=base ");
+     current_dir=base;
+   }
+  
+  for(i=0;i<(int)strlen(pathname);i++){
+    if(pathname[i]=='/'){
+	if(i==0)		
+	  continue;
+	else {
+	   new_path[c]='\0';
+	   ret_val=lookup(current_dir, new_path, c, &current_dir);
+	   c=0;
+	   if(ret_val < 0)
+		return ret_val;
+	   vput(current_dir);
+	   if((i+1) == (int)strlen(pathname))
+		break;
+	}
+     }
+     else{
+	new_path[c]=pathname[i];
+	c++;
+     }
+  }
+  new_path[c]='\0';
+  *name=new_path;
+  *namelen=c;
+  *res_vnode = vget(current_dir->vn_fs, current_dir->vn_vno);
+
+  KASSERT(NULL != *res_vnode);
+  dbg(DBG_PRINT,"(GRADING2A 2.b)  res_vnode pointer is not null\n");
+  return 0;
 }
 
 /* This returns in res_vnode the vnode requested by the other parameters.
@@ -67,8 +152,27 @@ dir_namev(const char *pathname, size_t *namelen, const char **name,
 int
 open_namev(const char *pathname, int flag, vnode_t **res_vnode, vnode_t *base)
 {
-        NOT_YET_IMPLEMENTED("VFS: open_namev");
-        return 0;
+        /* NOT_YET_IMPLEMENTED("VFS: open_namev"); */
+        size_t namelen;
+        const char *name;
+        /* Status will return if the file is already created or not */
+        int status = dir_namev(pathname, &namelen, &name, base, res_vnode);
+        if(status < 0){
+            return status;
+        }
+        status = lookup(*res_vnode, name, namelen, res_vnode);
+        if(status == -ENOENT){
+        dbg(DBG_PRINT,"(GRADING2C) status=ENOENT\n");
+            if(flag==O_CREAT){
+                KASSERT(NULL != (*res_vnode)->vn_ops->create);
+                dbg(DBG_PRINT,"(GRADING2A 2.c) The callee of create has implementation\n");
+                /*If the file do not exist then create it */
+                /*Create vnode from vnode_ops function*/
+                /*Create function return status of the operation*/
+                status = (*res_vnode)->vn_ops->create(*res_vnode, name, namelen, res_vnode); 
+            }
+        }
+        return status;
 }
 
 #ifdef __GETCWD__

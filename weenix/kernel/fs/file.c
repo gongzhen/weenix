@@ -62,7 +62,7 @@ fget(int fd)
                 f = curproc->p_files[fd];
         }
         if (f) fref(f);
-
+dbg(DBG_INIT,"\nfgetreturns\n");
         return f;
 }
 

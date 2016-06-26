@@ -51,9 +51,12 @@ static void      *idleproc_run(int arg1, void *arg2);
 static kthread_t *initproc_create(void);
 static void      *initproc_run(int arg1, void *arg2);
 static void       hard_shutdown(void);
-
+extern void *vfstest_main(int, void*);
+extern void *testproc();
 static context_t bootstrap_context;
-
+extern int Sunghantest(kshell_t *k,int arg1, char **);
+extern int sunghan_test();
+extern int sunghan_deadlock_test();
 static int gdb_wait = GDBWAIT;
 /**
  * This is the first real C function ever called. It performs a lot of
@@ -124,6 +127,49 @@ kmain()
         panic("\nReturned to kmain()!!!\n");
 }
 
+#ifdef __DRIVERS__
+
+        int Sunghantest(kshell_t *kshell, int argc, char **argv)
+        {
+            KASSERT(kshell != NULL);
+        
+	   sunghan_test();
+	 
+	    
+	 /*  sunghan_deadlock_test();*/
+	   
+/*	    dbg(DBG_INIT, "(GRADING): do_foo() is invoked, argc = %d, argv = 0x%08x\n",
+            argc, (unsigned int)argv);*/
+            return 0;
+        }
+
+	int Sunghandeadlock(kshell_t *kshell, int argc, char **argv)
+	{
+	KASSERT(kshell!=NULL);
+	sunghan_deadlock_test();
+	return 0;
+	}
+
+	int fabertest(kshell_t *kshell, int argc, char **argv)
+	{
+
+		KASSERT(kshell!=NULL);
+		testproc();
+		return 0;
+
+	}
+
+       int vfstestmain(kshell_t *kshell, int argc, char **argv)
+        {
+
+                KASSERT(kshell!=NULL);
+                vfstest_main(1, NULL);
+                return 0;
+
+        }
+
+#endif /* __DRIVERS__ */
+
 /**
  * This function is called from kmain, however it is not running in a
  * thread context yet. It should create the idle process which will
@@ -141,12 +187,30 @@ static void *
 bootstrap(int arg1, void *arg2)
 {
         /* necessary to finalize page table information */
+   
+    
+      
+	dbg(DBG_INIT, "\nBOOTSTRAP: INSIDE BOOTSTRAP\n");
         pt_template_init();
+	
+ 	proc_t* process0=proc_create("Idle_Process");
+	kthread_t* thread0=kthread_create(process0,idleproc_run,1,(void*)1);
+	
+	curproc=process0;
+	curthr=thread0;    
+	
+        KASSERT(NULL != curproc); /* make sure that the "idle" process has been created successfully */
+        dbg(DBG_INIT,"(GRADING1  1.a)  Idle Process Created Successfully\n");
+	KASSERT(PID_IDLE == curproc->p_pid); /* make sure that what has been created is the "idle" process */
+	dbg(DBG_INIT,"(GRADING1 1.a)  Idle Process's pid assigned properly\n");
+        KASSERT(NULL != curthr); /* make sure that the thread for the "idle" process has been created successfully */
+	dbg(DBG_INIT,"(GRADING1 1.a)  Thread for idle process created successfully\n");
+/*	dbg(DBG_INIT, "\nBOOTSTRAP: MOVING FROM BOOTSTRAP TO IDLEPROC_RUN\n");*/
+	/*sched_make_runnable(curthr); */    
+	context_make_active(&thread0->kt_ctx);
 
-        NOT_YET_IMPLEMENTED("PROCS: bootstrap");
+        return 0;
 
-        panic("weenix returned to bootstrap()!!! BAD!!!\n");
-        return NULL;
 }
 
 /**
@@ -166,11 +230,11 @@ idleproc_run(int arg1, void *arg2)
 {
         int status;
         pid_t child;
-
         /* create init proc */
         kthread_t *initthr = initproc_create();
-
-        init_call_all();
+/*	dbg(DBG_INIT,"created initproc");
+        dbg(DBG_INIT,"%d",curproc->p_pid);*/
+	init_call_all();
         GDB_CALL_HOOK(initialized);
 
         /* Create other kernel threads (in order) */
@@ -178,11 +242,29 @@ idleproc_run(int arg1, void *arg2)
 #ifdef __VFS__
         /* Once you have VFS remember to set the current working directory
          * of the idle and init processes */
+         curproc->p_cwd = vfs_root_vn;
+         initthr->kt_proc->p_cwd = vfs_root_vn;
+         vref(vfs_root_vn);
+         vref(vfs_root_vn);
 
         /* Here you need to make the null, zero, and tty devices using mknod */
         /* You can't do this until you have VFS, check the include/drivers/dev.h
          * file for macros with the device ID's you will need to pass to mknod */
-        NOT_YET_IMPLEMENTED("VFS: idleproc_run");
+        /*NOT_YET_IMPLEMENTED("VFS: idleproc_run");*/
+        /*TODO Dont know When VFS will be formed*/
+
+        if(do_mkdir("/dev") >=  0)
+        {
+        dbg(DBG_PRINT,"(GRADING2C) Creating null, zero and tty0\n");
+        /*do_mkdir("/dev");*/
+        /*Block devices*/
+        int status1=do_mknod("/dev/null", S_IFCHR, MEM_NULL_DEVID); 
+	
+        int status2=do_mknod("/dev/zero", S_IFCHR, MEM_ZERO_DEVID); 
+	 
+        int status3=do_mknod("/dev/tty0", S_IFCHR, MKDEVID(2, 0)); 
+          
+        }
 #endif
 
         /* Finally, enable interrupts (we want to make sure interrupts
@@ -233,8 +315,20 @@ idleproc_run(int arg1, void *arg2)
 static kthread_t *
 initproc_create(void)
 {
-        NOT_YET_IMPLEMENTED("PROCS: initproc_create");
-        return NULL;
+      	
+	proc_t *process1=proc_create("Init_process");
+ 	KASSERT(process1!=NULL);
+	dbg(DBG_INIT,"(GRADING1 1.b)  Init Process created successfully\n" );
+	kthread_t *thread1=kthread_create(process1,initproc_run,1,(void*)1);
+	
+	KASSERT(PID_INIT == process1->p_pid);
+	dbg(DBG_INIT,"(GRADING1 1.b)  Init process's pid assigned properly\n");
+        KASSERT(thread1 != NULL);
+	dbg(DBG_INIT,"(GRADING1 1.b)  Init process's thread created successfully\n");
+/*	dbg(DBG_INIT,"thread1_returned");*/
+	
+
+	return thread1;
 }
 
 /**
@@ -251,11 +345,25 @@ initproc_create(void)
 static void *
 initproc_run(int arg1, void *arg2)
 {
-        NOT_YET_IMPLEMENTED("PROCS: initproc_run");
+       
+#ifdef __DRIVERS__
+	
+        kshell_add_command("Sunghan test", Sunghantest, "\n");
+	kshell_add_command("Faber Test",fabertest,"\n");
+	kshell_add_command("deadlock test",Sunghandeadlock,"\n");
+	kshell_add_command("vfstest_main", vfstestmain,"\n");
 
+        kshell_t *kshell = kshell_create(0);
+        if (NULL == kshell) panic("init: Couldn't create kernel shell\n");
+        while(kshell_execute_next(kshell));
+        kshell_destroy(kshell);
+
+#endif /* __DRIVERS__ */
+	
+    /*   dbg(DBG_INIT, "\n..........RUNNING INITPROC AWESOMELY .......\n");*/
         return NULL;
 }
-
+	
 /**
  * Clears all interrupts and halts, meaning that we will never run
  * again.
