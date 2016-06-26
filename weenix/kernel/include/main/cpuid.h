@@ -89,3 +89,20 @@ static inline void cpuid(int request, uint32_t *a, uint32_t *d)
 {
         __asm__ volatile("cpuid":"=a"(*a), "=d"(*d):"0"(request));
 }
+
+static inline void cpuid_get_msr(uint32_t msr, uint32_t* lo, uint32_t* hi)
+{
+	__asm__ volatile("rdmsr":"=a"(*lo),"=d"(*hi):"c"(msr));
+}
+
+static inline void cpuid_set_msr(uint32_t msr, uint32_t lo, uint32_t hi)
+{
+	__asm__ volatile("wrmsr"::"a"(lo),"d"(hi),"c"(msr));
+}
+
+static inline void io_wait(void)
+{
+	__asm__ volatile("jmp 1f\n\t"
+			 "1:jmp 2f\n\t"
+			 "2:" );
+}

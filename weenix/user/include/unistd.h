@@ -52,6 +52,7 @@ int     rename(const char *oldname, const char *newname);
 int     chdir(const char *path);
 int     getdents(int fd, struct dirent *dir, size_t size);
 int     stat(const char *path, struct stat *buf);
+int     pipe(int pipefd[2]);
 
 /* VM-related */
 void    *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off);

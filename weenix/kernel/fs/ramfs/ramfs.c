@@ -76,6 +76,8 @@ static vnode_ops_t ramfs_dir_vops = {
         .rmdir = ramfs_rmdir,
         .readdir = ramfs_readdir,
         .stat = ramfs_stat,
+        .acquire = NULL,
+        .release = NULL,
         .fillpage = NULL,
         .dirtypage = NULL,
         .cleanpage = NULL
@@ -93,6 +95,8 @@ static vnode_ops_t ramfs_file_vops = {
         .mkdir = NULL,
         .rmdir = NULL,
         .stat = ramfs_stat,
+        .acquire = NULL,
+        .release = NULL,
         .fillpage = NULL,
         .dirtypage = NULL,
         .cleanpage = NULL
@@ -487,8 +491,7 @@ ramfs_mkdir(vnode_t *dir, const char *name, size_t name_len)
         vnode_t *vn;
         off_t i;
         ramfs_dirent_t *entry;
-	
-	 dbg(DBG_INIT,"RAMFS_MKDIR before KASSERT %s\n",name);
+
         KASSERT(0 != ramfs_lookup(dir, name, name_len, &vn));
 
         /* Look for space in the directory */

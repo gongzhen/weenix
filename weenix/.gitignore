@@ -1,7 +1,16 @@
+bochsout.txt
+inittmp.gdb
+commands.gdb
+cscope.out
+kernel/weenix
 
 # normal build system output
-*.[od]
+disk0.img
+disk0.vmdk
+*.[oad]
 *.pyc
+*.gdbcomm
+*.so
 
 .staging
 # editor temporary files
@@ -12,3 +21,4 @@
 *.bak
 *.orig
 *.nfs*
+

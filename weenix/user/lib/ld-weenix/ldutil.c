@@ -39,7 +39,7 @@ int _ldzero()
         int zfd;
 
         if ((zfd = open("/dev/zero", O_RDONLY, 0)) < 0) {
-                printf(err_zero, NULL);
+                printf(err_zero);
                 exit(1);
         }
 

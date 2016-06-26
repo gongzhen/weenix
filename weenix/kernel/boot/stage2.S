@@ -32,10 +32,10 @@ start:
 		mov		%ax, %fs	
 		mov		%ax, %gs	
 
-		/* settign up a stack from 0x9000-0xFFFF */
-		mov		$0x7000, %ax
+		/* setting up a stack from 0x9000 to 0x9FFF */
+		mov		$0x0900, %ax
 		mov		%ax, %ss
-		mov		$0xFFFF, %sp
+		mov		$0x0FFF, %sp
 		sti
 
 		/* print the loading message */

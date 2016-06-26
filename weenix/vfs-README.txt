@@ -1,4 +1,0 @@
-README
-===============
-
-Run the file.

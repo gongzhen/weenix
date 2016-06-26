@@ -30,7 +30,7 @@
 #define SYS_sync                15
 #define SYS_nuke                16 /* NYI */
 #define SYS_dup                 17
-#define SYS_pipe                18 /* NYI */
+#define SYS_pipe                18
 #define SYS_ioctl               19 /* NYI */
 #define SYS_rmdir               21
 #define SYS_mkdir               22

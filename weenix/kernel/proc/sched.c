@@ -10,14 +10,15 @@
 #include "util/debug.h"
 
 static ktqueue_t kt_runq;
-uint8_t priority,priority1,prior1;
-kthread_t *newthread,*prevthread;
-static __attribute__((unused)) void
+
+__attribute__((unused)) void
 sched_init(void)
 {
-    sched_queue_init(&kt_runq);
+        sched_queue_init(&kt_runq);
 }
 init_func(sched_init);
+
+
 
 /*** PRIVATE KTQUEUE MANIPULATION FUNCTIONS ***/
 /**
@@ -29,10 +30,10 @@ init_func(sched_init);
 static void
 ktqueue_enqueue(ktqueue_t *q, kthread_t *thr)
 {
-    KASSERT(!thr->kt_wchan);
-    list_insert_head(&q->tq_list, &thr->kt_qlink);
-    thr->kt_wchan = q;
-    q->tq_size++;
+        KASSERT(!thr->kt_wchan);
+        list_insert_head(&q->tq_list, &thr->kt_qlink);
+        thr->kt_wchan = q;
+        q->tq_size++;
 }
 
 /**
@@ -44,24 +45,23 @@ ktqueue_enqueue(ktqueue_t *q, kthread_t *thr)
 static kthread_t *
 ktqueue_dequeue(ktqueue_t *q)
 {
-    kthread_t *thr;
-    list_link_t *link;
+        kthread_t *thr;
+        list_link_t *link;
 
-    if (list_empty(&q->tq_list))
-        return NULL;
+        if (list_empty(&q->tq_list))
+                return NULL;
 
-    link = q->tq_list.l_prev;
-    thr = list_item(link, kthread_t, kt_qlink);
-    list_remove(link);
-    thr->kt_wchan = NULL;
+        link = q->tq_list.l_prev;
+        thr = list_item(link, kthread_t, kt_qlink);
+        list_remove(link);
+        thr->kt_wchan = NULL;
 
-    q->tq_size--;
+        q->tq_size--;
 
-    return thr;
+        return thr;
 }
 
-/**:wq
-
+/**
  * Removes a given thread from a queue.
  *
  * @param q the queue to remove the thread from
@@ -70,24 +70,24 @@ ktqueue_dequeue(ktqueue_t *q)
 static void
 ktqueue_remove(ktqueue_t *q, kthread_t *thr)
 {
-    KASSERT(thr->kt_qlink.l_next && thr->kt_qlink.l_prev);
-    list_remove(&thr->kt_qlink);
-    thr->kt_wchan = NULL;
-    q->tq_size--;
+        KASSERT(thr->kt_qlink.l_next && thr->kt_qlink.l_prev);
+        list_remove(&thr->kt_qlink);
+        thr->kt_wchan = NULL;
+        q->tq_size--;
 }
 
 /*** PUBLIC KTQUEUE MANIPULATION FUNCTIONS ***/
 void
 sched_queue_init(ktqueue_t *q)
 {
-    list_init(&q->tq_list);
-    q->tq_size = 0;
+        list_init(&q->tq_list);
+        q->tq_size = 0;
 }
 
 int
 sched_queue_empty(ktqueue_t *q)
 {
-    return list_empty(&q->tq_list);
+        return list_empty(&q->tq_list);
 }
 
 /*
@@ -100,14 +100,8 @@ sched_queue_empty(ktqueue_t *q)
 void
 sched_sleep_on(ktqueue_t *q)
 {
-    /*Assign state to sleep*/
-    curthr->kt_state=2;
-    KASSERT(q!=NULL);
-
-    /*dbg(DBG_INIT,"Sleeping %d process's thread\n", curthr->kt_proc->p_pid);*/
-    /* Insert into the queue */
+    curthr->kt_state = KT_SLEEP;
     ktqueue_enqueue(q, curthr);
-    /* Switch threads for other threads to run */
     sched_switch();
 }
 
@@ -122,68 +116,38 @@ sched_sleep_on(ktqueue_t *q)
 int
 sched_cancellable_sleep_on(ktqueue_t *q)
 {
- if(curthr->kt_cancelled == 1)
-    {
-        /*dbg(DBG_INIT,"Returning interrupt as %d process's thread is cancelled\n", curthr->kt_proc->p_pid);*/
-	return -EINTR;
-    }
-    /* Assign state as SLEEP_CANCELLABLE */
-    curthr->kt_state=3;
-   
-    /*dbg(DBG_INIT,"Sleeping %d process's thread\n", curthr->kt_proc->p_pid);*/
-    /* Sleep on the given queue q */
+    curthr->kt_state = KT_SLEEP_CANCELLABLE;
     ktqueue_enqueue(q, curthr);
-    /* Switch threads for other threads to run */
     sched_switch();
 
-  if(curthr->kt_cancelled == 1)
-    {
-        /* If the thread woken up is cancelled  then return interuppt */
-        /*dbg(DBG_INIT,"Returning interrupt as %d process's thread is cancelled which was woken up\n", curthr->kt_proc->p_pid);*/
-	return -EINTR;
+    if (curthr->kt_cancelled == 1){
+        return -EINTR;
+    } else {
+        return 0;
     }
-    return 0;
 }
 
 kthread_t *
 sched_wakeup_on(ktqueue_t *q)
 {
-    /*Remove the thread for the given queue*/
-    newthread=ktqueue_dequeue(q);
-    if(newthread!=NULL)
-    {
-        /*dbg(DBG_INIT,"Woked up %d process's thread from the queue\n", newthread->kt_proc->p_pid);*/
-        KASSERT((newthread->kt_state == KT_SLEEP) || (newthread->kt_state == KT_SLEEP_CANCELLABLE));
-        dbg(DBG_INIT,"(GRADING1 4.a) : Current thread to be woken up is in SLEEP or CANCELLABLE SLEEP state.\n");
+    if (q->tq_size == 0){
+        return NULL;
+    } else {
+        kthread_t *t = ktqueue_dequeue(q);
+        KASSERT(t != NULL);
 
-        /* Setting up interrupt so that the code of execution is uninterrupted */
-        priority1=intr_getipl();
-        intr_setipl(IPL_HIGH);
-        /* Assign the new thread to run state */
-        newthread->kt_state=1;
-        /* Set the new thread to run queue */
-        ktqueue_enqueue(&kt_runq, newthread);
-        intr_setipl(priority);
+        sched_make_runnable(t);
+
+        return t;
     }
-    return newthread;
 }
 
 void
 sched_broadcast_on(ktqueue_t *q)
 {
-    /* Remove thread from the given queue */
-    newthread=ktqueue_dequeue(q);
-    while(newthread!=NULL)
-    {
-        priority1=intr_getipl();
-        intr_setipl(IPL_HIGH);
-        newthread->kt_state=1;
-        /* Insert it into runQ */
-        ktqueue_enqueue(&kt_runq, newthread);
-
-        intr_setipl(priority);
-        /* Dequeue again as all the threads has to be removed */
-        newthread=ktqueue_dequeue(q);
+    while (q->tq_size > 0){
+        kthread_t *t = ktqueue_dequeue(q);
+        sched_make_runnable(t);
     }
 }
 
@@ -199,24 +163,14 @@ sched_broadcast_on(ktqueue_t *q)
 void
 sched_cancel(struct kthread *kthr)
 {
-    KASSERT(kthr!=NULL);
-    if(kthr->kt_state == KT_SLEEP_CANCELLABLE)
-    {
-        kthr->kt_cancelled = 1;
-        ktqueue_remove(kthr->kt_wchan,kthr);
-        priority1=intr_getipl();
-        intr_setipl(IPL_HIGH);
-        kthr->kt_state=1;
-        ktqueue_enqueue(&kt_runq, kthr);
+    kthr->kt_cancelled = 1;
 
-        intr_setipl(priority1);
-    }
-    else
-    {
-        /* Assign the cancelled state */
-        kthr->kt_cancelled = 1;
-    }
+    KASSERT(kthr->kt_state == KT_SLEEP_CANCELLABLE || kthr->kt_state == KT_SLEEP);
 
+    if (kthr->kt_state == KT_SLEEP_CANCELLABLE){
+        ktqueue_remove(kthr->kt_wchan, kthr);
+        sched_make_runnable(kthr);
+    } 
 }
 
 /*
@@ -258,36 +212,31 @@ sched_cancel(struct kthread *kthr)
 void
 sched_switch(void)
 {
-    prior1=intr_getipl();
+    uint8_t orig_ipl = intr_getipl();
+
     intr_setipl(IPL_HIGH);
-    while(1)
-    {
-        /* Dequeue the thread to be executed next */
-        newthread=ktqueue_dequeue(&kt_runq);
-        if(newthread==NULL)
-        {
-            /* In case of no thread in runQ, wait */
-            intr_setipl(IPL_LOW);
-            intr_wait();
-            intr_setipl(IPL_HIGH);
-            continue;
-        }
-        else
-        {
-            /* Break out of the loop and context switch */
-            break;
-        }
+
+    while (sched_queue_empty(&kt_runq)){
+        intr_disable();
+        intr_setipl(IPL_LOW);
+        intr_wait();
+        intr_setipl(IPL_HIGH);
     }
 
-    intr_setipl(prior1);
-    prevthread=curthr;
-    /* Assign the global variable. */
-    curthr=newthread;
+    /* make sure the interrupt actually led o
+     * someone being on the run queue. If this ever fails,
+     * we may need a while loop
+     */
+    KASSERT(!sched_queue_empty(&kt_runq));
 
-    curproc = newthread->kt_proc;
-    /* Context switch. */
-    context_switch(&prevthread->kt_ctx,&newthread->kt_ctx);
+    context_t *old_ctx = &curthr->kt_ctx;
 
+    curthr = ktqueue_dequeue(&kt_runq); 
+
+    curproc = curthr->kt_proc;
+
+    context_switch(old_ctx, &curthr->kt_ctx);
+    intr_setipl(orig_ipl);
 }
 
 /*
@@ -306,17 +255,12 @@ sched_switch(void)
 void
 sched_make_runnable(kthread_t *thr)
 {
-    KASSERT(&kt_runq != thr->kt_wchan);
-    dbg(DBG_INIT,"(GRADING1 4.b) : Given thread is not in the kt_runq \n");
-    /* Set up the interrupt to prevent the switching to be interuupted. */
-    priority= intr_getipl();
-    intr_setipl(IPL_HIGH);
-    thr->kt_state=1;
-    /* Setting the given thread to runq */
-    ktqueue_enqueue(&kt_runq, thr);
-    /* Assign wchan of the given thread to runQ. */
-    thr->kt_wchan=&kt_runq;
-    intr_setipl(priority);
-    /* Set interrupt to normal level. */
-}
+    uint8_t orig_ipl = intr_getipl();
 
+    intr_setipl(IPL_HIGH);
+
+    thr->kt_state = KT_RUN;
+    ktqueue_enqueue(&kt_runq, thr);
+
+    intr_setipl(orig_ipl);
+}

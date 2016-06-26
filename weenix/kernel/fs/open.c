@@ -29,7 +29,8 @@ get_empty_fd(proc_t *p)
                         return fd;
         }
 
-   dbg(DBG_ERROR | DBG_VFS, "ERROR: get_empty_fd: out of file descriptors for pid %d\n", curproc->p_pid);
+        dbg(DBG_ERROR | DBG_VFS, "ERROR: get_empty_fd: out of file descriptors "
+            "for pid %d\n", curproc->p_pid);
         return -EMFILE;
 }
 
@@ -40,7 +41,7 @@ get_empty_fd(proc_t *p)
  *      3. Save the file_t in curproc's file descriptor table.
  *      4. Set file_t->f_mode to OR of FMODE_(READ|WRITE|APPEND) based on
  *         oflags, which can be O_RDONLY, O_WRONLY or O_RDWR, possibly OR'd with
- *         O_APPEND.
+ *         O_APEND.
  *      5. Use open_namev() to get the vnode for the file_t.
  *      6. Fill in the fields of the file_t.
  *      7. Return new fd.
@@ -50,21 +51,21 @@ get_empty_fd(proc_t *p)
  * error.
  *
  * Error cases you must handle for this function at the VFS level:
- *      o EINVAL
+ *      o EINVAL (1)
  *        oflags is not valid.
- *      o EMFILE
+ *      o EMFILE (2)
  *        The process already has the maximum number of files open.
- *      o ENOMEM
+ *      o ENOMEM (3)
  *        Insufficient kernel memory was available.
- *      o ENAMETOOLONG
+ *      o ENAMETOOLONG (4)
  *        A component of filename was too long.
- *      o ENOENT
+ *      o ENOENT (5)
  *        O_CREAT is not set and the named file does not exist.  Or, a
  *        directory component in pathname does not exist.
- *      o EISDIR
+ *      o EISDIR (6)
  *        pathname refers to a directory and the access requested involved
  *        writing (that is, O_WRONLY or O_RDWR is set).
- *      o ENXIO
+ *      o ENXIO (7)
  *        pathname refers to a device special file and no corresponding device
  *        exists.
  */
@@ -72,123 +73,76 @@ get_empty_fd(proc_t *p)
 int
 do_open(const char *filename, int oflags)
 {
-        /*NOT_YET_IMPLEMENTED("VFS: do_open");*/
-        if(strlen(filename) > NAME_LEN){
-            return -ENAMETOOLONG;
-        }
-        /*Get free descriptor of current process*/
-        int fd = get_empty_fd(curproc);
-        if(fd == -EMFILE){
-            /*No empty descriptor available*/
-            /*Maximum number of files are opened*/
-            dbg(DBG_PRINT,"(GRADING2C) Maximum number of files are open\n");
-            return -EMFILE;
-        }
-        file_t *f = fget(-1);
+    dbg(DBG_VFS, "calling do_open on %s\n", filename);
+    /* step 1: get next empty file descriptor */
+    int fd = get_empty_fd(curproc);
 
-        if(f==NULL){
-            /*The kalloc operation will return NULL*/
-            dbg(DBG_PRINT,"(GRADING2C) Out of memory\n");
-            return -ENOMEM;
-        }
-        
-        int perm = oflags&3;
-        int extra = oflags&2044;
-        int final_mode=0;
-        int seek;
-        /*perm can be
-         O_RDONLY        0
-         O_WRONLY        1
-         O_RDWR          2
+    /* error case 2 */
+    if (fd == -EMFILE){
+        return -EMFILE;
+    }
 
-         O_CREAT         0x100   256 Create file if non-existent. 
-         O_TRUNC         0x200   512 Truncate to zero length. 
-         O_APPEND        0x400   1024 Append to file.
+    /* step 2: Call fget to get a fresh file_t */
+    file_t *f = fget(-1);
 
-         FMODE_READ    1
-         FMODE_WRITE   2
-         FMODE_APPEND  4
+    /* error case 3 */
+    if (f == NULL){
+        return -ENOMEM;
+    }
 
-         2^11-1
-        */
-        
-        if(perm == (O_WRONLY | O_RDWR)){
-            /*Error case for flags*/
-            fput(f);
-            return -EINVAL; 
-        }
+    KASSERT(f != NULL);
+    KASSERT(f->f_refcount == 1);
 
-        if(perm == 0){
-            final_mode = FMODE_READ;
-            seek = 0;
-        }
-        else if(perm == 1){
-            final_mode = FMODE_WRITE;
-            seek = 0;
-        }
-        else if(perm == 2 || perm == 3){
-            final_mode = FMODE_READ | FMODE_WRITE; 
-            seek = 0;
-        }
+    /* step 3: Save file_t in curproc's file descriptor table */
+    KASSERT(curproc->p_files[fd] == NULL);
+    curproc->p_files[fd] = f;
 
-        if((extra&256) != 0){
-           /*O_CREAT*/  
-           oflags = O_CREAT;
-        }
+    /* step 4: Set the file_t->f-mode */
+    f->f_mode = 0;
 
-        if((extra&512) != 0 ){
-          /*0_TRUNC*/
-        }
-        
-	if((extra&1024) != 0){
-            /*O_APPEND*/
-           /*Take default seek*/ 
-           final_mode=final_mode|FMODE_APPEND;
-        }
+    if (oflags & O_APPEND){
+        f->f_mode = FMODE_APPEND;
+    }
 
-        /*Call open_namev to get vnode of the file*/
-        /*Result vnode come here*/
-        vnode_t *res_vnode;
-        /*parent vnode*/
-        vnode_t *base;
+    if ((oflags & O_WRONLY) && !(oflags & O_RDWR)){
+        f->f_mode |= FMODE_WRITE;
+    } else if ((oflags & O_RDWR) && !(oflags & O_WRONLY)){
+        f->f_mode |= FMODE_READ | FMODE_WRITE;
+    } else if (oflags == O_RDONLY || oflags == (O_RDONLY | O_CREAT)
+            || oflags == (O_RDONLY | O_APPEND)
+            || oflags == (O_RDONLY | O_CREAT | O_APPEND)){
+        f->f_mode |= FMODE_READ;
+    } else {
+        dbg(DBG_VFS, "oflags not valid\n");
+        fput(f);
+        curproc->p_files[fd] = NULL;
+        return -EINVAL;
+    }
 
-        int status = open_namev(filename, oflags, &res_vnode, NULL);
+    /* make sure we have a valid mode */
+    KASSERT(f->f_mode == FMODE_READ
+            || f->f_mode == FMODE_WRITE
+            || f->f_mode == (FMODE_READ | FMODE_WRITE)
+            || f->f_mode == (FMODE_WRITE | FMODE_APPEND)
+            || f->f_mode == (FMODE_READ | FMODE_WRITE | FMODE_APPEND));
 
-        if(status == -ENOENT && oflags != O_CREAT){
-            curproc->p_files[fd]=NULL;
-            fput(f);
-            return -ENOENT;
-        }
-        else if (status < 0){
-            curproc->p_files[fd]=NULL;
-            fput(f);
-            return status;
-        }
-	
-	 /*If ISDIR and oflag permissions are */
-         if(_S_TYPE(res_vnode->vn_mode)==S_IFDIR && 
-              ( perm != O_RDONLY) ){
-           curproc->p_files[fd]=NULL;
-           fput(f);
-           return -EISDIR; 
-        }
-        if((extra&1024) != 0 && perm!=2){
-            /*O_APPEND*/
-           /*Take default seek*/ 
-           dbg(DBG_PRINT,"(GRADING2C) Case where O_APPEND (or) RDWR \n");
-           seek = res_vnode->vn_len;
-        }
+    /* step 5: use open_namev to get the vnode for the file_t */
+    int open_result = open_namev(filename, oflags, &f->f_vnode, NULL);
 
-        /*Set file descriptor of current process*/
-        /*fd of the current process will not be null anymore*/
+    if (open_result < 0){
+        curproc->p_files[fd] = NULL;
+        fput(f);
+        return open_result;
+    }
 
-        /*Fill in the file_t*/
-        f->f_pos = seek;
-        f->f_refcount = res_vnode->vn_refcount;
-        f->f_vnode = res_vnode;
-        /*Set the mode of the file*/
-        f->f_mode = final_mode;
-	 curproc->p_files[fd]=f;
-        /*Return new fd*/
-        return fd;
+    dbg(DBG_VFS, "found the vnode with id %d. Current refcount is %d\n",
+            f->f_vnode->vn_vno, f->f_vnode->vn_mmobj.mmo_refcount);
+
+    /* step 6: fill in the fields of the file_t */
+    /* no need to call vref, since open_namev() took care of that*/
+    f->f_pos = 0;
+    f->f_refcount = 1;
+
+    /* step 7: return new fd */
+    return fd;
 }

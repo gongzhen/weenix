@@ -3,6 +3,8 @@
 #include "types.h"
 #include "kernel.h"
 
+#define BIT(n) (1<<(n))
+
 static inline void
 bit_flip(void *addr, uintptr_t bit)
 {

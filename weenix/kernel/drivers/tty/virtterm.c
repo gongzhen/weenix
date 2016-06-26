@@ -337,10 +337,6 @@ vt_cursor_redraw()
         screen_move_cursor(rel_cursor % DISPLAY_WIDTH, rel_cursor / DISPLAY_WIDTH);
 }
 
-/* DRIVERS BLANK {{{ */
-/* TODO akerber: change this (and possibly screen interface) so we
- * don't need to use a temporary buffer */
-/* DRIVERS BLANK }}} */
 
 /* Redraws the screen based on the current virtual terminal */
 void

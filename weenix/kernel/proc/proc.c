@@ -1,5 +1,4 @@
 #include "kernel.h"
-
 #include "config.h"
 #include "globals.h"
 #include "errno.h"
@@ -72,76 +71,155 @@ failed:
         }
 }
 
+void yield(){
+    sched_make_runnable(curthr);
+    sched_switch();
+}
+
 /*
  * The new process, although it isn't really running since it has no
  * threads, should be in the PROC_RUNNING state.
  *
- * Don't forget to set proc_initproc when you create the init
+ * dON'T FORget to set proc_initproc when you create the init
  * process. You will need to be able to reference the init process
  * when reparenting processes to the init process.
  */
 proc_t *
 proc_create(char *name)
 {
-proc_t *new_process;
+    proc_t *p = slab_obj_alloc(proc_allocator);
 
-/*	if(strcmp(name,"Idle_Process"))
-	{	new_process=(proc_t*)proc_allocator;}
-	else
-	{}*/
-/*	dbg(DBG_INIT, "\nPROC_CREATE: creating process\n");*/
-	new_process=(proc_t*)slab_obj_alloc(proc_allocator);
-	KASSERT(new_process!= NULL);
-	strncpy(new_process->p_comm,name,PROC_NAME_LEN);
+    if (p == NULL){
+        return NULL;
+    }
+    
+    /* put this proc in the proc list */
+    list_link_init(&p->p_list_link)
 
-	list_init(&(new_process->p_threads));
+    list_insert_head(&_proc_list, &p->p_list_link); 
 
-	list_init(&(new_process->p_children));
+    p->p_pid = (pid_t) _proc_getid(); 
 
-	new_process->p_status=0;
-	new_process->p_pid=_proc_getid();
+    if (p->p_pid == -1){
+        panic("ran out of pid's to assign!\n");
+    }
 
-	KASSERT(PID_IDLE != new_process->p_pid || list_empty(&_proc_list)); /* pid can only be PID_IDLE if this is the first process */
-	dbg(DBG_INIT,"(GRADING1 2.a)  PID is only idle when this is the first process\n");
-        KASSERT(PID_INIT != new_process->p_pid || PID_IDLE == curproc->p_pid); /* pid can only be PID_INIT when creating from idle process */	
-	dbg(DBG_INIT,"(GRADING1 2.a)  PID is PID_INIT when creating from idle process\n");
-	dbg(DBG_INIT, "\nPROC_CREATE: Created Process ID :%d\n",new_process->p_pid);
-	new_process->p_state=PROC_RUNNING;
+    list_init(&p->p_threads);
+    list_init(&p->p_children);
+    p->p_pproc = curproc;
 
-	if(new_process->p_pid==PID_INIT)
-		{proc_initproc=new_process;}	
-	
-	sched_queue_init(&new_process->p_wait);
-	
-	list_insert_head(&_proc_list,&new_process->p_list_link);
+    p->p_state = PROC_RUNNING;
+    sched_queue_init(&p->p_wait);  
+   
+    p->p_pagedir = pt_create_pagedir(); 
 
-	new_process->p_pproc=curproc;
+    if (p->p_pagedir == NULL){
+        slab_obj_free(proc_allocator, p);
+        return NULL;
+    }
+  
+    /* initialize the name */    
+    char *correct_name = name ? name : "Unnamed process";
 
-	if(new_process->p_pid!=0)
+    int i;
+    for (i = 0; i < PROC_NAME_LEN && name[i]; i++){
+        p->p_comm[i] = name[i];
+    }
 
-	list_insert_head(&new_process->p_pproc->p_children,&new_process->p_child_link);
+    if (i < PROC_NAME_LEN){
+        p->p_comm[i] = '\0';
+    } else {
+        p->p_comm[PROC_NAME_LEN] = '\0';
+    }
 
-	
-	new_process->p_pagedir=pt_create_pagedir();
-
-	KASSERT(new_process->p_pagedir!=NULL);
-
-	int fd;	
-	for (fd = 0; fd < NFILES; fd++) {
-              new_process->p_files[fd]=NULL;
-        }
-        new_process->p_cwd=vfs_root_vn;
-        if (new_process->p_cwd)
-        {
-                vref(new_process->p_cwd);
-        }
-
-
+    list_link_init(&p->p_child_link);
+    
+    if (p->p_pid != 0){
+        /*     make sure we're not giving the idle proc a parent */
+        KASSERT(p->p_pid != (pid_t) 0);
         
-        return new_process;
+        list_insert_head(&p->p_pproc->p_children, &p->p_child_link); 
+    }
+   
+    /* if the init proc, set the global variable */
+    if (p->p_pid == (pid_t) 1){
+        proc_initproc = p;
+    }
+
+#ifdef __VFS__
+    int j;
+    for (j = 0; j < NFILES; j++){
+        p->p_files[j] = NULL;
+    } 
+
+    if (p->p_pid > 3){
+        p->p_cwd = p->p_pproc->p_cwd;
+        vref(p->p_cwd);
+    } else {
+        /* bad, but we'll catch this later with a KASSERT if it doesn't
+         * get set later */
+        p->p_cwd = NULL;
+    }
+#endif
+
+#ifdef __VM__
+    p->p_vmmap = vmmap_create();
+
+    if (p->p_vmmap == NULL){
+        if (p->p_cwd != NULL){
+            vput(p->p_cwd);
+        }
+
+        if (list_link_is_linked(&p->p_child_link)){
+            list_remove(&p->p_child_link);
+        }
+
+        pt_destroy_pagedir(p->p_pagedir);
+        list_remove(&p->p_list_link);
+        slab_obj_free(proc_allocator, p);
+        return NULL;
+    }
+
+    p->p_vmmap->vmm_proc = p;
+#endif
+
+    return p;
 }
+
+/**
+ * Makes a process a child of the init
+ * proc.
+ */
+static void reparent_proc(proc_t *p){
+    p->p_pproc = proc_initproc;
+    list_insert_tail(&proc_initproc->p_children, &p->p_child_link);
+}
+
+/**
+ * Reparents an entire list of processes to the init proc
+ */
+/* TODO: make sure this works */
+static void reparent_all_children(list_t *children){
+    dbg(DBG_PROC, "reparenting children. curproc = %s\n", curproc->p_comm);
+    
+    list_link_t *link = children->l_next;
+
+    while (link && link != children){
+        proc_t *p = list_item(link, proc_t, p_child_link);
+        link = link->l_next;
+
+        if (curproc == proc_initproc){
+            int status;
+            do_waitpid(p->p_pid, 0, &status);
+        } else {
+            reparent_proc(p);
+        }
+    }
+}
+
 /**
  * Cleans up as much as the process as can be done from within the
+ * process. This involves:
  *    - Closing all open files (VFS)
  *    - Cleaning up VM mappings (VM)
  *    - Waking up its parent if it is waiting
@@ -166,33 +244,40 @@ proc_t *new_process;
 void
 proc_cleanup(int status)
 {
-	proc_t *p;
-	KASSERT(NULL != proc_initproc); /* should have an "init" process */
-        dbg(DBG_INIT,"(GRADING1 2.b)  There exists an init process when cleanup is running\n");
-	KASSERT(1 <= curproc->p_pid); /* this process should not be idle process */
-	dbg(DBG_INIT,"(GRADING1 2.b)  This process is not idle process\n");
-        KASSERT(NULL != curproc->p_pproc); /* this process should have parent process */
-	dbg(DBG_INIT,"(GRADING1 2.b)  Process getting cleaned up has a parent process(precondition)\n");
-	if((curproc->p_pproc->p_wait).tq_size!=0)
-	{
-		sched_wakeup_on(&(curproc->p_pproc->p_wait));
-	}
-	if(curproc!=proc_initproc)
-	{ 
-	 if(!list_empty(&curproc->p_children))
-         {    
-           list_iterate_begin(&curproc->p_children, p, proc_t, p_child_link) {
-	       list_insert_head(&(proc_initproc->p_children),&p->p_child_link);
-           	p->p_pproc=proc_initproc;
-		} list_iterate_end();
-         }}	  
-	 curproc->p_state=PROC_DEAD;
- 	 curproc->p_status=status;
-	KASSERT(NULL != curproc->p_pproc); /* this process should have parent process */
-	dbg(DBG_INIT,"(GRADING1 2.b)  This process getting cleaned up still has a parent process(postcondition)\n");
-/*	sched_switch();*/
-/*	dbg(DBG_INIT,"\n********************************process getting cleaned up %s*********************************\n",curthr->kt_proc->p_comm);*/
-return;
+    /* Reparent all the children */
+    list_t *children = &curproc->p_children;
+
+    if (!list_empty(children)){
+        KASSERT(curproc != proc_initproc && "initproc still has children!!!");
+        reparent_all_children(children);        
+    }
+
+    curproc->p_status = status;
+    
+    curproc->p_state = PROC_DEAD;
+    
+    /* remove from the list of all processes */
+    list_remove(&curproc->p_list_link);
+
+#ifdef __VFS__
+    int i;
+    for (i = 0; i < NFILES; i++){
+        if (curproc->p_files[i] != NULL){
+            do_close(i);
+        }
+    }
+
+    if (curproc->p_pid != 2 && curproc->p_pid != 3){
+        KASSERT(curproc->p_cwd != NULL && "cwd is null");
+        vput(curproc->p_cwd);
+        curproc->p_cwd = NULL;
+    }
+#endif
+
+#ifdef __VM__
+    vmmap_destroy(curproc->p_vmmap);
+#endif
+    sched_wakeup_on(&curproc->p_pproc->p_wait);
 }
 
 /*
@@ -206,52 +291,20 @@ return;
 void
 proc_kill(proc_t *p, int status)
 {
-KASSERT(p!=NULL);
-KASSERT(p->p_state!=PROC_DEAD);
-/*dbg(DBG_INIT,"\n\n\nProcess to be killed is %d..............current process is %d\n\n\n",p->p_pid,curproc->p_pid);*/
-kthread_t *child_thread;
-proc_t *child;
-	if(p==curproc)
+    if (p == curproc){
+        do_exit(status);
+        panic("returned from do_exit()\n");
+    }
 
-{ 	dbg(DBG_INIT,"\n\n\n killing current process\n\n\n");	
-	do_exit(status);
-		
-		
-}
-	else 
-		 {     		
-			/*	if((p->p_pproc->p_wait).tq_size!=0)
-			       { sched_wakeup_on(&p->p_pproc->p_wait);}*/
-				/* if(curproc==proc_initproc)
-			         {
-                			 list_iterate_begin(&curproc->p_children, child, proc_t,p_child_link) {
-                			 do_waitpid(child->p_pid,0,&status);
-                		 	 } list_iterate_end();
-         			 }
-				*/
-          		/*	if(!list_empty(&p->p_children))
-         			{	
-           			
-                                        list_iterate_begin(&p->p_children, child, proc_t, p_child_link) {
-	                                    list_insert_head(&(proc_initproc->p_children),&child->p_child_link);
-         			            child->p_pproc=proc_initproc;
-                                         } list_iterate_end();
-    			        }*/
-       		        	  p->p_state=PROC_DEAD;
-       				  p->p_status=status;
-				 dbg(DBG_INIT,"\nKilling process with pid %d\n",p->p_pid);
+    list_link_t *link;
+    list_t *threads = &p->p_threads;
 
-                                list_iterate_begin(&p->p_threads,child_thread, kthread_t, kt_plink) {
-                                kthread_cancel(child_thread,(void*)1);
+    for (link = threads->l_next; link != threads; link = link->l_next){
+        kthread_t *t = list_item(link, kthread_t, kt_plink);
+        kthread_cancel(t, 0);
+    }
 
-                                
-                                } list_iterate_end();
-				
-				
-                  }
-
-
-		  
+    p->p_status = status;
 }
 
 /*
@@ -263,14 +316,22 @@ proc_t *child;
 void
 proc_kill_all()
 {
-	proc_t *p;
-	list_iterate_begin(&_proc_list, p, proc_t, p_list_link) {
-        if (p->p_pid != PID_IDLE) {
-                        proc_kill(p,1);
-	                }
-         } list_iterate_end();
-KASSERT(1);
-	 
+    list_t *all_procs = &_proc_list; 
+    list_link_t *link = all_procs->l_next;
+
+    while (link != all_procs){
+        proc_t *p = list_item(link, proc_t, p_list_link);
+        link = link->l_next;
+
+        /* if it's not the curproc or a child of the idle proc, kill it */
+        if (p != curproc && p->p_pproc && p->p_pproc->p_pid != 0){
+            proc_kill(p, 0);
+        }
+    }
+
+    if (curproc->p_pproc && curproc->p_pproc->p_pid != 0){
+        do_exit(0);
+    }
 }
 
 proc_t *
@@ -302,21 +363,134 @@ proc_list()
 void
 proc_thread_exited(void *retval)
 {
-  proc_t *child; 
- KASSERT(curthr->kt_state==KT_EXITED);
-	 if(curproc==proc_initproc)
-         {
-        	/*dbg(DBG_INIT,"inside if...so exiting initproc"); */
-/*	        list_iterate_begin(&curproc->p_children, child, proc_t,p_child_link) {
-                 do_waitpid(child->p_pid,0,(int*)retval);
-		 } list_iterate_end();*/
-       	 }
-	 proc_cleanup(0);
-/*	dbg(DBG_INIT,"\n........in proc thread exited of process %s.......\n",curproc->p_comm);*/
-	 sched_switch();
-return;
-		
+    proc_cleanup((int) retval);
+    curthr->kt_state = KT_EXITED;
+    sched_switch();
+}
+
+/**
+ * This morbid function finds a dead child,
+ * of the current proc, and returns a pointer
+ * to the child proc. If multiple children are dead,
+ * it is unspecified which child this function returns.
+ *
+ * @return a pointer to a dead child of the current proc, or
+ *         NULL if no such child exists
+ */
+static proc_t *find_dead_child(){
+    list_link_t *link;
+    list_t *children = &curproc->p_children;
+
+    for (link = children->l_next; link != children; link = link->l_next){
+        proc_t *p = list_item(link, proc_t, p_child_link);
+
+        if (p->p_state == PROC_DEAD){
+            return p;
+        }
+    }
+
+    return NULL;
+}
+
+/* disposes of the remaining resources of a
+ * cancelled child proc
+ */
+static void cleanup_child_proc(proc_t *p){
+    KASSERT(p->p_state == PROC_DEAD && "attempting to clean up a running process\n");
+
+    list_t *threads = &p->p_threads;
+    list_link_t *link = threads->l_next;
+
+    while (link != threads){
+        kthread_t *t = list_item(link, kthread_t, kt_plink);
+        link = link->l_next;
+        kthread_destroy(t);
+    }
+ 
+   list_remove(&p->p_child_link); 
    
+   pt_destroy_pagedir(p->p_pagedir);
+   slab_obj_free(proc_allocator, (void *) p);
+}
+
+/**
+ * A helper function for do_waitpid, which is invoked if
+ * the pid argument to do_waitpid is -1. This function waits
+ * for any child of the current process to exit, cleans it up,
+ * puts its exit value into status, and returns its pid
+ */
+static pid_t do_waitpid_any(int *status){
+    proc_t *dead_child = find_dead_child();
+
+    while (dead_child == NULL){
+        sched_cancellable_sleep_on(&curproc->p_wait);
+
+        /* we only have to do this once, because this process
+         * will only wake up if a child exits 
+         */
+        dead_child = find_dead_child();
+        /*KASSERT(dead_child != NULL);*/
+    }
+
+    cleanup_child_proc(dead_child);
+
+    if (status != NULL){
+        *status = dead_child->p_status;
+    }
+
+    return dead_child->p_pid;
+}
+
+/* returns true if a process with the given pid
+ * is in the given list, and false otherwise
+ */
+static int is_child(pid_t pid, list_t *child_list){
+    list_link_t *link;
+
+    for (link = child_list->l_next; link != child_list; link = link->l_next){
+        proc_t *p = list_item(link, proc_t, p_child_link);
+
+        if (p->p_pid == pid){
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * A helper function for do_waitpid, which is invoked if
+ * the pid argument to do_waitpid is > 0. This function waits
+ * for the child of the curproc with a pid of pid to exit, cleans it up,
+ * puts its exit value into status, and returns its pid
+ */
+static pid_t do_waitpid_specific(pid_t pid, int *status){
+    list_t *children = &curproc->p_children;
+    list_link_t *link;
+
+    proc_t *p;
+
+    for (link = children->l_next; link != children; link = link->l_next){
+        p = list_item(link, proc_t, p_child_link);
+
+        if (p->p_pid == pid){
+            break;
+        }
+    }
+
+    KASSERT(p != NULL && "given proc isn't a child of curproc!!!\n");
+
+    while (p->p_state != PROC_DEAD){
+        sched_cancellable_sleep_on(&curproc->p_wait);
+    }
+
+    cleanup_child_proc(p);
+
+    if (status != NULL){
+        *status = p->p_status;
+    }
+
+    return p->p_pid;
 }
 
 /* If pid is -1 dispose of one of the exited children of the current
@@ -337,98 +511,23 @@ return;
 pid_t
 do_waitpid(pid_t pid, int options, int *status)
 {
- int flag=0; 
-proc_t *child;
-kthread_t *child_thread;
-        if( list_empty(&curproc->p_children) == 1 ){
-           dbg(DBG_INIT,"\nreturning echild\n");
-		 return -ECHILD;
-        } 
-        if(pid!=-1)
-	{
-/*	dbg(DBG_INIT, "waitpid called by %s process with pid %d", curproc->p_comm,pid);*/
-	proc_t* given_p = proc_lookup(pid);
+    KASSERT(options == 0);
 
-        if(!given_p||given_p->p_pproc->p_pid !=  curproc->p_pid){
-           dbg(DBG_INIT,"\nreturning echild\n");
-            return -ECHILD;
-         
-	}
-        KASSERT( given_p!=NULL);
-	dbg(DBG_INIT,"(GRADING1 2.c)  The given process is not NULL\n");
-	KASSERT(-1 == pid || given_p->p_pid == pid);
-	dbg(DBG_INIT,"(GRADING1 2.c)  The process's pid is found\n");
-	KASSERT(NULL != given_p->p_pagedir);
-	dbg(DBG_INIT,"(GRADING1 2.c)  The process's has a page directory \n"); 
-	}
+    pid_t ret_pid;
 
-        if ( pid == -1 ){
-				
-         /*  dbg(DBG_INIT,"inside if -1");*/
-		list_iterate_begin(&curproc->p_children, child, proc_t, p_child_link) {
-			if(child->p_state==PROC_DEAD)
-			{
-                                   
-				list_remove(&child->p_child_link);
- 				list_remove(&child->p_list_link);		
-				flag=1;
-			/*TO DO : destroy data structure of the process*/
-			}                
-                } list_iterate_end();
-         	
-		while(flag==0)
-			{	
-           		/*	dbg(DBG_INIT,"flag=0");*/
-				sched_sleep_on(&curproc->p_wait);
-/*			dbg(DBG_INIT,"................sleep return curproc is %d........\n ",curproc->p_pid);	*/
-			
-		  list_iterate_begin(&curproc->p_children, child, proc_t, p_child_link) {
-                        if(child->p_state==PROC_DEAD)
-                        {
-/*				dbg(DBG_INIT,"..............inside if iterating pid %d........",child->p_pid);	*/
-                                list_remove(&child->p_child_link);
-                                list_remove(&child->p_list_link);
-                        	flag=1;
-				/*TO DO : destroy data structure of the process*/
-                        }
-                } list_iterate_end();
-/*			dbg(DBG_INIT,"................return pid  is %d.........\n ",child->p_pid);	*/
+    if (pid < -1){
+        ret_pid = -ECHILD;
+    } else if (list_empty(&curproc->p_children)){
+        ret_pid = -ECHILD;
+    } else if (pid == (pid_t) -1){
+        ret_pid = do_waitpid_any(status);      
+    } else if (is_child(pid, &curproc->p_children)){
+        ret_pid = do_waitpid_specific(pid, status);
+    } else {
+        ret_pid = -ECHILD;
+    }
 
-		} *status=child->p_status;	return child->p_pid;
- 		  /* Check if exited children exist of the current process
-                // If present then dispose one and return its exit status
-            //Othewise
-                // Block on its p_wait queue until one exits*/
-        	} 
-	else if ( pid > 0 ) {
-     		list_iterate_begin(&curproc->p_children, child, proc_t, p_child_link) {
-                if(child->p_pid==pid)
-                { 	
-                     while( (child->p_state!=PROC_DEAD) )
-		     { sched_sleep_on(&curproc->p_wait);
-/*			dbg(DBG_INIT,"\n..caught in while loop.....waiting for %s ...\n ",child->p_comm);*/
-			}
-  
-		     
-			{	list_remove(&child->p_child_link);
-                        	list_remove(&child->p_list_link);
-			 list_iterate_begin(&child->p_threads,child_thread, kthread_t, kt_plink) {
-		                KASSERT(KT_EXITED == child_thread->kt_state);
-				dbg(DBG_INIT,"(GRADING1 2.c)  child thread is a thread to be destroyed\n");
-				kthread_destroy(child_thread);
-                       	 		
-				/*TO DO : destroy data structure of the process*/
-		            } list_iterate_end();
-				
-			}	
-                }
-               
-                } list_iterate_end();
- 
-        } 
-*status=child->p_status;
-        return pid;
-
+    return ret_pid;
 }
 
 /*
@@ -440,13 +539,17 @@ kthread_t *child_thread;
 void
 do_exit(int status)
 {
-	 proc_t *child;  
-  	 
-	 kthread_exit((void*)status);
-	
-/*	 do_waitpid(curproc->pproc,curproc->p_pid,	
-	 //   NOT_YET_IMPLEMENTED("PROCS: do_exit");*/
+    list_link_t *link;
+    list_t *threads = &curproc->p_threads;
 
+    for (link = threads->l_next; link != threads; link = link->l_next){
+        kthread_t *t = list_item(link, kthread_t, kt_plink);
+        if (t != curthr){
+            kthread_cancel(t, 0);
+        }
+    }
+
+    kthread_exit((void *) status);
 }
 
 size_t

@@ -106,7 +106,8 @@ void acpi_init()
          * memory, therefore we must use the phys_tmp_map functionallity of page tables */
         rsd_table = _acpi_load_table(rsd_ptr->rp_addr);
         KASSERT(RSDT_SIGNATURE == rsd_table->rt_header.ah_sign);
-        KASSERT(0 == __acpi_checksum((void *)rsd_table, rsd_table->rt_header.ah_size));
+	/* Only support ACPI version 1.0 */
+        KASSERT(0 == __acpi_checksum((void *)rsd_table, rsd_table->rt_header.ah_size) && "Weenix only supports ACPI 1.0");
 
         dbgq(DBG_CORE, "--- ACPI INIT ---\n");
         dbgq(DBG_CORE, "rsdp addr:  %p\n", rsd_ptr);

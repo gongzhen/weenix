@@ -10,20 +10,11 @@ void apic_init();
 /* Maps the given IRQ to the given interrupt number. */
 void apic_setredir(uint32_t irq, uint8_t intr);
 
-/* Initializes the APIC timer to count down from 'count' and
- * trigger interrupt 'intr' when completed. Counter is (effectively)
- * decremented by 1/'div' every bus clock tick. If 'periodic' is set
- * repeat periodically, otherwise just do it once. This function
- * should be accessed via wrappers in the interrupt subsystem.
- * Returns 0 on success, nonzero on failure.
- * Note that 'div' must be a power of 2 less than 2^8. */
-int apic_starttimer(uint32_t count, unsigned int div, uint8_t intr, int periodic);
+/* Starts the APIC timer */
+void apic_enable_periodic_timer(uint32_t freq);
 
-/* Get the current value of the timer. */
-uint32_t apic_gettimer(void);
-
-/* Set the current value of the timer. */
-void apic_settimer(uint32_t count);
+/* Stops the APIC timer */
+void apic_disable_periodic_timer();
 
 /* Sets the interrupt to raise when a spurious
  * interrupt occurs. */

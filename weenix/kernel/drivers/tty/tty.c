@@ -24,7 +24,7 @@
  * which received the key press=
  * @param c the character received
  */
-static void tty_global_driver_callback(void *arg, char c);
+/*void tty_global_driver_callback(void *arg, char c);*/
 
 /**
  * Reads a specified maximum number of bytes from a tty into a given
@@ -127,8 +127,21 @@ tty_init()
 tty_device_t *
 tty_create(tty_driver_t *driver, int id)
 {
-        NOT_YET_IMPLEMENTED("DRIVERS: tty_create");
-        return 0;
+    tty_device_t *tty = (tty_device_t *) kmalloc(sizeof(tty_device_t));
+
+    if (tty == NULL){
+        return NULL;
+    }
+
+    tty->tty_driver = driver;
+    tty->tty_ldisc = NULL;
+    tty->tty_id = id;
+
+    tty->tty_cdev.cd_id = MKDEVID(2, id);
+    tty->tty_cdev.cd_ops = &tty_bytedev_ops;
+    list_link_init(&tty->tty_cdev.cd_link);
+
+    return tty;
 }
 
 /*
@@ -145,9 +158,18 @@ tty_create(tty_driver_t *driver, int id)
  * tty_echo() function.
  */
 void
-tty_global_driver_callback(void *arg, char c)
-{
-        NOT_YET_IMPLEMENTED("DRIVERS: tty_global_driver_callback");
+tty_global_driver_callback(void *arg, char c) {
+    tty_device_t *tty = (tty_device_t *) arg;
+    tty_ldisc_t *ldisc = tty->tty_ldisc;
+    struct tty_ldisc_ops *ops = ldisc->ld_ops;
+
+    const char *out = ops->receive_char(ldisc, c);
+
+    if (out != NULL){
+        tty_echo(tty->tty_driver, out);
+    } else {
+        dbg(DBG_TERM, "unable to print to screen\n");
+    }
 }
 
 /*
@@ -155,9 +177,19 @@ tty_global_driver_callback(void *arg, char c)
  * each character of the string 'out'.
  */
 void
-tty_echo(tty_driver_t *driver, const char *out)
-{
-        NOT_YET_IMPLEMENTED("DRIVERS: tty_echo");
+tty_echo(tty_driver_t *driver, const char *out) {
+    if (out == NULL){
+        return;
+    }
+
+    void *to_free = (void *) out;
+
+    while (*out != '\0'){
+        driver->ttd_ops->provide_char(driver, *out);
+        out++;
+    }
+
+    kfree(to_free);
 }
 
 /*
@@ -168,9 +200,16 @@ tty_echo(tty_driver_t *driver, const char *out)
 int
 tty_read(bytedev_t *dev, int offset, void *buf, int count)
 {
-        NOT_YET_IMPLEMENTED("DRIVERS: tty_read");
+    tty_ldisc_t *ldisk = bd_to_tty(dev)->tty_ldisc;
+    tty_driver_t *tty_driver = bd_to_tty(dev)->tty_driver;
 
-        return 0;
+    void *data = tty_driver->ttd_ops->block_io(tty_driver);
+
+    int chars_read = ldisk->ld_ops->read(ldisk, buf, count);
+
+    tty_driver->ttd_ops->unblock_io(tty_driver, data);
+    
+    return chars_read;
 }
 
 /*
@@ -184,7 +223,25 @@ tty_read(bytedev_t *dev, int offset, void *buf, int count)
 int
 tty_write(bytedev_t *dev, int offset, const void *buf, int count)
 {
-        NOT_YET_IMPLEMENTED("DRIVERS: tty_write");
+    const char *buffer = (const char *) buf;
 
-        return 0;
+    tty_driver_t *tty_driver = bd_to_tty(dev)->tty_driver;
+    tty_ldisc_t *ldisc = bd_to_tty(dev)->tty_ldisc;
+
+    void *data = tty_driver->ttd_ops->block_io(tty_driver);
+
+    int i;
+    for (i = 0; i < count; i++){
+       const char *to_echo = ldisc->ld_ops->process_char(ldisc, buffer[i]);
+
+       if (to_echo != NULL){
+           tty_echo(tty_driver, to_echo);
+       } else {   
+           dbg(DBG_TERM, "unable to print to screen\n");
+       }
+    }
+
+    tty_driver->ttd_ops->unblock_io(tty_driver, data);
+
+    return i;
 }
