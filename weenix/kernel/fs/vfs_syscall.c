@@ -3,7 +3,7 @@
  *  AUTH: mcc | jal
  *  DESC:
  *  DATE: Wed Apr  8 02:46:19 1998
- *  $Id: vfs_syscall.c,v 1.9.2.2 2006/06/04 01:02:32 afenn Exp $
+ *  $Id: vfs_syscall.c,v 1.1 2012/10/10 20:06:46 william Exp $
  */
 
 #include "kernel.h"
@@ -21,11 +21,6 @@
 #include "util/printf.h"
 #include "fs/stat.h"
 #include "util/debug.h"
-
-#define KMUTEX_STATIC_INITIALIZER(name) {{{&name.km_waitq.tq_list,\
-    &name.km_waitq.tq_list}, 0}, NULL}
-
-static kmutex_t lookup_mutex = KMUTEX_STATIC_INITIALIZER(lookup_mutex);
 
 /* To read a file:
  *      o fget(fd)
@@ -46,45 +41,8 @@ static kmutex_t lookup_mutex = KMUTEX_STATIC_INITIALIZER(lookup_mutex);
 int
 do_read(int fd, void *buf, size_t nbytes)
 {
-    if (fd < 0 || fd >= NFILES){
-        return -EBADF;
-    }
-
-    file_t *f = fget(fd);
-
-    if (f == NULL){
-        return -EBADF;
-    } else if (!(f->f_mode & FMODE_READ)){
-        fput(f);
-        return -EBADF;
-    }
-
-    if (f->f_vnode->vn_ops->read == NULL){
-        fput(f);
-        return -EISDIR;
-    }
-
-    int bytes_read = f->f_vnode->vn_ops->read(f->f_vnode, f->f_pos, buf, nbytes);
-
-    int ret_val = bytes_read;
-
-    if (bytes_read == 0 && nbytes != 0){
-        int seek_val = do_lseek(fd, 0, SEEK_END);
-
-        if (seek_val < 0){
-            ret_val = seek_val;
-        }
-
-    } else if (bytes_read > 0){
-        int seek_val = do_lseek(fd, bytes_read, SEEK_CUR);
-
-        if (seek_val < 0){
-            ret_val = seek_val;
-        }
-    }
-
-    fput(f);
-    return ret_val;
+        NOT_YET_IMPLEMENTED("VFS: do_read");
+        return -1;
 }
 
 /* Very similar to do_read.  Check f_mode to be sure the file is writable.  If
@@ -98,42 +56,8 @@ do_read(int fd, void *buf, size_t nbytes)
 int
 do_write(int fd, const void *buf, size_t nbytes)
 {
-    if (fd < 0 || fd >= NFILES){
-        return -EBADF;
-    }
-
-    file_t *f = fget(fd);
-
-    if (f == NULL){
-        return -EBADF;
-    } else if (!(f->f_mode & FMODE_WRITE)){
-        fput(f);
-        return -EBADF;
-    }
-
-    if (f->f_vnode->vn_ops->write == NULL){
-        fput(f);
-        return -EISDIR;
-    }
-
-    if (f->f_mode & FMODE_APPEND){
-        do_lseek(fd, 0, SEEK_END);
-    }
-
-    int bytes_written = f->f_vnode->vn_ops->write(f->f_vnode, f->f_pos, buf, nbytes);
-
-    int ret_val = bytes_written;
-
-    if (bytes_written > 0){
-        int seek_val = do_lseek(fd, bytes_written, SEEK_CUR);
-
-        if (seek_val < 0){
-            ret_val = seek_val;
-        }
-    }
-
-    fput(f);
-    return ret_val;
+        NOT_YET_IMPLEMENTED("VFS: do_write");
+        return -1;
 }
 
 /*
@@ -146,18 +70,8 @@ do_write(int fd, const void *buf, size_t nbytes)
 int
 do_close(int fd)
 {
-    if (fd < 0 || fd >= NFILES || curproc->p_files[fd] == NULL){
-        dbg(DBG_VFS, "invalid file descriptor %d. Unable to close file", fd);
-        return -EBADF;
-    }
-
-    file_t *f = curproc->p_files[fd];
-
-    curproc->p_files[fd] = NULL;
-
-    fput(f);
-
-    return 0;
+        NOT_YET_IMPLEMENTED("VFS: do_close");
+        return -1;
 }
 
 /* To dup a file:
@@ -179,26 +93,8 @@ do_close(int fd)
 int
 do_dup(int fd)
 {
-    dbg(DBG_VFS, "calling do_dup on fd %d\n", fd);
-    if (fd < 0 || fd >= NFILES || curproc->p_files[fd] == NULL){
-        return -EBADF;
-    }
-
-    file_t *f = fget(fd);
-
-    KASSERT(f != NULL && "fd not valid/not open");
-
-    int new_fd = get_empty_fd(curproc);
-
-    if (new_fd < 0){
-        KASSERT(new_fd == -EMFILE);
-        fput(f);
-        return new_fd;
-    }
-
-    curproc->p_files[new_fd] = curproc->p_files[fd];
-
-    return new_fd;
+        NOT_YET_IMPLEMENTED("VFS: do_dup");
+        return -1;
 }
 
 /* Same as do_dup, but insted of using get_empty_fd() to get the new fd,
@@ -213,28 +109,8 @@ do_dup(int fd)
 int
 do_dup2(int ofd, int nfd)
 {
-    dbg(DBG_VFS, "calling do_dup2 on ofd %d and nfd %d\n", ofd, nfd);
-
-    if (ofd < 0 || ofd >= NFILES || curproc->p_files[ofd] == NULL
-        || nfd < 0 || nfd >= NFILES){
-        return -EBADF;
-    }
-
-    if (ofd == nfd){
-        return ofd;
-    }
-
-    if (ofd != nfd && curproc->p_files[nfd] != NULL){
-        KASSERT(do_close(nfd) == 0);
-    }
-
-    file_t *f = fget(ofd);
-
-    KASSERT(f != NULL && "fd not valid/not open");
-
-    curproc->p_files[nfd] = f;
-
-    return nfd;
+        NOT_YET_IMPLEMENTED("VFS: do_dup2");
+        return -1;
 }
 
 /*
@@ -265,44 +141,8 @@ do_dup2(int ofd, int nfd)
 int
 do_mknod(const char *path, int mode, unsigned devid)
 {
-    if (mode != S_IFCHR && mode != S_IFBLK){
-        return -EINVAL;
-    }
-
-    size_t namelen;
-    const char *name;
-    vnode_t *dir;
-
-    int dir_result = dir_namev(path, &namelen, &name, NULL, &dir);
-
-    switch (dir_result){
-        case -ENOENT:
-        case -ENOTDIR:
-        case -ENAMETOOLONG:
-            return dir_result;
-        default:
-            /* do nothing */;
-    }
-
-    KASSERT(dir_result == 0);
-
-    vnode_t *base_node;
-    int lookup_result = lookup(dir, name, namelen, &base_node);
-
-    int ret_code;
-
-    if (lookup_result == -ENOTDIR){
-        ret_code = -ENOTDIR;
-    } else if (lookup_result == 0){
-        /* the file already exists */
-        vput(base_node);
-        ret_code = -EEXIST;
-    } else {
-        ret_code = dir->vn_ops->mknod(dir, name, namelen, mode, devid);
-    }
-
-    vput(dir);
-    return ret_code;
+        NOT_YET_IMPLEMENTED("VFS: do_mknod");
+        return -1;
 }
 
 /* Use dir_namev() to find the vnode of the dir we want to make the new
@@ -322,39 +162,8 @@ do_mknod(const char *path, int mode, unsigned devid)
 int
 do_mkdir(const char *path)
 {
-    size_t namelen;
-    const char *name;
-    vnode_t *dir;
-
-    int dir_result = dir_namev(path, &namelen, &name, NULL, &dir);
-
-    switch (dir_result){
-        case -ENOENT:
-        case -ENOTDIR:
-        case -ENAMETOOLONG:
-        case -EINVAL:
-            return dir_result;
-        default:
-            /* do nothing */;
-    }
-
-    vnode_t *base_node;
-    int lookup_result = lookup(dir, name, namelen, &base_node);
-
-    int ret_code;
-
-    if (lookup_result == -ENOTDIR){
-        ret_code = -ENOTDIR;
-    } if (lookup_result == 0){
-        /* the file already exists */
-        vput(base_node);
-        ret_code = -EEXIST;
-    } else {
-        KASSERT(lookup_result == -ENOENT);
-        ret_code = dir->vn_ops->mkdir(dir, name, namelen);
-    } 
-    vput(dir);
-    return ret_code;
+        NOT_YET_IMPLEMENTED("VFS: do_mkdir");
+        return -1;
 }
 
 /* Use dir_namev() to find the vnode of the directory containing the dir to be
@@ -378,41 +187,8 @@ do_mkdir(const char *path)
 int
 do_rmdir(const char *path)
 {
-    size_t namelen;
-    const char *name;
-    vnode_t *dir;
-
-    int dn_res = dir_namev(path, &namelen, &name, NULL, &dir);
-
-    if (dn_res < 0){
-        dbg(DBG_VFS, "dir_namev failed\n");
-        return dn_res;
-    }
-
-    int to_ret;
-    vnode_t *lookup_vn;
-    int lookup_res;
-
-    if (namelen == 1 && name[0] == '.'){
-        to_ret = -EINVAL;
-    } else if (namelen == 2 && name[0] == '.' && name[1] == '.'){
-        to_ret = -ENOTEMPTY;
-    } else if (dir->vn_ops->rmdir == NULL){
-        to_ret = -ENOTDIR;
-    } else if ((lookup_res = lookup(dir, name, namelen, &lookup_vn)) != 0){
-        /*probably because the dir doesn't exist */
-        to_ret = lookup_res;
-    } else if (lookup_vn->vn_ops->rmdir == NULL){
-        to_ret = -ENOTDIR;
-        vput(lookup_vn);
-    } else {
-        to_ret = dir->vn_ops->rmdir(dir, name, namelen);
-        vput(lookup_vn);
-    }
-
-    vput(dir);
-
-    return to_ret;
+        NOT_YET_IMPLEMENTED("VFS: do_rmdir");
+        return -1;
 }
 
 /*
@@ -431,36 +207,8 @@ do_rmdir(const char *path)
 int
 do_unlink(const char *path)
 {
-    size_t namelen;
-    const char *name;
-    vnode_t *dir;
-
-    int dn_res = dir_namev(path, &namelen, &name, NULL, &dir);
-
-    if (dn_res < 0){
-        dbg(DBG_VFS, "dir_namev failed\n");
-        return dn_res;
-    }
-
-    int to_ret;
-    vnode_t *lookup_vn;
-    int lookup_res;
-
-    if (dir->vn_ops->unlink == NULL){
-        to_ret = -ENOTDIR;
-    } else if ((lookup_res = lookup(dir, name, namelen, &lookup_vn)) != 0){
-        /* probably because the file doesn't exist */
-        to_ret = lookup_res;
-    } else if (lookup_vn->vn_ops->rmdir != NULL){
-        to_ret = -EISDIR;
-        vput(lookup_vn);
-    } else {
-        to_ret = dir->vn_ops->unlink(dir, name, namelen);
-        vput(lookup_vn);
-    }
-
-    vput(dir);
-    return to_ret;
+        NOT_YET_IMPLEMENTED("VFS: do_unlink");
+        return -1;
 }
 
 /* To link:
@@ -485,42 +233,8 @@ do_unlink(const char *path)
 int
 do_link(const char *from, const char *to)
 {
-    vnode_t *from_vn;
-
-    int on_res = open_namev(from, O_RDONLY, &from_vn, NULL);
-
-    if (on_res < 0){
-        dbg(DBG_VFS, "open_namev failed\n");
-        return on_res;
-    }
-
-    size_t namelen;
-    const char *name;
-    vnode_t *to_vn;
-
-    int dn_res = dir_namev(to, &namelen, &name, NULL, &to_vn);
-
-    if (dn_res < 0){
-        dbg(DBG_VFS, "dir_namev failed\n");
-        vput(from_vn);
-        return dn_res;
-    }
-
-    int to_ret;
-    vnode_t *lookup_vn;
-
-    if (to_vn->vn_ops->link == NULL){
-        return -ENOTDIR;
-    } else if (lookup(to_vn, name, namelen, &lookup_vn) == 0){
-        vput(lookup_vn);
-        to_ret = -EEXIST;
-    } else {
-        to_ret = to_vn->vn_ops->link(from_vn, to_vn, name, namelen);
-    }
-
-    vput(to_vn);
-    vput(from_vn);
-    return to_ret;
+        NOT_YET_IMPLEMENTED("VFS: do_link");
+        return -1;
 }
 
 /*      o link newname to oldname
@@ -534,14 +248,8 @@ do_link(const char *from, const char *to)
 int
 do_rename(const char *oldname, const char *newname)
 {
-    int link_res = do_link(oldname, newname);
-
-    if (link_res < 0){
-        dbg(DBG_VFS, "do_link failed\n");
-        return link_res;
-    }
-
-    return do_unlink(oldname);
+        NOT_YET_IMPLEMENTED("VFS: do_rename");
+        return -1;
 }
 
 /* Make the named directory the current process's cwd (current working
@@ -560,24 +268,8 @@ do_rename(const char *oldname, const char *newname)
 int
 do_chdir(const char *path)
 {
-    vnode_t *new_wd;
-
-    int open_namev_res = open_namev(path, O_RDONLY, &new_wd, NULL);
-
-    if (open_namev_res < 0){
-        dbg(DBG_VFS, "do_chdir failed with error %d\n", open_namev_res);
-        return open_namev_res;
-    }
-
-    if (new_wd->vn_ops->mkdir == NULL){
-        vput(new_wd);
-        return -ENOTDIR;
-    }
-    
-    vput(curproc->p_cwd);
-    curproc->p_cwd = new_wd;
-
-    return 0;
+        NOT_YET_IMPLEMENTED("VFS: do_chdir");
+        return -1;
 }
 
 /* Call the readdir f_op on the given fd, filling in the given dirent_t*.
@@ -598,35 +290,8 @@ do_chdir(const char *path)
 int
 do_getdent(int fd, struct dirent *dirp)
 {
-    if (fd < 0 || fd >= NFILES){
-        return -EBADF;
-    }
-
-    file_t *f = fget(fd);
-
-    if (f == NULL){
-        return -EBADF;
-    }
-
-    if (f->f_vnode->vn_ops->readdir == NULL){
-        fput(f);
-        return -ENOTDIR;
-    }
-
-    int readdir_res = f->f_vnode->vn_ops->readdir(f->f_vnode, f->f_pos, dirp);
-
-    /* if the call to readdir() failed */
-    if (readdir_res < 1){
-        fput(f);
-        return readdir_res;
-    }
-
-    int seek_result = do_lseek(fd, readdir_res, SEEK_CUR);
-
-    fput(f);
-    
-    dbg(DBG_VFS, "casting from unsigned to signed int...\n");
-    return (seek_result > -1) ? (signed) sizeof(dirent_t) : seek_result;
+        NOT_YET_IMPLEMENTED("VFS: do_getdent");
+        return -1;
 }
 
 /*
@@ -642,30 +307,8 @@ do_getdent(int fd, struct dirent *dirp)
 int
 do_lseek(int fd, int offset, int whence)
 {
-    if (fd < 0 || fd >= NFILES){
-        return -EBADF;
-    }
-
-    file_t *f = fget(fd);
-
-    if (f == NULL){
-        return -EBADF;
-    }   
-
-    if (whence == SEEK_SET && offset >= 0){
-        f->f_pos = offset;
-    } else if (whence == SEEK_CUR && f->f_pos + offset >= 0){
-        f->f_pos += offset;
-    } else if (whence == SEEK_END && f->f_vnode->vn_len + offset >= 0){
-        f->f_pos = f->f_vnode->vn_len + offset;
-    } else {
-        fput(f);
-        return -EINVAL;
-    }
-
-    int ret_val = f->f_pos;
-    fput(f);
-    return ret_val;
+        NOT_YET_IMPLEMENTED("VFS: do_lseek");
+        return -1;
 }
 
 /*
@@ -682,19 +325,8 @@ do_lseek(int fd, int offset, int whence)
 int
 do_stat(const char *path, struct stat *buf)
 {
-    vnode_t *vn;
-
-    int result = open_namev(path, O_RDONLY, &vn, NULL);
-
-    if (result < 0){
-        dbg(DBG_VFS, "do_stat failed because open_namev returned %d\n", result);
-        return result;
-    }
-
-    int stat_result = vn->vn_ops->stat(vn, buf);
-
-    vput(vn);
-    return result;
+        NOT_YET_IMPLEMENTED("VFS: do_stat");
+        return -1;
 }
 
 #ifdef __MOUNTING__

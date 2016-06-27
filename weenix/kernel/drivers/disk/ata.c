@@ -10,7 +10,6 @@
 
 #include "drivers/blockdev.h"
 #include "drivers/dev.h"
-#include "drivers/pci.h"
 #include "drivers/disk/dma.h"
 
 #include "proc/sched.h"
@@ -71,35 +70,26 @@ static struct ata_channel {
 
         /* Argument for interrupt handler */
         void *atac_intr_arg;
-	
-	/* address of busmaster register */
-	uint16_t atac_busmaster;
 } ATA_CHANNELS[2] = {
         {
                 ATA_PRIMARY_CMD_BASE,
                 ATA_PRIMARY_CTRL_BASE,
                 INTR_DISK_PRIMARY,
                 NULL,
-                NULL,
-		NULL
+                NULL
         },
         {
                 ATA_SECONDARY_CMD_BASE,
                 ATA_SECONDARY_CTRL_BASE,
                 INTR_DISK_SECONDARY,
                 NULL,
-                NULL,
-		NULL
+                NULL
         }
 };
 
 #define ATA_NUM_CHANNELS 2
 
 #define ATA_SECTOR_SIZE 512 /* Pretty much always true */
-
-/* Drive/head values (for ATA_REG_DRIVEHEAD) */
-#define ATA_DRIVEHEAD_MASTER 0xA0
-#define ATA_DRIVEHEAD_SLAVE  0xB0
 
 /* Port address offsets for registers */
 /* Command registers */
@@ -120,7 +110,6 @@ static struct ata_channel {
 #define ATA_REG_LBA3       0x09
 #define ATA_REG_LBA4       0x0A
 #define ATA_REG_LBA5       0x0B /* --- */
-#define ATA_REG_NIEN_CONTROL		 0x0C
 
 /* Control registers */
 #define ATA_REG_CONTROL    0x06 /* Write only */
@@ -163,6 +152,10 @@ static struct ata_channel {
 #define ATA_CMD_IDENTIFY_PACKET 0xA1
 #define ATA_CMD_IDENTIFY        0xEC
 
+/* Drive/head values (for ATA_REG_DRIVEHEAD) */
+#define ATA_DRIVEHEAD_MASTER 0xA0
+#define ATA_DRIVEHEAD_SLAVE  0xB0
+
 /* Drive/head values for CHS / LBA */
 #define ATA_DRIVEHEAD_CHS 0x00
 #define ATA_DRIVEHEAD_LBA 0x40
@@ -202,10 +195,9 @@ ata_pause(uint8_t channel)
         ndelay(400);
 }
 
-#define ATA_IDENT_BUFSIZE 256
+#define ATA_IDENT_BUFSIZE 128
 
 #define bd_to_ata(bd) (CONTAINER_OF((bd), ata_disk_t, ata_bdev))
-
 
 typedef struct ata_disk {
         /* 0 (Primary Channel) or 1 (Secondary Channel) */
@@ -231,9 +223,6 @@ typedef struct ata_disk {
         blockdev_t ata_bdev;
 } ata_disk_t;
 
-/* this prototype needs to be after the struct definition */
-uint16_t ata_setup_busmaster(ata_disk_t* adisk);
-
 #define NDISKS __NDISKS__
 
 static void ata_intr_wrapper(regs_t *regs);
@@ -253,131 +242,100 @@ static blockdev_ops_t ata_disk_ops = {
 void
 ata_init()
 {
-    int ii;
+        int ii;
 
-    intr_map(IRQ_DISK_PRIMARY, INTR_DISK_PRIMARY);
-    intr_map(IRQ_DISK_SECONDARY, INTR_DISK_SECONDARY);
+        intr_map(IRQ_DISK_PRIMARY, INTR_DISK_PRIMARY);
+        intr_map(IRQ_DISK_SECONDARY, INTR_DISK_SECONDARY);
 
-    dma_init(); /* IMPORTANT! */
+        dma_init(); /* IMPORTANT! */
 
-    uint8_t oldipl = intr_getipl();
-    intr_setipl(INTR_DISK_PRIMARY);
+        uint8_t oldipl = intr_getipl();
+        intr_setipl(INTR_DISK_PRIMARY);
 
-    for (ii = 0; ii < NDISKS; ii++) {
-        int i;
-        int err = 0;
-        uint32_t ident_buf[ATA_IDENT_BUFSIZE];
-        uint8_t status = 0;
-        int channel = ii; /* No slave drive support */
-        ata_disk_t *adisk;
+        for (ii = 0; ii < NDISKS; ii++) {
+                int i;
+                uint32_t ident_buf[ATA_IDENT_BUFSIZE];
+                int channel = ii; /* No slave drive support */
+                ata_disk_t *adisk;
 
-        if (ii >= ATA_NUM_CHANNELS)
-            panic("ATA does not have as many drives"
-                    "as you want!\n");
-        /* Choose drive - In this case always Master */
-        ata_outb_reg(channel, ATA_REG_DRIVEHEAD, ATA_DRIVEHEAD_MASTER | ATA_DRIVEHEAD_LBA);
-        /* Set the Sector count register to be 0 */
-        ata_outb_reg(channel, ATA_REG_SECCOUNT0, 0);
-        /* Set the LBA0 LBA1 LBA2 registers to be 0 */
-        ata_outb_reg(channel, ATA_REG_LBA0, 0);
-        ata_outb_reg(channel, ATA_REG_LBA1, 0);
-        ata_outb_reg(channel, ATA_REG_LBA2, 0);
+                if (ii >= ATA_NUM_CHANNELS)
+                        panic("ATA does not have as many drives"
+                              "as you want!\n");
+                /* Choose drive - set the mode we will use */
+                ata_outb_reg(channel, ATA_REG_DRIVEHEAD,
+                             ATA_DRIVEHEAD_MASTER | ATA_DRIVEHEAD_LBA);
+                /* Tell drive to get ready to in identification space */
+                ata_outb_reg(channel, ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
 
-        /* disable IRQs for the master (shamelessly stolen from OS Dev */
-        outb(ATA_PRIMARY_CTRL_BASE + ATA_REG_CONTROL, 0x02);
+                /* If status register is 0xff, drive does not exist */
+                if (0xff == ata_inb_reg(channel, ATA_REG_STATUS))
+                        continue;
 
-        /* Tell drive to get ready to in identification space */
-        ata_outb_reg(channel, ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+                /* Otherwise, allocate new disk */
+                if (NULL ==
+                    (adisk = (ata_disk_t *)kmalloc(sizeof(ata_disk_t))))
+                        panic("Not enough memory for ata disk struct!\n");
+                adisk->ata_channel = channel;
+                adisk->ata_drive = 0;
 
-        /* wait some time for the drive to process */
-        ata_pause(channel);
+                uint8_t status =
+                        ata_inb_reg(adisk->ata_channel, ATA_REG_STATUS);
+                if (status & ATA_SR_ERR) { /* If Err, Device is not ATA */
+                        panic("ATA drive initialization failure!\n");
+                        break;
+                }
 
-        /* If status register is 0xff, drive does not exist */
-        if (0x00 == ata_inb_reg(channel, ATA_REG_STATUS)) {
-            dbgq(DBG_DISK, "Drive does not exist\n");
-            continue;
+                for (i = 0; i < ATA_IDENT_BUFSIZE; i++) {
+                        ident_buf[i] = ata_inl_reg(adisk->ata_channel,
+                                                   ATA_REG_DATA);
+                }
+                /* Determine disk size */
+                adisk->ata_size = ident_buf[ATA_IDENT_MAX_LBA];
+                /* In theory we could use this identification buffer
+                 * to find out lots of other things but we don't
+                 * really need to know any of them */
+
+                adisk->ata_sectors_per_block = BLOCK_SIZE / ATA_SECTOR_SIZE;
+
+                sched_queue_init(&adisk->ata_waitq);
+                kmutex_init(&adisk->ata_mutex);
+
+                dbg(DBG_DISK, "Initialized ATA device %d, channel %s, drive %s, size %d\n",
+                    ii, (adisk->ata_channel ? "SECONDARY" : "PRIMARY"),
+                    (adisk->ata_drive ? "SLAVE" : "MASTER"), adisk->ata_size);
+
+                /* Set up corresponding handler */
+                intr_register(ATA_CHANNELS[adisk->ata_channel].atac_intr,
+                              ata_intr_wrapper);
+                ATA_CHANNELS[adisk->ata_channel].atac_intr_handler = ata_intr;
+                ATA_CHANNELS[adisk->ata_channel].atac_intr_arg = adisk;
+
+                adisk->ata_bdev.bd_id = MKDEVID(DISK_MAJOR, ii);
+                adisk->ata_bdev.bd_ops = &ata_disk_ops;
+                blockdev_register(&adisk->ata_bdev);
         }
-
-        /* poll until the BSY bit clears */
-        while(1) {
-            status = ata_inb_reg(channel, ATA_REG_STATUS);
-            if (!(status & ATA_SR_BSY)) break;
-            ata_pause(channel);	
-        }
-
-        /* Now the drive is no longer busy, poll until the error bit is set or drq is set */
-        while (1) {
-            status = ata_inb_reg(channel, ATA_REG_STATUS);
-            if (status & ATA_SR_ERR) { err = 1; break; }
-            if (status & ATA_SR_DRQ) break;
-            ata_pause(channel);
-        }
-
-        if (err) {
-            panic("Error setting up ATA drive\n");
-        }
-
-        /* Now clear the command register */
-        outb(ATA_PRIMARY_CTRL_BASE + ATA_REG_CONTROL, 0x00);
-
-        /* Otherwise, allocate new disk */
-        if (NULL ==
-                (adisk = (ata_disk_t *)kmalloc(sizeof(ata_disk_t))))
-            panic("Not enough memory for ata disk struct!\n");
-        adisk->ata_channel = channel;
-        adisk->ata_drive = 0;
-
-        for (i = 0; i < ATA_IDENT_BUFSIZE; i++) {
-            ident_buf[i] = ata_inl_reg(adisk->ata_channel, ATA_REG_DATA);
-        }
-        /* Determine disk size */
-        adisk->ata_size = ident_buf[ATA_IDENT_MAX_LBA];
-        /* In theory we could use this identification buffer
-         * to find out lots of other things but we don't
-         * really need to know any of them */
-
-        adisk->ata_sectors_per_block = BLOCK_SIZE / ATA_SECTOR_SIZE;
-
-        sched_queue_init(&adisk->ata_waitq);
-        kmutex_init(&adisk->ata_mutex);
-
-        dbg(DBG_DISK, "Initialized ATA device %d, channel %s, drive %s, size %d\n",
-                ii, (adisk->ata_channel ? "SECONDARY" : "PRIMARY"),
-                (adisk->ata_drive ? "SLAVE" : "MASTER"), adisk->ata_size);
-
-        /* Set up corresponding handler */
-        intr_register(ATA_CHANNELS[adisk->ata_channel].atac_intr,
-                ata_intr_wrapper);
-        ATA_CHANNELS[adisk->ata_channel].atac_intr_handler = ata_intr;
-        ATA_CHANNELS[adisk->ata_channel].atac_intr_arg = adisk;
-        ATA_CHANNELS[adisk->ata_channel].atac_busmaster = ata_setup_busmaster(adisk);
-
-        adisk->ata_bdev.bd_id = MKDEVID(DISK_MAJOR, ii);
-        adisk->ata_bdev.bd_ops = &ata_disk_ops;
-        blockdev_register(&adisk->ata_bdev);
-    }
-    intr_setipl(oldipl);
+        intr_setipl(oldipl);
 }
 
 static void
 ata_intr_wrapper(regs_t *regs)
 {
-    int i;
-    dbg(DBG_DISK, "ATA interrupt\n");
-    for (i = 0; i < ATA_NUM_CHANNELS; i++) {
-        /* Check if interrupt is for this channel */
-        if (ATA_CHANNELS[i].atac_intr == regs->r_intr) {
-            if (NULL == ATA_CHANNELS[i].atac_intr_handler)
-                panic("No handler registered "
-                        "for ATA channel %d!\n", i);
-            ATA_CHANNELS[i].atac_intr_handler(
-                    regs, ATA_CHANNELS[i].atac_intr_arg);
-            /* Acknowledge interrupt */
-            ata_inb_reg(i, ATA_REG_STATUS);
-            return;
+        int i;
+        dbg(DBG_DISK, "ATA interrupt\n");
+        for (i = 0; i < ATA_NUM_CHANNELS; i++) {
+                /* Check if interrupt is for this channel */
+                if (ATA_CHANNELS[i].atac_intr == regs->r_intr) {
+                        if (NULL == ATA_CHANNELS[i].atac_intr_handler)
+                                panic("No handler registered "
+                                      "for ATA channel %d!\n", i);
+                        ATA_CHANNELS[i].atac_intr_handler(
+                                regs, ATA_CHANNELS[i].atac_intr_arg);
+                        /* Acknowledge interrupt */
+                        ata_inb_reg(i, ATA_REG_STATUS);
+                        return;
+                }
         }
-    }
-    panic("Received interrupt on channel we don't know about\n");
+        panic("Received interrupt on channel we don't know about\n");
 }
 
 /**
@@ -393,24 +351,8 @@ ata_intr_wrapper(regs_t *regs)
 static int
 ata_read(blockdev_t *bdev, char *data, blocknum_t blocknum, unsigned int count)
 {
-    ata_disk_t *adisk = bd_to_ata(bdev);
-
-    unsigned int i = 0;
-    while (i < count){
-
-        /* ata_do_operation returns 0 on sucess and < 0 on error, so if
-         * we add ever time, we'll only return < 0 on error, and 0 otherwise */
-        int ret_code = ata_do_operation(adisk, data, (blocknum + i), 0);
-
-        if (ret_code != 0){
-            return ret_code;
-        }
-
-        data += BLOCK_SIZE;
-        i++;
-    }
-
-    return 0;
+        NOT_YET_IMPLEMENTED("DRIVERS: ata_read");
+        return -1;
 }
 
 /**
@@ -426,24 +368,8 @@ ata_read(blockdev_t *bdev, char *data, blocknum_t blocknum, unsigned int count)
 static int
 ata_write(blockdev_t *bdev, const char *data, blocknum_t blocknum, unsigned int count)
 {
-    ata_disk_t *adisk = bd_to_ata(bdev);
-
-    char *to_write = data;
-
-    unsigned int i = 0;
-    while (i < count){
-
-        int ret_code = ata_do_operation(adisk, to_write, (blocknum + i), 1);
-
-        if (ret_code != 0){
-            return ret_code;
-        }
-
-        to_write += BLOCK_SIZE;
-        i++;
-    }
-
-    return 0;
+        NOT_YET_IMPLEMENTED("DRIVERS: ata_write");
+        return -1;
 }
 
 /**
@@ -538,58 +464,8 @@ static int
 ata_do_operation(ata_disk_t *adisk, char *data, blocknum_t blocknum, int write)
 {
 
-    uint8_t channel = adisk->ata_channel;
-
-    /* step 1: Lock the mutex and set the IPL */
-    uint8_t old_ipl = intr_getipl();
-    intr_setipl(INTR_DISK_SECONDARY);
-    kmutex_lock(&adisk->ata_mutex);
-   
-    /* step 2: Initialize DMA for this operation */
-    dma_load(channel, (void *) data, BLOCK_SIZE);
-
-    /* step 3: Write to the disk's registers to tell it
-     * the number of sectors */
-    ata_outb_reg(channel, ATA_REG_SECCOUNT0, adisk->ata_sectors_per_block);
-
-    int sectornum = blocknum * adisk->ata_sectors_per_block;
-
-    ata_outb_reg(channel, ATA_REG_LBA0,  sectornum & 0xff);
-    ata_outb_reg(channel, ATA_REG_LBA1, (sectornum & 0xff00) >> 8);
-    ata_outb_reg(channel, ATA_REG_LBA2, (sectornum & 0xff0000) >> 16);
-    
-    /* step 4: Write to the disk's registers to tell it the operation type */
-    if (write){
-        ata_outb_reg(channel, ATA_REG_COMMAND, ATA_CMD_WRITE_DMA);
-    } else {
-        ata_outb_reg(channel, ATA_REG_COMMAND, ATA_CMD_READ_DMA);
-    }
-
-    /* step 5: pause */
-    ata_pause(channel);
-
-    /* step 6: start the DMA operation */
-    dma_start(channel, ATA_CHANNELS[channel].atac_busmaster, write);
-
-    /* step 7: wait for DMA operation to complete*/
-    sched_sleep_on(&adisk->ata_waitq);
-
-    /* step 8: read the status of the DMA operation */
-    uint8_t operation_status = ata_inb_reg(channel, ATA_REG_STATUS);
-    uint8_t ret_val = 0;
-
-    /* step 9: check the status to see if the error bit is set */
-    if (operation_status & ATA_SR_ERR){
-        ret_val = ata_inb_reg(channel, ATA_REG_ERROR);
-    }
-
-    /* step 10: alert the DMA controller that we have received the interrupt */
-    dma_reset(ATA_CHANNELS[channel].atac_busmaster);
-
-    /* step 11: restore IPL, release locks, and return status */
-    kmutex_unlock(&adisk->ata_mutex);
-    intr_setipl(old_ipl);
-    return ret_val;
+        NOT_YET_IMPLEMENTED("DRIVERS: ata_do_operation");
+        return -1;
 }
 
 /**
@@ -603,36 +479,6 @@ ata_do_operation(ata_disk_t *adisk, char *data, blocknum_t blocknum, int write)
 static void
 ata_intr(regs_t *regs, void *arg)
 {
-    sched_wakeup_on(&(((ata_disk_t *) arg)->ata_waitq));
+        NOT_YET_IMPLEMENTED("DRIVERS: ata_intr");
 }
 
-/*
- * This function takes in an ATA Disk struct and 
- * sets it up for busmastering DMA
- */
-uint16_t ata_setup_busmaster(ata_disk_t* adisk) {
-  /* First step is to read the command register and see what's there */
-	pcidev_t* ide = pci_lookup(0x01, 0x01, 0x80);
-
-	if (ide == NULL) {
-		panic("Could not find ide device\n");
-	}
-
-	uint32_t command = pci_read_config(ide, PCI_COMMAND, 2); 
-	/* set the busmaster bit to 1 to enable busmaster */
-	command |= 0x4;
-	/* clear bit 10 to make sure that interrupts are enabled */
-	command &= 0xfdff;
-	
-	pci_write_config(ide, PCI_COMMAND, command, 2);
-	/* read BAR4 and return the address of the busmaster register */
-	uint32_t busmaster_base = ide->pci_bar[4].base_addr + (adisk->ata_channel * 8);
-	
-	if (busmaster_base == 0) {
-		panic("No valid busmastering address\n");
-	}
-
-	KASSERT(busmaster_base != 0 && "Disk device should not have 0 for the busmaster register");
-
-	return (uint16_t)busmaster_base;
-}

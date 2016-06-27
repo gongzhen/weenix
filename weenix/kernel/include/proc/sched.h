@@ -9,11 +9,6 @@ typedef struct ktqueue {
 } ktqueue_t;
 
 /**
- * Initializes the scheduler
- */
-void sched_init(void);
-
-/**
  * Switches execution between kernel threads.
  */
 void sched_switch(void);

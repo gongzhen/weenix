@@ -396,12 +396,6 @@ stat(const char *path, struct stat *buf)
 }
 
 int
-pipe(int pipefd[2])
-{
-        return trap(SYS_pipe, (uint32_t) pipefd);
-}
-
-int
 uname(struct utsname *buf)
 {
         return trap(SYS_uname, (uint32_t) buf);

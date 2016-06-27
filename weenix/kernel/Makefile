@@ -1,21 +1,31 @@
 CFLAGS    := -ffreestanding
 LDFLAGS   := -m elf_i386 -z nodefaultlib
+# EFLAGS  := ./libdrivers.a ./libmm.a ./libs5fs.a 
+EFLAGS	  := ./libdrivers.a ./libs5fs.a 
 # XXX should have --omagic?
 
 include ../Global.mk
 
-CFLAGS    += -D__KERNEL__
+CFLAGS    += -D__KERNEL__ -DCS402TESTS=${CS402TESTS} -DGDBWAIT=${GDBWAIT}
 
 ###
 
 HEAD      := $(wildcard include/*/*.h include/*/*/*.h)
-SRCDIR    := main boot util drivers/disk drivers/tty drivers mm proc fs/ramfs fs/s5fs fs vm api test test/kshell entry test/vfstest
+#SRCDIR    := main boot util drivers/disk drivers/tty drivers mm proc fs/ramfs fs/s5fs fs vm api test test/kshell entry test/vfstest
+# libdrivers.a: drivers/disk drivers/tty drivers 
+#         drivers/memdevs.c:        NOT_YET_IMPLEMENTED("VM: zero_mmap");
+# libmm.a: mm
+#         mm/pframe.c:        NOT_YET_IMPLEMENTED("S5FS: pframe_get");
+#         mm/pframe.c:        NOT_YET_IMPLEMENTED("S5FS: pframe_pin");
+#         mm/pframe.c:        NOT_YET_IMPLEMENTED("S5FS: pframe_unpin");
+# libs5fs.a: fs/s5fs
+#         fs/s5fs/s5fs.c:        NOT_YET_IMPLEMENTED("VM: s5fs_mmap");
+SRCDIR    := main boot util mm proc fs/ramfs fs vm api test test/kshell entry test/vfstest
+#LIBDIR    := mm drivers/disk drivers/tty drivers fs/s5fs
 SRC       := $(foreach dr, $(SRCDIR), $(wildcard $(dr)/*.[cS]))
 OBJS      := $(addsuffix .o,$(basename $(SRC)))
-SCRIPTS   := $(foreach dr, $(SRCDIR), $(wildcard $(dr)/*.gdb $(dr)/*.py))
-
-# List of prebuilt modules that do not include the source
-PREBUILT  :=
+#LIB_OBJS  := $(foreach dr, $(LIBDIR), $(wildcard $(dr)/*.o))
+SCRIPTS   := $(foreach dr, $(SRCDIR), $(abspath $(wildcard $(dr)/*.gdb $(dr)/*.py)))
 
 ifneq "$(shell which mkisofs 2>/dev/null)" ""
     MAKEISO := mkisofs
@@ -32,14 +42,11 @@ GDBCOMM   := gdb-commands
 
 .PHONY: all cscope clean
 
-%.a:
-	touch $@
-
 all: $(BSYMBOLS) $(ISO_IMAGE) $(GDBCOMM)
 
-$(SYMBOLS): $(OBJS) $(PREBUILT)
+$(SYMBOLS): $(OBJS) $(LIB_OBJS)
 	@ echo "  Linking for \"kernel/$@\"..."
-	@ $(LD) $(LDFLAGS) -T link.ld $(filter-out entry/entry.o,$^) -o $@ # entry.o included from link.ld
+	@ $(LD) $(LDFLAGS) -T link.ld $(filter-out entry/entry.o,$^) -o $@ $(EFLAGS) # entry.o included from link.ld
 
 $(BSYMBOLS): $(SYMBOLS)
 	@ echo "  Generating kernel symbols list..."
@@ -66,7 +73,7 @@ $(ISO_IMAGE): $(IMAGE)
 
 $(GDBCOMM): $(SCRIPTS)
 	@ echo "  Creating gdb command list..."
-	@ $(foreach script, $(SCRIPTS), echo $(abspath $(script)) >> $(dir $(script))$(shell basename $(dir $(script))).gdbcomm; )
+	@ $(foreach script, $(SCRIPTS), echo $(script) >> $(dir $(script))$(shell basename $(dir $(script))).gdbcomm; )
 	@ cat */*.gdbcomm > $@
 
 %.o: %.c 

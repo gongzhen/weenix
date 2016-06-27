@@ -321,4 +321,3 @@ int kshell_stat(kshell_t *ksh, int argc, char **argv)
         return exit_val;
 }
 #endif
-

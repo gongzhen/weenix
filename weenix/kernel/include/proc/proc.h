@@ -89,7 +89,8 @@ list_t *proc_list(void);
 void proc_kill(proc_t *p, int status);
 
 /**
- * Kill every process except for the idle process.
+ * Kill every process except for the idle process and direct children of
+ * the idle process.
  */
 void proc_kill_all(void);
 
@@ -146,6 +147,3 @@ size_t proc_info(const void *arg, char *buf, size_t osize);
  * @return the remaining size of the buffer
  */
 size_t proc_list_info(const void *arg, char *buf, size_t osize);
-
-/* yield the processor */
-void yield();

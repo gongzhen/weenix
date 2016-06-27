@@ -149,11 +149,10 @@ endif
 BASE_TARGETS := README hamlet test/stuff
 LIB_TARGETS := lib/ld-weenix.so lib/libc.a lib/libc.so lib/libtest.a \
 lib/libtest.so
-EXEC_TARGETS := bin/ed bin/ls bin/sh bin/uname bin/hd bin/stat \
+EXEC_TARGETS := bin/ed bin/ls bin/sh bin/uname \
 sbin/halt sbin/init \
 usr/bin/args usr/bin/hello usr/bin/kshell usr/bin/segfault usr/bin/spin \
-usr/bin/eatmem usr/bin/forkbomb usr/bin/memtest usr/bin/stress usr/bin/vfstest \
-usr/bin/wc usr/bin/forktest usr/bin/eatinodes
+usr/bin/eatmem usr/bin/forkbomb usr/bin/memtest usr/bin/stress usr/bin/vfstest
 
 EXEC_SUFFIX := .exec
 EXEC_TARGETS_WITH_SUFFIX := $(addsuffix $(EXEC_SUFFIX),$(EXEC_TARGETS))
@@ -183,8 +182,6 @@ done
 
 $(DISK_IMAGE): $(STAGING_DIR)
 	@ echo "  Running fsmaker to create \"user/$@\"..."
-	@ echo "  Disk Blocks: $(DISK_BLOCKS)"
-	@ echo "  Disk Inodes: $(DISK_INODES)"
 	@ $(PYTHON) ../tools/fsmaker/sh.py $@ -e "format -b $(DISK_BLOCKS) -i $(DISK_INODES) -d $<"
 
 ########

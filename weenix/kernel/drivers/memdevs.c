@@ -45,28 +45,9 @@ bytedev_ops_t zero_dev_ops = {
  * bytedev_t's for null and zero, fill them in, and register them.
  */
 void
-memdevs_init() {
-
-    /* initialize null dev */
-    bytedev_t *nd = (bytedev_t *) kmalloc(sizeof(bytedev_t));
-    KASSERT(nd != NULL && "unable to create null device");
-
-    nd->cd_id = MEM_NULL_DEVID;
-    nd->cd_ops = &null_dev_ops;
-    list_link_init(&nd->cd_link);
-
-    bytedev_register(nd);
-
-    /* initialize zero dev */
-    bytedev_t *zd = (bytedev_t *) kmalloc(sizeof(bytedev_t));
-
-    KASSERT(zd != NULL && "unable to create zero device");
-
-    zd->cd_id = MEM_ZERO_DEVID;
-    zd->cd_ops = &zero_dev_ops;
-    list_link_init(&zd->cd_link);
-
-    bytedev_register(zd);
+memdevs_init()
+{
+        NOT_YET_IMPLEMENTED("DRIVERS: memdevs_init");
 }
 
 /**
@@ -82,7 +63,8 @@ memdevs_init() {
 static int
 null_read(bytedev_t *dev, int offset, void *buf, int count)
 {
-    return 0;
+        NOT_YET_IMPLEMENTED("DRIVERS: null_read");
+        return -ENOMEM;
 }
 
 /**
@@ -99,7 +81,8 @@ null_read(bytedev_t *dev, int offset, void *buf, int count)
 static int
 null_write(bytedev_t *dev, int offset, const void *buf, int count)
 {
-    return count;
+        NOT_YET_IMPLEMENTED("DRIVERS: null_write");
+        return -ENOMEM;
 }
 
 /**
@@ -116,12 +99,8 @@ null_write(bytedev_t *dev, int offset, const void *buf, int count)
 static int
 zero_read(bytedev_t *dev, int offset, void *buf, int count)
 {
-    int i;
-    for (i = 0; i < count; i++){
-        ((char *)buf)[i] = '\0';
-    }
-
-    return count;
+        NOT_YET_IMPLEMENTED("DRIVERS: zero_read");
+        return 0;
 }
 
 /* Don't worry about these until VM. Once you're there, they shouldn't be hard. */
@@ -129,12 +108,6 @@ zero_read(bytedev_t *dev, int offset, void *buf, int count)
 static int
 zero_mmap(vnode_t *file, vmarea_t *vma, mmobj_t **ret)
 {
-    mmobj_t *newobj = anon_create();
-
-    if (newobj == NULL){
-        return -ENOMEM;
-    }
-
-    *ret = newobj;
-    return 0;
+        NOT_YET_IMPLEMENTED("VM: zero_mmap");
+        return -1;
 }

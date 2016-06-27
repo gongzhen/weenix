@@ -90,7 +90,7 @@ shadowd(int arg1, void *arg2)
                                                         KASSERT(o->mmo_refcount == 1 && o->mmo_nrespages == 0);
                                                         o->mmo_ops->put(o);
                                                 } else {
-                                                        /*KASSERT(o->mmo_refcount - o->mmo_nrespages == 2);*/
+                                                        KASSERT(o->mmo_refcount - o->mmo_nrespages == 2);
                                                         o->mmo_ops->ref(o);
                                                         last->mmo_ops->put(last);
                                                         last = o;
@@ -136,14 +136,10 @@ init_depends(sched_init);
  * Cancel the shadowd
  */
 void
-shadowd_shutdown()
+shadowd_exit()
 {
         KASSERT(NULL != shadowd_thr);
-        KASSERT(PID_IDLE == curproc->p_pid);
         kthread_cancel(shadowd_thr, (void *)0);
         shadowd_thr = NULL;
-        int shadow_pid = shadowd_proc->p_pid;
-        int child = do_waitpid(-1, 0, NULL);
-        KASSERT(child == shadow_pid && "waited on process other than pageoutd");
 }
 #endif

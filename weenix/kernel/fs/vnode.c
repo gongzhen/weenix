@@ -2,7 +2,7 @@
  *  FILE: vnode.c
  *  AUTH: mcc | mahrens | kma | afenn
  *  DESC: vnode management
- *  $Id: vnode.c,v 1.6.2.2 2006/06/04 01:02:32 afenn Exp $
+ *  $Id: vnode.c,v 1.1 2012/10/10 20:06:46 william Exp $
  */
 
 #include "kernel.h"
@@ -434,11 +434,8 @@ init_special_vnode(vnode_t *vn)
 static int
 special_file_read(vnode_t *file, off_t offset, void *buf, size_t count)
 {
-    if (file->vn_cdev == NULL){
-        return -ENOTSUP;
-    } else {
-        return file->vn_cdev->cd_ops->read(file->vn_cdev, offset, buf, count);
-    }
+        NOT_YET_IMPLEMENTED("VFS: special_file_read");
+        return 0;
 }
 
 /*
@@ -450,11 +447,8 @@ special_file_read(vnode_t *file, off_t offset, void *buf, size_t count)
 static int
 special_file_write(vnode_t *file, off_t offset, const void *buf, size_t count)
 {
-    if (file->vn_cdev == NULL){
-        return -ENOTSUP;
-    } else {
-        return file->vn_cdev->cd_ops->write(file->vn_cdev, offset, buf, count);
-    }
+        NOT_YET_IMPLEMENTED("VFS: special_file_write");
+        return 0;
 }
 
 /* Memory map the special file represented by <file>. All of the
@@ -467,10 +461,8 @@ special_file_write(vnode_t *file, off_t offset, const void *buf, size_t count)
 static int
 special_file_mmap(vnode_t *file, vmarea_t *vma, mmobj_t **ret)
 {
-    KASSERT(file->vn_bdev == NULL && "special file has a block device");
-    KASSERT(file->vn_cdev != NULL && "special file doesn't have a char device");
-
-    return file->vn_cdev->cd_ops->mmap(file, vma, ret);
+        NOT_YET_IMPLEMENTED("VM: special_file_mmap");
+        return 0;
 }
 
 /* Stat is currently the only filesystem specific routine that we have to worry
@@ -487,39 +479,39 @@ special_file_stat(vnode_t *vnode, struct stat *ss)
 }
 
 /* Just as with mmap above, pass the call through to the
- * device-specific fillpage function.
+ * device-specific mmap function.
  *
  * Do not worry about this until VM.
  */
 static int
-special_file_fillpage(vnode_t *file, off_t offset, void *pagebuf) 
+special_file_fillpage(vnode_t *file, off_t offset, void *pagebuf)
 {
-    KASSERT(file->vn_cdev != NULL && file->vn_bdev == NULL);
-    return file->vn_cdev->cd_ops->fillpage(file, offset, pagebuf);
+        NOT_YET_IMPLEMENTED("VM: special_file_fillpage");
+        return 0;
 }
 
 /* Just as with mmap above, pass the call through to the
- * device-specific dirtypage function.
+ * device-specific mmap function.
  *
  * Do not worry about this until VM.
  */
 static int
 special_file_dirtypage(vnode_t *file, off_t offset)
 {
-    KASSERT(file->vn_cdev != NULL && file->vn_bdev == NULL);
-    return file->vn_cdev->cd_ops->dirtypage(file, offset);
+        NOT_YET_IMPLEMENTED("VM: special_file_dirtypage");
+        return 0;
 }
 
 /* Just as with mmap above, pass the call through to the
- * device-specific cleanpage function.
+ * device-specific mmap function.
  *
  * Do not worry about this until VM.
  */
 static int
 special_file_cleanpage(vnode_t *file, off_t offset, void *pagebuf)
 {
-    KASSERT(file->vn_cdev != NULL && file->vn_bdev == NULL);
-    return file->vn_cdev->cd_ops->cleanpage(file, offset, pagebuf);
+        NOT_YET_IMPLEMENTED("VM: special_file_cleanpage");
+        return 0;
 }
 
 /*

@@ -333,11 +333,8 @@ static int test_start_brk(void)
 
         /* Move it up, make sure we have new clean region */
         test_assert(0 == brk(oldbrk + 1), NULL);
-        /* This behavior is undefined, this represents how it
-         * works on Linux but these need not pass
-         */
-        /*test_assert('\0' == *oldbrk, NULL);
-        test_assert('\0' == *(newbrk - 1), NULL);*/
+        test_assert('\0' == *oldbrk, NULL);
+        test_assert('\0' == *(newbrk - 1), NULL);
         assert_fault(char foo = *newbrk, "");
 
         /* Move back and finish */

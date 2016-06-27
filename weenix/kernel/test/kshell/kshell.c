@@ -102,18 +102,17 @@ kshell_t *kshell_create(uint8_t ttyid)
 
 void kshell_destroy(kshell_t *ksh)
 {
-    KASSERT(NULL != ksh);
-    kprintf(ksh, "Bye!\n");
+        KASSERT(NULL != ksh);
+        kprintf(ksh, "Bye!\n");
 #ifdef __VFS__
-    if (do_close(ksh->ksh_fd) < 0) {
-        panic("Error closing TTY file descriptor\n");
-    }
-    dprintf("kshell with file descriptor %d destroyed\n", ksh->ksh_fd);
+        if (do_close(ksh->ksh_fd) < 0) {
+                panic("Error closing TTY file descriptor\n");
+        }
+        dprintf("kshell with file descriptor %d destroyed\n", ksh->ksh_fd);
 #else
-    dprintf("kshell on byte device %u destroyed\n", ksh->ksh_bd->cd_id);
+        dprintf("kshell on byte device %u destroyed\n", ksh->ksh_bd->cd_id);
 #endif
-
-    kfree(ksh);
+        kfree(ksh);
 }
 
 /**
@@ -362,7 +361,7 @@ error:
 
 int kshell_execute_next(kshell_t *ksh)
 {
-        static const char *kshell_prompt = "kanyeshell$";
+        static const char *kshell_prompt = "kshell$";
 
         int nbytes, retval;
         kshell_command_t *cmd;

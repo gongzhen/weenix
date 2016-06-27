@@ -9,8 +9,6 @@
 
 typedef struct n_tty n_tty_t;
 
-#define TTY_BUF_SIZE 128
-
 /**
  * Allocate and initialize an n_tty line discipline, which is not yet
  * attached to a tty.
@@ -25,5 +23,3 @@ tty_ldisc_t *n_tty_create();
  * @param ntty the n_tty line discipline to destroy
  */
 void n_tty_destroy(tty_ldisc_t *ntty);
-
-void print_buffer(struct n_tty *tty);

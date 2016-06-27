@@ -47,20 +47,6 @@ fref(file_t *f)
         }
 }
 
-/* Add vnode to file, and call acquire if available. */
-void
-facq(file_t *f, vnode_t *vn)
-{
-        KASSERT(f);
-        KASSERT(f->f_vnode == NULL);
-        KASSERT(vn);
-
-        f->f_vnode = vn;
-        if (vn->vn_ops->acquire) {
-                vn->vn_ops->acquire(vn, f);
-        }
-}
-
 /* Look in process fd table and return the file*. */
 file_t *
 fget(int fd)
@@ -81,7 +67,7 @@ fget(int fd)
 }
 
 /* - Decrement f_count.
- * - If f_count == 0, call release (if available), vput() and free it. */
+ * - If f_count == 0, call vput() and free it. */
 void
 fput(file_t *f)
 {
@@ -102,13 +88,7 @@ fput(file_t *f)
         }
 
         if (f->f_refcount == 0) {
-                vnode_t *vn = f->f_vnode;
-                if (vn) {
-                        if (vn->vn_ops->release) {
-                                vn->vn_ops->release(vn, f);
-                        }
-                        vput(vn);
-                }
+                if (f->f_vnode) vput(f->f_vnode);
                 slab_obj_free(file_allocator, f);
         }
 }

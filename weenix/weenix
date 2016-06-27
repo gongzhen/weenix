@@ -19,7 +19,7 @@ GDB_COMM_INIT=commands.gdb
 GDB_INIT=init.gdb
 GDBCOMM=gdb-commands
 QEMU=qemu-system-i386
-QEMU_FLAGS="-k en-us -boot order=dca"
+#VNC='-vnc :0'
 if ! which $QEMU; then
 	QEMU=qemu
 	if ! which $QEMU; then
@@ -27,13 +27,6 @@ if ! which $QEMU; then
 		exit 2
 	fi
 fi
-
-# If we're on qemu version > 1.0, add the -no-kvm flag to avoid errors
-# qemu >= 1.1 uses -machine accel=... and thus kvm is off by default
-if $QEMU -version | grep "version 1.0"; then
-	QEMU_FLAGS+=" -no-kvm"
-fi
-
 GDB=gdb
 GDB_PORT=1234
 GDB_TERM=xterm
@@ -41,19 +34,21 @@ MEMORY=32
 
 cd $(dirname $0)
 
-TEMP=$(getopt -o hm:d:n --long help,machine:,debug:,new-disk -n "$0" -- "$@")
+TEMP=$(getopt -o hwm:d:n --long help,wait,machine:,debug:,new-disk -n "$0" -- "$@")
 if [ $? != 0 ] ; then
 	exit 2
 fi
 
 machine=qemu
 dbgmode="run"
+gdbwait=
 newdisk=
 eval set -- "$TEMP"
 while true ; do
 	case "$1" in
 		-h|--help) echo "$USAGE" >&2 ; exit 0 ;;
 		-n|--new-disk) newdisk=1 ; shift ;;
+		-w|--wait) gdbwait=1 ; shift ;;
 		-m|--machine) machine="$2" ; shift 2 ;;
 		-d|--debug) dbgmode="$2" ; shift 2 ;;
 		--) shift ; break ;;
@@ -68,10 +63,10 @@ do
 	echo "source $file" >> "$GDB_COMM_INIT"
 done
 # XXX disabled until gdb version checks are written
-cat "$KERN_DIR/$GDBCOMM" | grep "\.py$" | while read file
-do
-	echo "source $file" >> "$GDB_COMM_INIT"
-done
+## cat "$KERN_DIR/$GDBCOMM" | grep "\.py$" | while read file
+## do
+## 	echo "source $file" >> "$GDB_COMM_INIT"
+## done
 
 case $machine in
 	qemu)
@@ -81,14 +76,20 @@ case $machine in
 
 		case $dbgmode in
 			run)
-				$QEMU $QEMU_FLAGS -m "$MEMORY" -cdrom "$KERN_DIR/$ISO_IMAGE" -hda disk0.img -serial stdio
+				$QEMU -m "$MEMORY" -cdrom "$KERN_DIR/$ISO_IMAGE" disk0.img -serial stdio $VNC
 				;;
 			gdb)
 				# Build the gdb initialization script
 				echo "target remote localhost:$GDB_PORT" > $GDB_TMP_INIT
-				echo "python sys.path.append(\"$(pwd)/python\")" >> $GDB_TMP_INIT
+				echo "python sys.path.append(\"$(pwd)\")" >> $GDB_TMP_INIT
 
-				$GDB_TERM -e $QEMU $QEMU_FLAGS -m "$MEMORY" -cdrom "$KERN_DIR/$ISO_IMAGE" disk0.img -serial stdio -s -S -daemonize
+				if [[ -n "$gdbwait" ]]; then
+					$GDB_TERM -e $QEMU -m "$MEMORY" -cdrom "$KERN_DIR/$ISO_IMAGE" disk0.img -serial stdio -s $VNC &
+					sleep 5
+				fi
+				if [[ ! -n "$gdbwait" ]]; then
+					$GDB_TERM -e $QEMU -m "$MEMORY" -cdrom "$KERN_DIR/$ISO_IMAGE" disk0.img -serial stdio -s -S -daemonize $VNC
+				fi
 				$GDB $GDB_FLAGS
 				;;
 			*)

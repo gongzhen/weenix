@@ -47,12 +47,6 @@ typedef struct file {
 struct file *fget(int fd);
 
 /*
- * Places the vnode vn inside of the given file, possibly calling the
- * acquire vnode operation if one exists.
- */
-void facq(file_t *f, struct vnode *vn);
-
-/*
  * fref() increments the reference count on the given file.
  */
 void fref(file_t *f);
@@ -63,6 +57,5 @@ void fref(file_t *f);
  * If the refcount reaches 0, the storage for the given file_t will be
  * released (f won't point to a valid memory address anymore), and the
  * refcount on the associated vnode (if any) will be decremented.
- * The vnode release operation will also be called if it exists.
  */
 void fput(file_t *f);

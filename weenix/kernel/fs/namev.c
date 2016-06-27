@@ -13,11 +13,6 @@
 #include "fs/vfs.h"
 #include "fs/vnode.h"
 
-/*kmutex_t lookup_mutex;*/
-
-#define KMUTEX_STATIC_INITIALIZER(name) {{{&name.km_waitq.tq_list,\
-    &name.km_waitq.tq_list}, 0}, NULL}
-
 /* This takes a base 'dir', a 'name', its 'len', and a result vnode.
  * Most of the work should be done by the vnode's implementation
  * specific lookup() function, but you may want to special case
@@ -30,15 +25,8 @@
 int
 lookup(vnode_t *dir, const char *name, size_t len, vnode_t **result)
 {
-    if (dir->vn_ops->lookup == NULL){
-        return -ENOTDIR;
-    }
-
-    KASSERT(name != NULL);
-
-    int lookup_result = dir->vn_ops->lookup(dir, name, len, result);
-    
-    return lookup_result;
+        NOT_YET_IMPLEMENTED("VFS: lookup");
+        return 0;
 }
 
 
@@ -64,112 +52,8 @@ int
 dir_namev(const char *pathname, size_t *namelen, const char **name,
           vnode_t *base, vnode_t **res_vnode)
 {
-    if (*pathname == '\0'){
-        return -EINVAL;
-    }
-
-    vnode_t *parent = NULL;
-    vnode_t *curr;
-
-    if (*pathname == '/'){
-        curr = vfs_root_vn;
-
-        while (*pathname == '/'){    
-            pathname++;
-        }
-
-    } else if (base == NULL){
-        curr = curproc->p_cwd;
-    } else {
-        curr = base;
-    }
-
-    vref(curr);
-
-    if (*pathname == '\0'){
-        *namelen = 1;
-        *name = ".";
-        *res_vnode = curr;
+        NOT_YET_IMPLEMENTED("VFS: dir_namev");
         return 0;
-    }
-
-    int dir_name_start = 0;
-    int next_name = 0;
-    int lookup_result = 1;
-    int cur_name_len;
-    int errcode = 0;
-
-    while (lookup_result >= 0 && pathname[next_name] != '\0'){
-        if (parent != NULL){
-            vput(parent);
-        }
-
-        parent = curr;
-
-        dir_name_start = next_name;
-
-        /* first, find the end of the current dir name */
-        while (pathname[next_name] != '/' && pathname[next_name] != '\0'){
-            next_name++;
-        }
-
-        /* save the length of the current dir name in case we need it
-         * outside the loop (if the current dir is actually the base) */
-        cur_name_len = next_name - dir_name_start;
-
-        if (next_name - dir_name_start > NAME_LEN){
-            errcode = -ENAMETOOLONG;
-            break;
-        }
-
-        /* then, look up the node */
-        lookup_result = lookup(parent, (pathname + dir_name_start),
-                next_name - dir_name_start, &curr);
-
-        if (lookup_result == -ENOTDIR){
-            errcode = -ENOTDIR;
-            break;
-        }
-
-        /* we've reserved this as a special value, so let's make sure it never
-         * is returned for real */
-        KASSERT(!(lookup_result > 0));
-
-        /* read away any trailing slashes */
-        while (pathname[next_name] == '/'){
-            next_name++;
-        }
-    }
-
-    /* see if we exited in error -- these are only true if we've entered the loop */
-    if (lookup_result < 0 && lookup_result != -ENOENT){
-        dbg(DBG_VFS, "lookup failed with error code %d\n", lookup_result);
-        vput(parent);
-
-        return lookup_result;
-    } else if (errcode != 0){
-        dbg(DBG_VFS, "lookup failed with error code %d\n", errcode);
-        vput(parent);
-
-        return errcode;
-    } else if (pathname[next_name] != '\0'){
-        KASSERT(lookup_result == -ENOENT);
-        dbg(DBG_VFS, "lookup failed with error code %d\n", -ENOENT);
-
-        vput(parent);
-        return -ENOENT;
-    }
-    
-    if (lookup_result == 0){
-        vput(curr);
-    }
-
-    *namelen = cur_name_len;
-    *name = (pathname + dir_name_start);
-
-    *res_vnode = parent;
-
-    return 0;
 }
 
 /* This returns in res_vnode the vnode requested by the other parameters.
@@ -183,45 +67,8 @@ dir_namev(const char *pathname, size_t *namelen, const char **name,
 int
 open_namev(const char *pathname, int flag, vnode_t **res_vnode, vnode_t *base)
 {
-    static kmutex_t lookup_mutex = KMUTEX_STATIC_INITIALIZER(lookup_mutex);
-
-    size_t namelen;
-    const char *name;
-
-    vnode_t *dir;
-
-    int namev_result = dir_namev(pathname, &namelen, &name, base, &dir);
-
-    if (namev_result < 0){
-        dbg(DBG_VFS, "couldn't find the file\n");
-        return namev_result;
-    }
-  
-    kmutex_lock(&lookup_mutex);
-    int lookup_res = lookup(dir, name, namelen, res_vnode);
-
-    int ret_val = lookup_res;
-
-    if (lookup_res == -ENOENT){
-       if (flag & O_CREAT){
-           ret_val = dir->vn_ops->create(dir, name, namelen, res_vnode);
-       } else {
-           ret_val = -ENOENT;
-       }
-    } else if (lookup_res < 0){
-        ret_val = lookup_res;
-    } else if ((*res_vnode)->vn_ops->mkdir != NULL &&
-            ((flag & O_WRONLY) || (flag & O_RDWR))){
-        
-        ret_val = -EISDIR;
-        vput(*res_vnode);
-        *res_vnode = NULL;
-    }
-
-    kmutex_unlock(&lookup_mutex);
-    vput(dir);
-
-    return ret_val;
+        NOT_YET_IMPLEMENTED("VFS: open_namev");
+        return 0;
 }
 
 #ifdef __GETCWD__

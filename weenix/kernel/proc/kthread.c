@@ -74,36 +74,8 @@ free_stack(char *stack)
 kthread_t *
 kthread_create(struct proc *p, kthread_func_t func, long arg1, void *arg2)
 {
-    kthread_t *k = slab_obj_alloc(kthread_allocator);
-
-    if (k == NULL){
+        NOT_YET_IMPLEMENTED("PROCS: kthread_create");
         return NULL;
-    }
-
-    char *kstack = alloc_stack();
-
-    if (kstack == NULL){
-        slab_obj_free(kthread_allocator, k);
-        return NULL;
-    }
-    
-    k->kt_kstack = kstack;
-
-    k->kt_proc = p;
-
-    k->kt_cancelled = 0;
-    k->kt_wchan = NULL;
-    k->kt_state = KT_NO_STATE;
-
-    list_link_init(&k->kt_qlink);
-
-    list_link_init(&k->kt_plink);
-    list_insert_head(&p->p_threads, &k->kt_plink);
-
-    context_setup(&k->kt_ctx, func, arg1, arg2, k->kt_kstack, 
-            DEFAULT_STACK_SIZE, p->p_pagedir);    
-
-    return k;
 }
 
 void
@@ -131,27 +103,13 @@ kthread_destroy(kthread_t *t)
 void
 kthread_cancel(kthread_t *kthr, void *retval)
 {
-    if (kthr == curthr){
-        KASSERT(kthr->kt_state == KT_RUN);
-        kthread_exit(retval);
-    } else {
-        /*KASSERT(kthr->kt_state == KT_SLEEP || kthr->kt_state == KT_SLEEP_CANCELLABLE);*/
-
-        kthr->kt_cancelled = 1;
-        kthr->kt_retval = retval;
-
-        if (kthr->kt_state == KT_SLEEP_CANCELLABLE){
-            sched_wakeup_on(kthr->kt_wchan);
-        }
-    }
+        NOT_YET_IMPLEMENTED("PROCS: kthread_cancel");
 }
 
 /*
- * You need to set the thread's retval field and alert the current
- * process that a thread is exiting via proc_thread_exited. You should
- * refrain from setting the thread's state to KT_EXITED until you are
- * sure you won't make any more blocking calls before you invoke the
- * scheduler again.
+ * You need to set the thread's retval field, set its state to
+ * KT_EXITED, and alert the current process that a thread is exiting
+ * via proc_thread_exited.
  *
  * It may seem unneccessary to push the work of cleaning up the thread
  * over to the process. However, if you implement MTP, a thread
@@ -159,10 +117,9 @@ kthread_cancel(kthread_t *kthr, void *retval)
  * cleaned up.
  */
 void
-kthread_exit(void *retval){
-    curthr->kt_retval = retval;
-    curthr->kt_state = KT_EXITED;
-    proc_thread_exited(retval);
+kthread_exit(void *retval)
+{
+        NOT_YET_IMPLEMENTED("PROCS: kthread_exit");
 }
 
 /*
@@ -173,41 +130,10 @@ kthread_exit(void *retval){
  * You do not need to worry about this until VM.
  */
 kthread_t *
-kthread_clone(kthread_t *oldthr)
+kthread_clone(kthread_t *thr)
 {
-    kthread_t *newthr = slab_obj_alloc(kthread_allocator);
-
-    if (newthr == NULL){
+        NOT_YET_IMPLEMENTED("VM: kthread_clone");
         return NULL;
-    }
-
-    char *kstack = alloc_stack();
-
-    if (kstack == NULL){
-        slab_obj_free(kthread_allocator, newthr);
-        return NULL;
-    }
-    
-    newthr->kt_kstack = kstack;
-
-    newthr->kt_retval = oldthr->kt_retval;
-    newthr->kt_errno = oldthr->kt_errno;
-    newthr->kt_proc = NULL;
-
-    newthr->kt_cancelled = oldthr->kt_cancelled;
-
-    KASSERT(oldthr->kt_wchan == NULL);
-    newthr->kt_wchan = oldthr->kt_wchan;
-
-    KASSERT(oldthr->kt_state == KT_RUN);
-    newthr->kt_state = oldthr->kt_state;
-
-    KASSERT(!list_link_is_linked(&oldthr->kt_qlink));
-    list_link_init(&newthr->kt_qlink);
-
-    list_link_init(&newthr->kt_plink);
-
-    return newthr;
 }
 
 /*
@@ -218,7 +144,6 @@ kthread_clone(kthread_t *oldthr)
 #ifdef __MTP__
 int
 kthread_detach(kthread_t *kthr)
-
 {
         NOT_YET_IMPLEMENTED("MTP: kthread_detach");
         return 0;

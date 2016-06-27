@@ -3,7 +3,7 @@
  *  AUTH: mcc
  *  DESC:
  *  DATE: Fri Mar 13 18:54:11 1998
- *  $Id: vnode.h,v 1.2.2.2 2006/06/04 01:02:32 afenn Exp $
+ *  $Id: vnode.h,v 1.1 2012/10/10 20:07:49 william Exp $
  */
 
 #pragma once
@@ -19,7 +19,6 @@
 struct fs;
 struct dirent;
 struct stat;
-struct file;
 struct vnode;
 struct vmarea;
 
@@ -116,18 +115,6 @@ typedef struct vnode_ops {
          * information about file.
          */
         int (*stat)(struct vnode *vnode, struct stat *buf);
-        /*
-         * acquire is called on a vnode when a file takes its first
-         * reference to the vnode. The file is passed in.
-         */
-        int (*acquire)(struct vnode *vnode, struct file *file);
-        /*
-         * release is called on a vnode when the refcount of a file
-         * descriptor that has it open comes down to 0. Each call to
-         * acquire has exactly one matching call to release with the
-         * same file that was passed to acquire.
-         */
-        int (*release)(struct vnode *vnode, struct file *file);
 
         /*
          * Used by vnode vm_object entry points (and by no one else):

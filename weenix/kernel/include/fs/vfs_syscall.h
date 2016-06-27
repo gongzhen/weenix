@@ -5,7 +5,6 @@
 #include "types.h"
 
 #include "fs/open.h"
-#include "fs/pipe.h"
 #include "fs/stat.h"
 
 int do_close(int fd);

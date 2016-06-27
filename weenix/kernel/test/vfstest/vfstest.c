@@ -81,7 +81,6 @@ makedirs(const char *dir)
                 return errno;
         }
 
-        free(d);
         return 0;
 }
 
@@ -453,7 +452,7 @@ vfstest_fd(void)
         syscall_fail(dup2(0, -1), EBADF);
 
         /* if the fds are equal, but the first is invalid or out of the
-         allowed range */
+         * allowed range */
         syscall_fail(dup2(BAD_FD, BAD_FD), EBADF);
         syscall_fail(dup2(HUGE_FD, HUGE_FD), EBADF);
         syscall_fail(dup2(-1, -1), EBADF);
@@ -801,7 +800,7 @@ vfstest_s5fs_vm(void)
         /* Link/unlink error cases */
         syscall_fail(link("oldchld", "newchld"), EEXIST);
         syscall_fail(link("oldchld", LONGNAME), ENAMETOOLONG);
-        syscall_fail(link("parent", "newchld"), EEXIST);
+        syscall_fail(link("parent", "newchld"), EISDIR);
 
         /* only rename test */
         /*syscall_success(rename("oldchld", "newchld"));*/
